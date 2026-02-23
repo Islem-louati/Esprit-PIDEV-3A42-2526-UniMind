@@ -1,0 +1,741 @@
+{# templates/etudiant/rendezvous/index.html.twig - VERSION FINALE COMPLÈTE #}
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Mes Rendez-vous | UniMind{% endblock %}
+
+{% block breadcrumb_icon %}fa-calendar-alt{% endblock %}
+{% block page_title_icon %}fa-calendar-alt{% endblock %}
+{% block page_title %}Mes Rendez-vous{% endblock %}
+
+{% block breadcrumb %}
+  {{ parent() }}
+  <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+    <i class="fas fa-calendar-alt me-1"></i>Rendez-vous
+  </li>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .dispo-card {
+      transition: all 0.3s ease;
+      border: 1px solid #e9ecef;
+    }
+    
+    .dispo-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-color: #5e72e4;
+    }
+    
+    .btn-reserver {
+      background: linear-gradient(310deg, #1171ef 0%, #11cdef 100%);
+      color: white;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.375rem;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-reserver:hover {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+    
+    .statut-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+    }
+    
+    .modal-lg-custom {
+      max-width: 900px;
+    }
+    
+    /* Corriger le z-index du modal pour qu'il apparaisse au-dessus de la sidebar */
+    .modal-backdrop {
+      z-index: 1199;
+    }
+    
+    .modal {
+      z-index: 1200;
+    }
+    
+    /* S'assurer que la sidebar est en dessous des modals */
+    .sidenav, #sidenav-main {
+      z-index: 1099;
+    }
+    
+    .psy-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .time-slot {
+      background: #f8f9fe;
+      border-left: 4px solid #5e72e4;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.25rem;
+    }
+    
+    .filter-section {
+      background: #f8f9fe;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .filter-btn-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  {# Messages Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+        <span class="alert-text text-white">{{ message }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+  
+  <div class="row">
+    {# Colonne de gauche : Mes rendez-vous #}
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6>Mes Rendez-vous ({{ rendez_vous_list|length }})</h6>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalPrendreRDV">
+              <i class="fas fa-plus me-2"></i>Prendre un rendez-vous
+            </button>
+          </div>
+          
+          {# Filtres pour les rendez-vous #}
+          <div class="filter-section">
+            <h6 class="text-sm font-weight-bold mb-3">
+              <i class="fas fa-filter me-2"></i>Filtrer mes rendez-vous
+            </h6>
+            <form method="get" action="{{ path('app_etudiant_rdv') }}" id="filterForm">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-search me-1"></i>Recherche
+                  </label>
+                  <input type="text" 
+                         class="form-control form-control-sm" 
+                         name="search" 
+                         placeholder="Rechercher (psy, motif...)"
+                         value="{{ filters.search ?? '' }}">
+                </div>
+                
+                <div class="col-md-3">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-info-circle me-1"></i>Statut
+                  </label>
+                  <select class="form-select form-select-sm" name="statut">
+                    <option value="">Tous les statuts</option>
+                    {% for key, label in statuts_rendezvous %}
+                      <option value="{{ key }}" {{ (filters.statut ?? '') == key ? 'selected' : '' }}>
+                        {{ label }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+                <div class="col-md-3">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-video me-1"></i>Type
+                  </label>
+                  <select class="form-select form-select-sm" name="type_consultation">
+                    <option value="">Tous les types</option>
+                    {% for key, label in types_consultation %}
+                      <option value="{{ key }}" {{ (filters.type_consultation ?? '') == key ? 'selected' : '' }}>
+                        {{ label }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+                <div class="col-md-2">
+                  <label class="form-label text-xs mb-1">&nbsp;</label>
+                  <div class="filter-btn-group">
+                    <button type="submit" class="btn btn-info btn-sm">
+                      <i class="fas fa-filter"></i>
+                    </button>
+                    <a href="{{ path('app_etudiant_rdv') }}" class="btn btn-secondary btn-sm">
+                      <i class="fas fa-redo"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-calendar me-1"></i>Date de création
+                  </label>
+                  <input type="date" 
+                         class="form-control form-control-sm" 
+                         name="created_at" 
+                         placeholder="Date de création"
+                         value="{{ filters.created_at ?? '' }}">
+                  <small class="form-text text-muted">Quand le rendez-vous a été pris</small>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-user-md me-1"></i>Psychologue
+                  </label>
+                  <select class="form-select form-select-sm" name="psy_id">
+                    <option value="">Tous les psychologues</option>
+                    {% for psy in psychologues %}
+                      <option value="{{ psy.userId }}" {{ (filters.psy_id ?? '') == psy.userId ? 'selected' : '' }}>
+                        Dr. {{ psy.nom }} {{ psy.prenom }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if rendez_vous_list is empty %}
+            <div class="text-center py-4">
+              <i class="fas fa-calendar-alt text-secondary" style="font-size: 3rem;"></i>
+              <p class="text-sm text-secondary mb-0 mt-3">
+                {% if filters is defined and filters is not empty %}
+                  Aucun rendez-vous trouvé avec ces critères
+                {% else %}
+                  Vous n'avez aucun rendez-vous
+                {% endif %}
+              </p>
+              <button type="button" class="btn btn-sm btn-outline-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalPrendreRDV">
+                Prendre un rendez-vous
+              </button>
+            </div>
+          {% else %}
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date & Heure</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Psychologue</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for rdv in rendez_vous_list %}
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">
+                              {{ rdv.getDateRendezVous()|date('d/m/Y') }}
+                            </h6>
+                            <p class="text-xs text-secondary mb-0">
+                              {{ rdv.getHeureDebut()|date('H:i') }} - {{ rdv.getHeureFin()|date('H:i') }}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="me-3">
+                            <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                              <i class="fas fa-user-md text-white text-sm opacity-10"></i>
+                            </div>
+                          </div>
+                          <div>
+                            <h6 class="mb-0 text-sm">Dr. {{ rdv.psy.nom }}</h6>
+                            <p class="text-xs text-secondary mb-0">{{ rdv.psy.specialite ?? 'Psychologue' }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        {% if rdv.getTypeConsultation() == 'présentiel' %}
+                          <span class="badge badge-sm bg-gradient-info">
+                            <i class="fas fa-building me-1"></i>Présentiel
+                          </span>
+                        {% else %}
+                          <span class="badge badge-sm bg-gradient-success">
+                            <i class="fas fa-video me-1"></i>En ligne
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle text-center">
+                        {% if rdv.isDemande() %}
+                          <span class="badge badge-sm bg-gradient-warning">
+                            <i class="fas fa-clock me-1"></i>Demande
+                          </span>
+                        {% elseif rdv.isConfirme() %}
+                          <span class="badge badge-sm bg-gradient-success">
+                            <i class="fas fa-check-circle me-1"></i>Confirmé
+                          </span>
+                        {% elseif rdv.isEnCours() %}
+                          <span class="badge badge-sm bg-gradient-info">
+                            <i class="fas fa-play-circle me-1"></i>En cours
+                          </span>
+                        {% elseif rdv.isTermine() %}
+                          <span class="badge badge-sm bg-gradient-secondary">
+                            <i class="fas fa-check-circle me-1"></i>Terminé
+                          </span>
+                        {% elseif rdv.isAnnule() %}
+                          <span class="badge badge-sm bg-gradient-danger">
+                            <i class="fas fa-times-circle me-1"></i>Annulé
+                          </span>
+                        {% else %}
+                          <span class="badge badge-sm bg-gradient-dark">
+                            <i class="fas fa-user-slash me-1"></i>Absent
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle text-center">
+                        <div class="btn-group" role="group">
+                          <a href="{{ path('app_etudiant_rdv_detail', {id: rdv.rendezVousId}) }}" 
+                             class="btn btn-outline-info btn-sm"
+                             data-bs-toggle="tooltip" 
+                             title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                        
+                          {% if rdv.canBeCancelled() %}
+                            <form method="post" 
+                                  action="{{ path('app_etudiant_rdv_annuler', {id: rdv.rendezVousId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ rdv.rendezVousId) }}">
+                              <button type="submit" 
+                                      class="btn btn-outline-danger btn-sm" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Annuler">
+                                <i class="fas fa-times"></i>
+                              </button>
+                            </form>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    {# Colonne de droite : Statistiques #}
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Statistiques des rendez-vous</h6>
+        </div>
+        <div class="card-body p-3">
+          <ul class="list-group">
+            <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+              <div class="d-flex align-items-center">
+                <div class="icon icon-shape icon-sm me-3 bg-gradient-success shadow text-center">
+                  <i class="fas fa-check text-white text-sm opacity-10"></i>
+                </div>
+                <div>
+                  <span class="text-sm">Confirmés</span>
+                </div>
+              </div>
+              <div>
+                <span class="text-sm font-weight-bold">
+                  {{ statistiques['confirme'] ?? 0 }}
+                </span>
+              </div>
+            </li>
+            <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+              <div class="d-flex align-items-center">
+                <div class="icon icon-shape icon-sm me-3 bg-gradient-warning shadow text-center">
+                  <i class="fas fa-clock text-white text-sm opacity-10"></i>
+                </div>
+                <div>
+                  <span class="text-sm">En attente</span>
+                </div>
+              </div>
+              <div>
+                <span class="text-sm font-weight-bold">
+                  {{ statistiques['demande'] ?? 0 }}
+                </span>
+              </div>
+            </li>
+            <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+              <div class="d-flex align-items-center">
+                <div class="icon icon-shape icon-sm me-3 bg-gradient-info shadow text-center">
+                  <i class="fas fa-play text-white text-sm opacity-10"></i>
+                </div>
+                <div>
+                  <span class="text-sm">En cours</span>
+                </div>
+              </div>
+              <div>
+                <span class="text-sm font-weight-bold">
+                  {{ statistiques['en-cours'] ?? 0 }}
+                </span>
+              </div>
+            </li>
+            <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+              <div class="d-flex align-items-center">
+                <div class="icon icon-shape icon-sm me-3 bg-gradient-secondary shadow text-center">
+                  <i class="fas fa-flag-checkered text-white text-sm opacity-10"></i>
+                </div>
+                <div>
+                  <span class="text-sm">Terminés</span>
+                </div>
+              </div>
+              <div>
+                <span class="text-sm font-weight-bold">
+                  {{ statistiques['termine'] ?? 0 }}
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="card mt-4">
+        <div class="card-header pb-0">
+          <h6>Informations importantes</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="alert alert-info text-white" role="alert">
+            <h6 class="alert-heading text-white">
+              <i class="fas fa-info-circle me-2"></i>Comment prendre un rendez-vous ?
+            </h6>
+            <p class="text-sm mb-0">
+              1. Cliquez sur "Prendre un rendez-vous"<br>
+              2. Filtrez les créneaux disponibles<br>
+              3. Sélectionnez un créneau<br>
+              4. Remplissez le motif (facultatif)<br>
+              5. Confirmez la prise de rendez-vous
+            </p>
+          </div>
+          <div class="alert alert-warning text-white" role="alert">
+            <h6 class="alert-heading text-white">
+              <i class="fas fa-exclamation-triangle me-2"></i>Annulation
+            </h6>
+            <p class="text-sm mb-0">
+              Vous pouvez annuler un rendez-vous jusqu'à 24h avant l'heure prévue.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Modal pour prendre un rendez-vous #}
+  <div class="modal fade" id="modalPrendreRDV" tabindex="-1" aria-labelledby="modalPrendreRDVLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-lg-custom">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalPrendreRDVLabel">
+            <i class="fas fa-calendar-alt me-2"></i>
+            Prendre un rendez-vous
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        {# Filtres pour les disponibilités #}
+        <div class="modal-body">
+          <div class="filter-section mb-4">
+            <h6 class="text-sm font-weight-bold mb-3">
+              <i class="fas fa-filter me-2"></i>Filtrer les créneaux disponibles
+            </h6>
+            <form method="get" action="{{ path('app_etudiant_rdv') }}" id="dispoFilterForm">
+              
+              {# Ligne 1: Recherche et Type de consultation #}
+              <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-search me-1"></i>Rechercher un psychologue
+                  </label>
+                  <input type="text" 
+                         class="form-control form-control-sm" 
+                         name="dispo_search" 
+                         placeholder="Nom, prénom ou spécialité..."
+                         value="{{ dispo_filters.search ?? '' }}">
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-video me-1"></i>Type de consultation
+                  </label>
+                  <select class="form-select form-select-sm" name="dispo_type_consultation">
+                    <option value="">Tous les types</option>
+                    {% for key, label in types_consultation %}
+                      <option value="{{ key }}" {{ (dispo_filters.type_consultation ?? '') == key ? 'selected' : '' }}>
+                        {{ label }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              
+              {# Ligne 2: Filtres de date #}
+          <div class="row g-2 mb-3">
+  <div class="col-md-6">
+    <label class="form-label text-xs mb-1">
+      <i class="fas fa-calendar me-1"></i>Date du créneau
+    </label>
+    <input type="date" 
+           class="form-control form-control-sm" 
+           name="dispo_date" 
+           value="{{ dispo_filters.date ?? '' }}">
+    <small class="form-text text-muted">Filtrer par date spécifique</small>
+  </div>
+              
+              {# Ligne 3: Psychologue et Plages horaires #}
+              <div class="row g-2 mb-3">
+                <div class="col-md-4">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-user-md me-1"></i>Psychologue
+                  </label>
+                  <select class="form-select form-select-sm" name="dispo_psy_id">
+                    <option value="">Tous les psychologues</option>
+                    {% for psy in psychologues %}
+                      <option value="{{ psy.userId }}" {{ (dispo_filters.psy_id ?? '') == psy.userId ? 'selected' : '' }}>
+                        Dr. {{ psy.nom }} {{ psy.prenom }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-clock me-1"></i>Heure minimale
+                  </label>
+                  <input type="time" 
+                         class="form-control form-control-sm" 
+                         name="dispo_heure_debut" 
+                         value="{{ dispo_filters.heure_debut ?? '' }}">
+                  <small class="form-text text-muted">Début après cette heure</small>
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label text-xs mb-1">
+                    <i class="fas fa-clock me-1"></i>Heure maximale
+                  </label>
+                  <input type="time" 
+                         class="form-control form-control-sm" 
+                         name="dispo_heure_fin" 
+                         value="{{ dispo_filters.heure_fin ?? '' }}">
+                  <small class="form-text text-muted">Fin avant cette heure</small>
+                </div>
+              </div>
+              
+              {# Boutons d'action #}
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-info btn-sm" onclick="openModalAfterFilter()">
+                  <i class="fas fa-filter me-1"></i>Appliquer les filtres
+                </button>
+                <a href="{{ path('app_etudiant_rdv') }}" class="btn btn-secondary btn-sm">
+                  <i class="fas fa-redo me-1"></i>Réinitialiser
+                </a>
+              </div>
+              
+              {# Indicateur de filtres actifs #}
+              {% set active_filters_count = 0 %}
+             {#} {% if dispo_filters.search %}{% set active_filters_count = active_filters_count + 1 %}{% endif %}#}
+             {#} {% if dispo_filters.type_consultation %}{% set active_filters_count = active_filters_count + 1 %}{% endif %}
+              {% if dispo_filters.date_debut %}{% set active_filters_count = active_filters_count + 1 %}{% endif %}
+              {% if dispo_filters.date_fin %}{% set active_filters_count = active_filters_count + 1 %}{% endif %}
+              {% if dispo_filters.psy_id %}{% set active_filters_count = active_filters_count + 1 %}{% endif %}
+              {% if dispo_filters.heure_debut %}{% set active_filters_count = active_filters_count + 1 %}{% endif %}
+              {% if dispo_filters.heure_fin %}{% set active_filters_count = active_filters_count + 1 %}{% endif %}#}
+              
+              {% if active_filters_count > 0 %}
+                <div class="alert alert-info alert-sm mt-2 mb-0">
+                  <i class="fas fa-info-circle me-1"></i>
+                  <strong>{{ active_filters_count }}</strong> filtre(s) actif(s)
+                </div>
+              {% endif %}
+            </form>
+          </div>
+          
+          <hr>
+          
+          <form method="post" action="{{ path('app_etudiant_rdv') }}" id="formPrendreRDV">
+            <div class="mb-4">
+              <h6 class="text-sm font-weight-bold mb-3">
+                <i class="fas fa-calendar-check me-2"></i>
+                Créneaux disponibles ({{ disponibilites_futures|length }})
+              </h6>
+              
+              {% if disponibilites_futures is empty %}
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle me-2"></i>
+                  <strong>Aucun créneau disponible</strong> avec ces critères.
+                  <br>
+                  <small>Essayez de modifier vos filtres pour voir plus de créneaux.</small>
+                </div>
+              {% else %}
+                {# Grouper les disponibilités par date #}
+                {% set disponibilites_by_date = {} %}
+                {% for dispo in disponibilites_futures %}
+                  {% set date_key = dispo.dateDispo|date('Y-m-d') %}
+                  {% if date_key not in disponibilites_by_date|keys %}
+                    {% set disponibilites_by_date = disponibilites_by_date|merge({(date_key): []}) %}
+                  {% endif %}
+                  {% set disponibilites_by_date = disponibilites_by_date|merge({(date_key): disponibilites_by_date[date_key]|merge([dispo])}) %}
+                {% endfor %}
+                
+                {# Afficher les disponibilités groupées par date #}
+                <div style="max-height: 400px; overflow-y: auto;">
+                  {% for date_key, dispos in disponibilites_by_date %}
+                    <div class="card mb-3 dispo-card">
+                      <div class="card-header bg-gradient-info">
+                        <h6 class="mb-0 text-white">
+                          <i class="fas fa-calendar-day me-2"></i>
+                          {{ dispos[0].dateDispo|date('l d F Y')|capitalize }}
+                        </h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="row">
+                          {% for dispo in dispos %}
+                            <div class="col-md-6 mb-3">
+                              <div class="time-slot">
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-dark">
+                                      <i class="fas fa-clock me-1"></i>
+                                      {{ dispo.heureDebut|date('H:i') }} - {{ dispo.heureFin|date('H:i') }}
+                                      <small class="text-muted">({{ dispo.duree }})</small>
+                                    </h6>
+                                    <p class="text-sm mb-1">
+                                      <i class="fas fa-user-md me-1"></i>
+                                      <strong>Dr. {{ dispo.user.nom }} {{ dispo.user.prenom }}</strong>
+                                    </p>
+                                    {% if dispo.user.specialite %}
+                                      <p class="text-xs text-secondary mb-1">
+                                        <i class="fas fa-stethoscope me-1"></i>
+                                        {{ dispo.user.specialite }}
+                                      </p>
+                                    {% endif %}
+                                    <p class="text-sm mb-0">
+                                      <i class="fas fa-map-marker-alt me-1"></i>
+                                      {% if dispo.isPresentiel %}
+                                        <span class="badge bg-info">
+                                          <i class="fas fa-building me-1"></i>
+                                          Présentiel - {{ dispo.lieu ?? 'Bureau' }}
+                                        </span>
+                                      {% else %}
+                                        <span class="badge bg-success">
+                                          <i class="fas fa-video me-1"></i>
+                                          En ligne
+                                        </span>
+                                      {% endif %}
+                                    </p>
+                                  </div>
+                                  <div class="ms-3">
+                                    <div class="form-check">
+                                      <input class="form-check-input" 
+                                             type="radio" 
+                                             name="dispo_id" 
+                                             id="dispo_{{ dispo.dispoId }}" 
+                                             value="{{ dispo.dispoId }}"
+                                             required>
+                                      <label class="form-check-label text-sm" for="dispo_{{ dispo.dispoId }}">
+                                        Sélectionner
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            {# Motif de consultation #}
+            <div class="mb-3">
+              <label for="motif" class="form-label">
+                <i class="fas fa-sticky-note me-2"></i>
+                Motif de consultation <small class="text-muted">(facultatif)</small>
+              </label>
+              <textarea class="form-control" 
+                        id="motif" 
+                        name="motif" 
+                        rows="3" 
+                        placeholder="Décrivez brièvement la raison de votre consultation..."></textarea>
+              <small class="form-text text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Cette information aidera le psychologue à mieux préparer votre séance.
+              </small>
+            </div>
+            
+            {# CSRF Token #}
+            <input type="hidden" name="_token" value="{{ csrf_token('prendre_rdv') }}">
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="fas fa-times me-2"></i>Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" {% if disponibilites_futures is empty %}disabled{% endif %}>
+                <i class="fas fa-calendar-check me-2"></i>Confirmer le rendez-vous
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Activer les tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+      
+      // Validation du formulaire de prise de RDV
+      const formPrendreRDV = document.querySelector('#formPrendreRDV');
+      if (formPrendreRDV) {
+        formPrendreRDV.addEventListener('submit', function(event) {
+          const selectedDispo = this.querySelector('input[name="dispo_id"]:checked');
+          if (!selectedDispo) {
+            event.preventDefault();
+            alert('Veuillez sélectionner un créneau horaire.');
+          }
+        });
+      }
+      
+      // Si des filtres de disponibilité sont présents, ouvrir automatiquement le modal
+      {% if dispo_filters is not empty %}
+        const modal = new bootstrap.Modal(document.getElementById('modalPrendreRDV'));
+        modal.show();
+      {% endif %}
+    });
+    
+    // Fonction pour ouvrir le modal après filtrage
+    function openModalAfterFilter() {
+      // Le formulaire va se soumettre et recharger la page
+      // Le modal s'ouvrira automatiquement grâce au code ci-dessus
+    }
+  </script>
+{% endblock %}

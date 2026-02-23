@@ -1,0 +1,547 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Passer le questionnaire: {{ questionnaire.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('etudiant_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('etudiant_questionnaire_liste') }}">Questionnaires</a></li>
+                    <li class="breadcrumb-item active">{{ questionnaire.nom }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="h2 text-dark mb-3">{{ questionnaire.nom }}</h1>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead text-muted mb-3">{{ questionnaire.description }}</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-{{ 
+                        questionnaire.type == 'STRESS' ? 'danger' :
+                        questionnaire.type == 'ANXIETE' ? 'warning' :
+                        questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success'
+                    }} fs-6">
+                        {{ questionnaire.type }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="alert alert-primary shadow-sm">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle fa-2x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="alert-heading mb-2">Instructions importantes</h5>
+                        <ul class="mb-0">
+                            <li>Répondez à chaque question avec honnêteté</li>
+                            <li>Chaque question a 5 options de réponse standard</li>
+                            <li>Prenez le temps de bien lire chaque question</li>
+                            <li>Vous ne pouvez pas modifier vos réponses après soumission</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistiques et seuils -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-start-primary shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-question-circle fa-2x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="text-muted small">Nombre de questions</div>
+                            <div class="fw-bold fs-4">{{ questions|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-start-info shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clock fa-2x text-info"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="text-muted small">Temps estimé</div>
+                            <div class="fw-bold fs-4">{{ (questions|length * 0.5)|round }} min</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-start-success shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-brain fa-2x text-success"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="text-muted small">Type</div>
+                            <div class="fw-bold fs-4">{{ questionnaire.type }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-start-warning shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-star fa-2x text-warning"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="text-muted small">Score maximum</div>
+                            <div class="fw-bold fs-4">{{ questions|length * 4 }} pts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de seuils -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">Seuils d'interprétation</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge bg-success">Léger: 0-{{ questionnaire.seuilLeger }}</span>
+                        <span class="badge bg-warning">Modéré: {{ questionnaire.seuilLeger+1 }}-{{ questionnaire.seuilModere }}</span>
+                        <span class="badge bg-danger">Sévère: >{{ questionnaire.seuilModere }}</span>
+                    </div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-success" style="width: {{ (questionnaire.seuilLeger / (questions|length * 4)) * 100 }}%"></div>
+                        <div class="progress-bar bg-warning" style="width: {{ ((questionnaire.seuilModere - questionnaire.seuilLeger) / (questions|length * 4)) * 100 }}%"></div>
+                        <div class="progress-bar bg-danger" style="width: {{ ((questions|length * 4 - questionnaire.seuilModere) / (questions|length * 4)) * 100 }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Questions -->
+    {% if not questions or questions|length == 0 %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-4x text-warning mb-4"></i>
+                        <h3 class="text-dark mb-3">Aucune question disponible</h3>
+                        <p class="text-muted mb-4">Ce questionnaire ne contient pas de questions pour le moment.</p>
+                        <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Retour aux questionnaires
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <form method="post" action="{{ path('etudiant_questionnaire_submit', {'id': questionnaire.questionnaireId}) }}" id="questionnaireForm">
+            <!-- Barre de progression et score en direct -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">Progression</h6>
+                                        <span class="badge bg-primary" id="progressCounter">0/{{ questions|length }}</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" id="progressBar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">Score en direct</h6>
+                                        <span class="badge" id="scoreBadge">0 pts</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar" role="progressbar" id="scoreBar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="mt-2 text-end">
+                                        <strong id="niveauActuel">-</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Liste des questions -->
+            {% for question in questions %}
+                {% set questionNumber = loop.index %}
+                {% set options = ["Jamais", "Rarement", "Parfois", "Souvent", "Toujours"] %}
+                {% set scores = [0, 1, 2, 3, 4] %}
+                
+                <div class="row mb-4 question-card" id="question-{{ question.questionId }}">
+                    <div class="col-12">
+                        <div class="card shadow border-{{ 
+                            questionnaire.type == 'STRESS' ? 'danger' :
+                            questionnaire.type == 'ANXIETE' ? 'warning' :
+                            questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success'
+                        }}">
+                            <div class="card-header bg-{{ 
+                                questionnaire.type == 'STRESS' ? 'danger' :
+                                questionnaire.type == 'ANXIETE' ? 'warning' :
+                                questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success'
+                            }} text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-question-circle me-2"></i>
+                                        Question {{ questionNumber }}
+                                    </h5>
+                                    <span class="badge bg-light text-dark">
+                                        {{ questionNumber }}/{{ questions|length }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <h6 class="card-title mb-4 fs-5 text-dark">{{ question.texte }}</h6>
+                                
+                                <div class="options-container">
+                                    {% for index in 0..4 %}
+                                        <div class="option-item mb-3">
+                                            <input type="radio" 
+                                                   class="btn-check" 
+                                                   name="reponses[{{ question.questionId }}]" 
+                                                   id="question_{{ question.questionId }}_option_{{ index }}"
+                                                   value="{{ scores[index] }}"
+                                                   data-question-id="{{ question.questionId }}">
+                                            <label class="btn btn-outline-secondary w-100 text-start option-label" 
+                                                   for="question_{{ question.questionId }}_option_{{ index }}">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="option-indicator me-3">
+                                                        <span class="badge bg-secondary option-badge">
+                                                            {{ ['A', 'B', 'C', 'D', 'E'][index] }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="fw-medium">{{ options[index] }}</div>
+                                                        <small class="text-muted">Score: {{ scores[index] }}/4</small>
+                                                    </div>
+                                                    <div class="option-check ms-3">
+                                                        <i class="fas fa-check-circle text-success d-none"></i>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <!-- Actions avec score et seuil -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card shadow border-0">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="text-dark mb-3">Résumé</h5>
+                                    <div class="d-flex flex-wrap gap-4">
+                                        <div>
+                                            <span class="text-muted">Questions:</span>
+                                            <strong><span id="questionsAnswered">0</span>/{{ questions|length }}</strong>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted">Score:</span>
+                                            <strong><span id="currentScore">0</span>/{{ questions|length * 4 }}</strong>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted">Niveau:</span>
+                                            <strong><span id="currentLevel" class="text-uppercase">-</span></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-outline-secondary me-2">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                    <button type="button" class="btn btn-success btn-lg" id="submitBtn" onclick="afficherScorePopup()">
+                                        <i class="fas fa-paper-plane me-2"></i>
+                                        Soumettre le questionnaire
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{# DÉBOGAGE CONNEXION - À AJOUTER TEMPORAIREMENT #}
+<div class="row mb-3">
+    <div class="col-12">
+        {% if app.user %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Connecté en tant que :</strong> {{ app.user.email }}
+                {% if is_granted('ROLE_ETUDIANT') %}
+                    <span class="badge bg-success ms-2">Étudiant</span>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>NON CONNECTÉ</strong> - Vous devez être connecté pour soumettre un questionnaire.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+let reponses = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const totalQuestions = {{ questions|length }};
+    const maxScore = totalQuestions * 4;
+    const seuilLeger = {{ questionnaire.seuilLeger }};
+    const seuilModere = {{ questionnaire.seuilModere }};
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressCounter = document.getElementById('progressCounter');
+    const questionsAnswered = document.getElementById('questionsAnswered');
+    const currentScore = document.getElementById('currentScore');
+    const currentLevel = document.getElementById('currentLevel');
+    const scoreBar = document.getElementById('scoreBar');
+    const scoreBadge = document.getElementById('scoreBadge');
+    
+    // Déterminer le niveau en fonction du score
+    function getNiveau(score) {
+        if (score <= seuilLeger) return { nom: 'léger', couleur: 'success' };
+        if (score <= seuilModere) return { nom: 'modéré', couleur: 'warning' };
+        return { nom: 'sévère', couleur: 'danger' };
+    }
+    
+    // Calculer le score total
+    function calculerScore() {
+        let total = 0;
+        for (let questionId in reponses) {
+            total += parseInt(reponses[questionId]);
+        }
+        return total;
+    }
+    
+    // Mettre à jour la progression et le score
+    function updateProgress() {
+        const answeredCount = Object.keys(reponses).length;
+        const progressPercentage = Math.round((answeredCount / totalQuestions) * 100);
+        const score = calculerScore();
+        const scorePercentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+        const niveau = getNiveau(score);
+        
+        // Mise à jour des éléments
+        progressBar.style.width = progressPercentage + '%';
+        progressCounter.textContent = answeredCount + '/' + totalQuestions;
+        questionsAnswered.textContent = answeredCount;
+        currentScore.textContent = score;
+        
+        // Mise à jour du niveau
+        currentLevel.textContent = niveau.nom;
+        currentLevel.className = 'text-uppercase text-' + niveau.couleur;
+        
+        // Barre de score
+        scoreBar.style.width = scorePercentage + '%';
+        scoreBar.className = 'progress-bar bg-' + niveau.couleur;
+        scoreBadge.textContent = score + ' pts';
+        scoreBadge.className = 'badge bg-' + niveau.couleur;
+        
+        // Activer/désactiver le bouton de soumission
+        if (answeredCount === totalQuestions) {
+            submitBtn.classList.remove('btn-secondary');
+            submitBtn.classList.add('btn-success');
+        } else {
+            submitBtn.classList.remove('btn-success');
+            submitBtn.classList.add('btn-secondary');
+        }
+        
+        // Marquer les questions comme répondues
+        document.querySelectorAll('.question-card').forEach(card => {
+            const questionId = card.id.split('-')[1];
+            if (reponses[questionId] !== undefined) {
+                card.classList.add('border-success');
+            } else {
+                card.classList.remove('border-success');
+            }
+        });
+    }
+    
+    // Gérer les sélections de radio
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const match = this.getAttribute('name').match(/\[(\d+)\]/);
+            if (match) {
+                const questionId = match[1];
+                reponses[questionId] = this.value;
+                
+                // Marquer l'option sélectionnée
+                const parentLabel = this.parentElement;
+                document.querySelectorAll(`[name="${this.name}"]`).forEach(input => {
+                    input.parentElement.classList.remove('selected-option');
+                });
+                parentLabel.classList.add('selected-option');
+                
+                updateProgress();
+            }
+        });
+    });
+    
+    // Initialiser la progression
+    updateProgress();
+});
+
+// ✅ NOUVELLE FONCTION : Afficher le score dans une popup avant soumission
+function afficherScorePopup() {
+    const totalQuestions = {{ questions|length }};
+    const maxScore = totalQuestions * 4;
+    const seuilLeger = {{ questionnaire.seuilLeger }};
+    const seuilModere = {{ questionnaire.seuilModere }};
+    const answeredCount = Object.keys(reponses).length;
+    
+    // Vérifier si toutes les questions sont répondues
+    if (answeredCount !== totalQuestions) {
+        alert('❌ Veuillez répondre à toutes les questions.\n' +
+              'Il reste ' + (totalQuestions - answeredCount) + ' question(s) sans réponse.');
+        return;
+    }
+    
+    // Calculer le score
+    let score = 0;
+    for (let questionId in reponses) {
+        score += parseInt(reponses[questionId]);
+    }
+    const pourcentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    
+    // Déterminer le niveau
+    let niveau, message, emoji;
+    if (score <= seuilLeger) {
+        niveau = 'LÉGER';
+        message = 'Votre niveau est léger. Continuez à prendre soin de vous !';
+        emoji = '😊';
+    } else if (score <= seuilModere) {
+        niveau = 'MODÉRÉ';
+        message = 'Votre niveau est modéré. Pensez à des activités relaxantes.';
+        emoji = '😐';
+    } else {
+        niveau = 'SÉVÈRE';
+        message = 'Votre niveau est sévère. N\'hésitez pas à consulter un professionnel.';
+        emoji = '⚠️';
+    }
+    
+    // Créer le message de la popup
+    const messagePopup = 
+        '📊 RÉSULTAT DU QUESTIONNAIRE\n' +
+        '═══════════════════════════\n\n' +
+        emoji + ' Score: ' + score + '/' + maxScore + '\n' +
+        '📈 Pourcentage: ' + pourcentage + '%\n' +
+        '🏷️ Niveau: ' + niveau + '\n\n' +
+        '💬 ' + message + '\n\n' +
+        '═══════════════════════════\n\n' +
+        '✅ Voulez-vous soumettre vos réponses ?';
+    
+    // Afficher la popup de confirmation
+    if (confirm(messagePopup)) {
+        document.getElementById('questionnaireForm').submit();
+    }
+}
+
+// ✅ SUPPRESSION du beforeunload (plus de popup de quitter)
+</script>
+
+<style>
+.option-item .option-label {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    border: 2px solid #e9ecef;
+}
+
+.option-item .option-label:hover {
+    border-color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.option-item .btn-check:checked + .option-label {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.option-item .btn-check:checked + .option-label .option-badge {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.option-item .btn-check:checked + .option-label .fa-check-circle {
+    display: inline-block !important;
+}
+
+.option-item.selected-option .option-label {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.option-badge {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.9rem;
+}
+
+.question-card {
+    transition: all 0.3s;
+}
+
+.question-card.border-success {
+    box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+#submitBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-check:checked + .btn-outline-secondary {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+</style>
+{% endblock %}

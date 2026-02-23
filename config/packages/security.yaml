@@ -1,0 +1,79 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\LoginAuthenticator
+            
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                always_remember_me: false
+
+            logout:
+                path: app_logout
+                target: app_login
+
+    access_control:
+        # Routes publiques
+        - { path: ^/connexion$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription$, roles: PUBLIC_ACCESS }
+        - { path: ^/verification, roles: PUBLIC_ACCESS }
+        - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
+        - { path: ^/reinitialiser-mot-de-passe, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/email, roles: PUBLIC_ACCESS }
+        
+        # Routes pour les assets
+        - { path: ^/uploads, roles: PUBLIC_ACCESS }
+        - { path: ^/build, roles: PUBLIC_ACCESS }
+        - { path: ^/public, roles: PUBLIC_ACCESS }
+
+        # Module Événements (protection par espace)
+        - { path: ^/admin/evenements, roles: ROLE_ADMIN }
+        - { path: ^/admin/sponsors, roles: ROLE_ADMIN }
+        - { path: ^/admin/participations, roles: ROLE_ADMIN }
+        - { path: ^/admin/feedbacks, roles: ROLE_ADMIN }
+        - { path: ^/admin$, roles: ROLE_ADMIN }
+
+        - { path: ^/responsable-etudiant/evenements, roles: ROLE_RESPONSABLE_ETUDIANT }
+        - { path: ^/responsable-etudiant$, roles: ROLE_RESPONSABLE_ETUDIANT }
+
+        - { path: ^/etudiant/evenements, roles: ROLE_ETUDIANT }
+
+        # Protection des routes par rôle
+        - { path: ^/dashboard/admin, roles: ROLE_ADMIN }
+        - { path: ^/dashboard/psychologue, roles: ROLE_PSYCHOLOGUE }
+        - { path: ^/dashboard/responsable, roles: ROLE_RESPONSABLE_ETUDIANT }
+        - { path: ^/dashboard/etudiant, roles: ROLE_ETUDIANT }
+        
+        # Routes dashboard général - accessible à tous les utilisateurs connectés
+        - { path: ^/dashboard$, roles: ROLE_USER }
+        
+        # Protection par défaut (optionnel, décommentez si nécessaire)
+        # - { path: ^/, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

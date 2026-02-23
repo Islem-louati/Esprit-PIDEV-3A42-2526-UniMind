@@ -1,0 +1,1564 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Méditation & Forum - Espace Étudiant{% endblock %}
+
+{% block breadcrumb_title %}Méditation{% endblock %}
+
+{% block page_title %}Méditation & Forum{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+  
+  {# En-tête avec statistiques #}
+  <div class="row">
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Catégories</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ categories|length }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                <i class="fas fa-layer-group text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Séances actives</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {% set total_seances = 0 %}
+                  {% for categorie in categories %}
+                    {% set total_seances = total_seances + categorie.seanceMeditations|filter(s => s.isActive)|length %}
+                  {% endfor %}
+                  {{ total_seances }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                <i class="fas fa-music text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Discussions</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ posts|length }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                <i class="fas fa-comments text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Communauté</p>
+                <h5 class="font-weight-bolder mb-0">Active</h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                <i class="fas fa-users text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Message de bienvenue et forum #}
+  <div class="row mt-4">
+    <div class="col-lg-8 mb-lg-0 mb-4">
+      <div class="card">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <div>
+            <h6>Bienvenue dans l'espace Méditation</h6>
+            <p class="text-sm mb-0">
+              <i class="fas fa-spa me-1"></i>
+              Détendez-vous, méditez et échangez avec la communauté
+            </p>
+          </div>
+          <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalNewPost">
+            <i class="fas fa-plus-circle me-1"></i> Nouvelle discussion
+          </button>
+        </div>
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-12">
+              <div class="d-flex flex-column h-100">
+                <div class="mb-4">
+                  <h5 class="font-weight-bolder">Améliorez votre bien-être mental</h5>
+                  <p class="mb-4">
+                    Accédez à une collection de méditations guidées conçues pour réduire 
+                    le stress, améliorer la concentration et favoriser le bien-être général.
+                    Nos séances sont adaptées à tous les niveaux, du débutant à l'expérimenté.
+                  </p>
+                </div>
+                
+                <div class="row mt-2">
+                  <div class="col-md-4 mb-3">
+                    <div class="d-flex align-items-center">
+                      <div class="icon icon-shape icon-sm bg-gradient-success shadow-success rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                        <i class="fas fa-headphones text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <h6 class="mb-0 text-sm">Audio & Vidéo</h6>
+                        <p class="text-xs text-secondary mb-0">Séances guidées</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <div class="d-flex align-items-center">
+                      <div class="icon icon-shape icon-sm bg-gradient-warning shadow-warning rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                        <i class="fas fa-chart-line text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <h6 class="mb-0 text-sm">Progression</h6>
+                        <p class="text-xs text-secondary mb-0">Suivez votre évolution</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <div class="d-flex align-items-center">
+                      <div class="icon icon-shape icon-sm bg-gradient-danger shadow-danger rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                        <i class="fas fa-users text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <h6 class="mb-0 text-sm">Communauté</h6>
+                        <p class="text-xs text-secondary mb-0">Échangez avec les pairs</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <a class="btn btn-info mt-3" href="#categories">
+                  <i class="fas fa-spa me-1"></i> Explorer les catégories
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header pb-0">
+          <h6>Forum Communautaire</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="timeline timeline-one-side">
+            <div class="timeline-block mb-3">
+              <span class="timeline-step">
+                <i class="fas fa-comments text-success text-gradient"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Échangez & Partagez</h6>
+                <p class="text-secondary text-xs mt-1 mb-0">
+                  Participez aux discussions, posez vos questions et partagez vos expériences.
+                </p>
+              </div>
+            </div>
+            <div class="timeline-block mb-3">
+              <span class="timeline-step">
+                <i class="fas fa-user-friends text-info text-gradient"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Communauté bienveillante</h6>
+                <p class="text-secondary text-xs mt-1 mb-0">
+                  Rejoignez une communauté d'étudiants partageant les mêmes intérêts.
+                </p>
+              </div>
+            </div>
+            <div class="timeline-block">
+              <span class="timeline-step">
+                <i class="fas fa-lightbulb text-warning text-gradient"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Conseils & Astuces</h6>
+                <p class="text-secondary text-xs mt-1 mb-0">
+                  Découvrez des conseils pratiques pour améliorer votre pratique.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Section Catégories #}
+  <div class="row mt-4" id="categories">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6>Catégories de Méditation</h6>
+              <p class="text-sm mb-0">
+                <i class="fas fa-spa me-1"></i>
+                Explorez nos collections de séances guidées
+              </p>
+            </div>
+            <div>
+              <span class="badge bg-gradient-info">{{ categories|length }} catégories</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if categories is not empty %}
+          <div class="row">
+            {% for categorie in categories %}
+            <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+              <div class="card card-blog card-plain h-100">
+                <div class="card-body text-center p-3">
+                  {# Icône en petit cercle #}
+                  <div class="icon icon-shape icon-lg bg-gradient-{{ cycle(['primary', 'info', 'success', 'warning', 'danger', 'dark'], loop.index0) }} 
+                            shadow-{{ cycle(['primary', 'info', 'success', 'warning', 'danger', 'dark'], loop.index0) }} 
+                            text-center rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                       style="width: 70px; height: 70px;">
+                    {% if categorie.iconUrl %}
+                      <img src="{{ categorie.iconUrl }}" 
+                           alt="{{ categorie.nom }}" 
+                           class="rounded-circle"
+                           style="width: 50px; height: 50px; object-fit: cover;">
+                    {% else %}
+                      <i class="fas fa-spa text-white text-2xl"></i>
+                    {% endif %}
+                  </div>
+                  
+                  <a href="{{ path('etudiant_meditation_categorie', {'id': categorie.categorieId}) }}" class="text-dark">
+                    <h5 class="mb-2">{{ categorie.nom }}</h5>
+                  </a>
+                  
+                  <p class="text-sm text-secondary mb-3">
+                    {{ categorie.description|slice(0, 80) }}{% if categorie.description|length > 80 %}...{% endif %}
+                  </p>
+                  
+                  <div class="d-flex justify-content-center align-items-center mb-3">
+                    <span class="badge badge-sm bg-gradient-info me-2">
+                      <i class="fas fa-music me-1"></i>
+                      {{ categorie.seanceMeditations|filter(s => s.isActive)|length }} séances
+                    </span>
+                    <span class="badge badge-sm bg-gradient-secondary">
+                      <i class="fas fa-comment me-1"></i>
+                      {{ categorie.posts|length }}
+                    </span>
+                  </div>
+                  
+                  <a href="{{ path('etudiant_meditation_categorie', {'id': categorie.categorieId}) }}" 
+                     class="btn btn-sm btn-outline-{{ cycle(['primary', 'info', 'success', 'warning', 'danger'], loop.index0) }} w-100">
+                    <i class="fas fa-eye me-1"></i> Explorer
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <div class="icon icon-shape icon-xl bg-gradient-info shadow-info text-center rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="fas fa-spa text-white text-2xl"></i>
+            </div>
+            <h6 class="text-gradient text-info mb-0">Aucune catégorie disponible</h6>
+            <p class="text-sm mb-4">
+              Les catégories de méditation seront bientôt disponibles.
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Section Discussions #}
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header pb-0">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6>Forum Communautaire - Toutes les discussions</h6>
+            <p class="text-sm mb-0">
+              <i class="fas fa-comments me-1"></i>
+              Participez aux échanges et partagez vos expériences
+            </p>
+          </div>
+          <div>
+            <span class="badge bg-gradient-success me-2">{{ posts|length }} discussions</span>
+            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalNewPost">
+              <i class="fas fa-plus me-1"></i> Nouveau post
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        {% if posts is not empty %}
+          <div class="list-group list-group-flush">
+            {% for post in posts %}
+              <div class="list-group-item border-0 px-0 py-4 mb-4" id="post-{{ post.postId }}">
+                <div class="row">
+                  <!-- Avatar et info auteur -->
+                  <div class="col-auto">
+                    <div class="avatar avatar-lg me-3 bg-gradient-{{ post.isAnonyme ? 'secondary' : 'info' }} shadow-{{ post.isAnonyme ? 'secondary' : 'info' }} text-center rounded-circle d-flex align-items-center justify-content-center">
+                      {% if post.isAnonyme %}
+                        <i class="fas fa-user-secret text-white"></i>
+                      {% else %}
+                        <i class="fas fa-user text-white"></i>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Contenu du post -->
+                  <div class="col">
+                    <!-- En-tête du post -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h5 class="mb-1 text-primary">{{ post.titre }}</h5>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                          <span class="badge badge-sm bg-gradient-info">
+                            <i class="fas fa-folder me-1"></i> {{ post.categorieMeditation.nom }}
+                          </span>
+                          <span class="text-xs text-muted">
+                            {% if post.isAnonyme %}
+                              <i class="fas fa-user-secret me-1"></i> Anonyme
+                            {% else %}
+                              <i class="fas fa-user me-1"></i> {{ post.user.prenom }}
+                            {% endif %}
+                          </span>
+                          <span class="text-xs text-muted">
+                            <i class="far fa-clock me-1"></i> {{ post.createdAt|date('d/m/Y H:i') }}
+                          </span>
+                          {% if post.updatedAt and post.updatedAt != post.createdAt %}
+                            <span class="text-xs text-muted">
+                              <i class="fas fa-edit me-1"></i> Modifié
+                            </span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      <!-- Menu actions post -->
+                      <div class="dropdown">
+                        <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li>
+                            <a class="dropdown-item" href="{{ path('etudiant_meditation_categorie', {'id': post.categorieMeditation.categorieId}) }}">
+                              <i class="fas fa-external-link-alt me-2"></i> Voir dans la catégorie
+                            </a>
+                          </li>
+                          {% if app.user and app.user.userId == post.user.userId %}
+                            <li>
+                              <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalEditPost{{ post.postId }}">
+                                <i class="fas fa-edit me-2"></i> Modifier
+                              </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                              <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#modalDeletePost{{ post.postId }}">
+                                <i class="fas fa-trash me-2"></i> Supprimer
+                              </button>
+                            </li>
+                          {% endif %}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Contenu complet du post -->
+                    <div class="post-content mb-3">
+                      <p class="mb-0" style="white-space: pre-wrap;">{{ post.contenu }}</p>
+                    </div>
+
+                    <!-- Actions et statistiques -->
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                      <div class="d-flex gap-3">
+                        <span class="text-xs">
+                          <i class="far fa-comment me-1"></i> {{ post.commentaires|length }} commentaire{{ post.commentaires|length > 1 ? 's' : '' }}
+                        </span>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary add-comment-btn"
+                                data-post-id="{{ post.postId }}"
+                                title="Répondre à cette discussion">
+                          <i class="fas fa-reply me-1"></i> Répondre
+                        </button>
+
+                        {% if app.user and app.user.userId == post.user.userId %}
+                          <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditPost{{ post.postId }}">
+                            <i class="fas fa-edit me-1"></i> Modifier
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalDeletePost{{ post.postId }}">
+                            <i class="fas fa-trash me-1"></i> Supprimer
+                          </button>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <!-- Formulaire de commentaire rapide -->
+                    <div class="quick-comment-form mt-3" id="quick-comment-{{ post.postId }}" style="display: none;">
+                      <form method="post"
+                            action="{{ path('etudiant_forum_comment_new', {'id': post.postId}) }}"
+                            class="card card-body p-2">
+                        <div class="mb-2">
+                          <textarea name="contenu"
+                                    class="form-control form-control-sm"
+                                    rows="2"
+                                    placeholder="Votre commentaire..."
+                                    required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div class="form-check form-check-inline mb-0">
+                            <input type="checkbox" class="form-check-input"
+                                   id="anonyme-quick-{{ post.postId }}"
+                                   name="is_anonyme">
+                            <label class="form-check-label text-xs mb-0" for="anonyme-quick-{{ post.postId }}">
+                              Publier anonymement
+                            </label>
+                          </div>
+                          <div class="d-flex gap-2">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary cancel-comment-btn"
+                                    data-post-id="{{ post.postId }}">
+                              Annuler
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                              <i class="fas fa-paper-plane me-1"></i> Envoyer
+                            </button>
+                          </div>
+                        </div>
+                        <input type="hidden" name="_token" value="{{ csrf_token('comment_' ~ post.postId) }}">
+                      </form>
+                    </div>
+
+                    <!-- Liste des commentaires -->
+                    {% if post.commentaires|length > 0 %}
+                      <div class="mt-4">
+                        <h6 class="text-sm mb-3">
+                          <i class="far fa-comments me-1"></i> Commentaires ({{ post.commentaires|length }})
+                        </h6>
+                        <div class="list-group list-group-flush">
+                          {% for commentaire in post.commentaires %}
+                            <div class="list-group-item border-0 px-0 py-2">
+                              <div class="d-flex">
+                                <!-- Avatar commentaire -->
+                                <div class="avatar avatar-xs me-2">
+                                  {% if commentaire.isAnonyme %}
+                                    <div class="avatar avatar-xs bg-gradient-secondary d-flex align-items-center justify-content-center">
+                                      <i class="fas fa-user-secret text-white text-xxs"></i>
+                                    </div>
+                                  {% else %}
+                                    <div class="avatar avatar-xs bg-gradient-primary d-flex align-items-center justify-content-center">
+                                      <i class="fas fa-user text-white text-xxs"></i>
+                                    </div>
+                                  {% endif %}
+                                </div>
+
+                                <!-- Contenu commentaire -->
+                                <div class="flex-fill">
+                                  <div class="d-flex justify-content-between">
+                                    <small class="text-xs font-weight-bold">
+                                      {% if commentaire.isAnonyme %}
+                                        <i class="fas fa-user-secret me-1"></i> Anonyme
+                                      {% else %}
+                                        <i class="fas fa-user me-1"></i> {{ commentaire.user.prenom }}
+                                      {% endif %}
+                                    </small>
+                                    <small class="text-xs text-muted">
+                                      {{ commentaire.createdAt|date('d/m H:i') }}
+                                      {% if app.user and app.user.userId == commentaire.user.userId %}
+                                        <div class="d-flex gap-1 ms-2">
+                                          <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#modalEditComment{{ commentaire.commentaireId }}"
+                                                  title="Modifier ce commentaire">
+                                            <i class="fas fa-edit fa-xs"></i>
+                                          </button>
+                                          <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#modalDeleteComment{{ commentaire.commentaireId }}"
+                                                  title="Supprimer ce commentaire">
+                                            <i class="fas fa-trash fa-xs"></i>
+                                          </button>
+                                        </div>
+                                      {% endif %}
+                                    </small>
+                                  </div>
+                                  <p class="text-xs mb-1" style="white-space: pre-wrap;">{{ commentaire.contenu }}</p>
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %} {# fin de la boucle des commentaires #}
+                        </div> {# fin du list-group des commentaires #}
+                      </div> {# fin du bloc des commentaires #}
+                    {% endif %} {# fin du if post.commentaires|length > 0 #}
+                  </div> {# fin de la colonne contenant le post #}
+                </div> {# fin de la row #}
+              </div> {# fin du list-group-item du post #}
+
+              {# Séparateur entre les posts #}
+              {% if not loop.last %}
+                <hr class="horizontal dark my-3">
+              {% endif %}
+
+            {% endfor %} {# fin de la boucle des posts #}
+          </div> {# fin du list-group principal #}
+
+          {# Bouton "Charger plus" (optionnel) #}
+          {% if posts|length >= 10 %}
+            <div class="text-center mt-4">
+              <button type="button" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-down me-1"></i> Charger plus de discussions
+              </button>
+            </div>
+          {% endif %}
+
+        {% else %} {# si posts est vide #}
+          <div class="text-center py-5">
+            <div class="icon icon-shape icon-xl bg-gradient-warning shadow-warning text-center rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="fas fa-comments text-white text-2xl"></i>
+            </div>
+            <h6 class="text-gradient text-warning mb-0">Aucune discussion pour le moment</h6>
+            <p class="text-sm mb-4">
+              Soyez le premier à démarrer une conversation !
+            </p>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNewPost">
+              <i class="fas fa-plus-circle me-1"></i> Créer une discussion
+            </button>
+          </div>
+        {% endif %} {# fin du if posts is not empty #}
+      </div> {# fin du card-body #}
+    </div> {# fin de la card #}
+  </div> {# fin du col-12 #}
+</div> {# fin du row #}
+
+<!-- Modal Nouveau Post -->
+<div class="modal fade" id="modalNewPost" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-plus-circle me-1"></i> Nouvelle discussion
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% if form is defined %}
+        {{ form_start(form, {'attr': {'id': 'new-post-form', 'novalidate': 'novalidate'}, 'action': path('etudiant_forum_post_new')}) }}
+          <div class="mb-3">
+            {{ form_label(form.categorieMeditation) }}
+            {{ form_widget(form.categorieMeditation, {'attr': {
+              'class': 'form-control'
+            }}) }}
+            <div class="text-danger text-xs">{{ form_errors(form.categorieMeditation) }}</div>
+          </div>
+          
+          <div class="mb-3">
+            {{ form_label(form.titre) }}
+            {{ form_widget(form.titre, {'attr': {
+              'class': 'form-control',
+              'placeholder': 'Titre de votre discussion'
+            }}) }}
+            <div class="text-danger text-xs">{{ form_errors(form.titre) }}</div>
+          </div>
+          
+          <div class="mb-3">
+            {{ form_label(form.contenu) }}
+            {{ form_widget(form.contenu, {'attr': {
+              'class': 'form-control',
+              'rows': 5,
+              'placeholder': 'Partagez vos pensées, questions ou expériences...'
+            }}) }}
+            <div class="text-danger text-xs">{{ form_errors(form.contenu) }}</div>
+          </div>
+          
+          <div class="form-check mb-3">
+            {{ form_widget(form.is_anonyme, {'attr': {
+              'class': 'form-check-input'
+            }}) }}
+            {{ form_label(form.is_anonyme, 'Publier anonymement', {
+              'label_attr': {'class': 'form-check-label'}
+            }) }}
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-paper-plane me-1"></i> Publier
+            </button>
+          </div>
+        {{ form_end(form) }}
+        {% else %}
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Le formulaire n'est pas disponible. Veuillez réessayer.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{# ========== MODALS ========== #}
+
+{# Modals pour les posts #}
+{% for post in posts %}
+    <!-- Modal Modification Post {{ post.postId }} -->
+    <div class="modal fade" id="modalEditPost{{ post.postId }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-1"></i> Modifier la discussion
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{{ path('etudiant_forum_post_edit', {'id': post.postId}) }}" 
+                          id="editPostForm{{ post.postId }}" data-post-id="{{ post.postId }}">
+                        <div class="mb-3">
+                            <label class="form-label">Titre *</label>
+                            <input type="text" name="titre" class="form-control" 
+                                   value="{{ post.titre }}" required maxlength="255">
+                            <small class="form-text text-muted">Donnez un titre clair à votre discussion.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contenu *</label>
+                            <textarea name="contenu" class="form-control" rows="6" required>{{ post.contenu }}</textarea>
+                            <small class="form-text text-muted">Partagez vos pensées avec la communauté.</small>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input type="checkbox" class="form-check-input" 
+                                   id="anonyme-edit-post-{{ post.postId }}" 
+                                   name="is_anonyme" {{ post.isAnonyme ? 'checked' : '' }}>
+                            <label class="form-check-label" for="anonyme-edit-post-{{ post.postId }}">
+                                Publier anonymement
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                Votre nom ne sera pas affiché si cette case est cochée.
+                            </small>
+                        </div>
+                        <input type="hidden" name="_token" value="{{ csrf_token('edit_post_' ~ post.postId) }}">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Suppression Post {{ post.postId }} -->
+    <div class="modal fade" id="modalDeletePost{{ post.postId }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-trash me-1"></i> Supprimer la discussion
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Attention !</strong> Cette action est irréversible.
+                    </div>
+                    <p class="mb-3">Êtes-vous sûr de vouloir supprimer cette discussion ?</p>
+                    <div class="card border-warning mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="card-title">{{ post.titre }}</h6>
+                            <p class="card-text small text-muted mb-2">
+                                {{ post.contenu|slice(0, 100) }}{% if post.contenu|length > 100 %}...{% endif %}
+                            </p>
+                            <div class="d-flex justify-content-between small">
+                                <span>
+                                    <i class="fas fa-comment me-1"></i> 
+                                    {{ post.commentaires|length }} commentaire{{ post.commentaires|length > 1 ? 's' : '' }}
+                                </span>
+                                <span>
+                                    <i class="fas fa-calendar me-1"></i> 
+                                    {{ post.createdAt|date('d/m/Y') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Tous les commentaires associés seront également supprimés.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form method="post" action="{{ path('etudiant_forum_post_delete', {'id': post.postId}) }}" 
+                          id="deletePostForm{{ post.postId }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.postId) }}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Supprimer définitivement
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{# Modals pour les commentaires #}
+{% for post in posts %}
+    {% for commentaire in post.commentaires %}
+        <!-- Modal Modification Commentaire {{ commentaire.commentaireId }} -->
+        <div class="modal fade" id="modalEditComment{{ commentaire.commentaireId }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-edit me-1"></i> Modifier le commentaire
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{{ path('etudiant_forum_comment_edit', {'id': commentaire.commentaireId}) }}" 
+                              id="editCommentForm{{ commentaire.commentaireId }}">
+                            <div class="mb-3">
+                                <label class="form-label">Commentaire</label>
+                                <textarea name="contenu" class="form-control" rows="3" required>{{ commentaire.contenu }}</textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" 
+                                       id="anonyme-edit-comment-{{ commentaire.commentaireId }}" 
+                                       name="is_anonyme" {{ commentaire.isAnonyme ? 'checked' : '' }}>
+                                <label class="form-check-label" for="anonyme-edit-comment-{{ commentaire.commentaireId }}">
+                                    Publier anonymement
+                                </label>
+                            </div>
+                            <input type="hidden" name="_token" value="{{ csrf_token('edit_comment_' ~ commentaire.commentaireId) }}">
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save me-1"></i> Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Suppression Commentaire {{ commentaire.commentaireId }} -->
+        <div class="modal fade" id="modalDeleteComment{{ commentaire.commentaireId }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-trash me-1"></i> Supprimer
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-exclamation-triangle text-danger fa-2x"></i>
+                        </div>
+                        <p class="mb-3">Supprimer ce commentaire ?</p>
+                        <p class="text-muted small mb-0">Cette action est irréversible.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <form method="post" action="{{ path('etudiant_forum_comment_delete', {'id': commentaire.commentaireId}) }}" 
+                              class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.commentaireId) }}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endfor %}
+
+<style>
+.btn-xs {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.7rem;
+    border-radius: 4px;
+}
+
+/* Assurez-vous que les boutons sont visibles */
+.btn-outline-warning, .btn-outline-danger {
+    border-width: 1px;
+}
+
+/* Style pour les boutons de commentaires */
+.comment-actions .btn {
+    opacity: 0.8;
+    transition: all 0.2s;
+}
+
+.comment-actions .btn:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+/* Styles généraux */
+.list-group-item {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.post-content {
+  background-color: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border-left: 4px solid #4ECDC4;
+  margin: 1rem 0;
+}
+
+.post-content p {
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 0;
+}
+
+.avatar-lg {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.avatar-xs {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.quick-comment-form {
+  animation: slideDown 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-menu {
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+}
+
+.dropdown-item {
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  margin: 0.125rem 0;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.badge-sm {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: 12px;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.modal-content {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  border-radius: 15px 15px 0 0;
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .avatar-lg {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .post-content {
+    padding: 1rem;
+  }
+  
+  .d-flex.gap-2, .d-flex.gap-3 {
+    gap: 0.5rem !important;
+  }
+  
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+}
+
+/* Effets d'animation */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Style pour les commentaires */
+.list-group-flush .list-group-item {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.list-group-flush .list-group-item:last-child {
+  border-bottom: none;
+}
+
+/* Tooltips personnalisés */
+[data-bs-toggle="tooltip"] {
+  cursor: pointer;
+}
+
+/* Scrollbar personnalisée */
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Gestion des formulaires de commentaire rapide
+  document.querySelectorAll('.add-comment-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const postId = this.getAttribute('data-post-id');
+      const form = document.getElementById(`quick-comment-${postId}`);
+      const allForms = document.querySelectorAll('.quick-comment-form');
+      
+      // Cacher tous les autres formulaires
+      allForms.forEach(f => f.style.display = 'none');
+      
+      // Afficher/masquer le formulaire courant
+      if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        form.querySelector('textarea').focus();
+        // Scroll légèrement vers le formulaire
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        form.style.display = 'none';
+      }
+    });
+  });
+  
+  // Annuler le formulaire de commentaire
+  document.querySelectorAll('.cancel-comment-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const postId = this.getAttribute('data-post-id');
+      const form = document.getElementById(`quick-comment-${postId}`);
+      form.style.display = 'none';
+    });
+  });
+  
+  // Si un post spécifique est demandé dans l'URL (avec #post-123)
+  const hash = window.location.hash;
+  if (hash.startsWith('#post-')) {
+    const targetPost = document.querySelector(hash);
+    if (targetPost) {
+      // Attendre un peu pour que la page se charge
+      setTimeout(() => {
+        targetPost.scrollIntoView({ behavior: 'smooth' });
+        // Ajouter un effet visuel sur le post ciblé
+        targetPost.style.backgroundColor = 'rgba(78, 205, 196, 0.1)';
+        targetPost.style.boxShadow = '0 0 0 2px #4ECDC4';
+        targetPost.style.borderRadius = '12px';
+        targetPost.style.padding = '1rem';
+        
+        // Retirer l'effet après 3 secondes
+        setTimeout(() => {
+          targetPost.style.backgroundColor = '';
+          targetPost.style.boxShadow = '';
+          targetPost.style.padding = '';
+        }, 3000);
+      }, 500);
+    }
+  }
+  
+  // Initialiser les tooltips Bootstrap
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+  
+  // Animation au survol des posts
+  document.querySelectorAll('.list-group-item').forEach(item => {
+    item.addEventListener('mouseenter', function() {
+      const avatar = this.querySelector('.avatar-lg');
+      if (avatar) {
+        avatar.style.transform = 'scale(1.1)';
+        avatar.style.transition = 'transform 0.3s ease';
+      }
+    });
+    
+    item.addEventListener('mouseleave', function() {
+      const avatar = this.querySelector('.avatar-lg');
+      if (avatar) {
+        avatar.style.transform = 'scale(1)';
+      }
+    });
+  });
+  
+  // Gestion de la soumission du formulaire de nouveau post
+  // Gestion de la soumission du formulaire de nouveau post
+const newPostForm = document.getElementById('new-post-form');
+if (newPostForm) {
+    newPostForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalNewPost'));
+        
+        // Désactiver le bouton
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Publication...';
+        submitBtn.disabled = true;
+        
+        // Supprimer les anciennes erreurs
+        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Succès
+                if (modal) modal.hide();
+                this.reset();
+                showToast('success', data.message || 'Discussion créée avec succès !');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                // Afficher les erreurs
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(field => {
+                        // Chercher l'input correspondant
+                        let input;
+                        if (field === 'categorieMeditation') {
+                            input = this.querySelector(`#${field.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}`);
+                        } else {
+                            input = this.querySelector(`[name="post[${field}]"], [name="${field}"]`);
+                        }
+                        
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            
+                            // Créer le message d'erreur
+                            let feedback = input.nextElementSibling;
+                            if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                                feedback = document.createElement('div');
+                                feedback.className = 'invalid-feedback';
+                                input.parentNode.insertBefore(feedback, input.nextSibling);
+                            }
+                            feedback.innerHTML = data.errors[field];
+                        }
+                    });
+                    
+                    showToast('error', 'Veuillez corriger les erreurs.');
+                } else {
+                    showToast('error', data.message || 'Une erreur est survenue.');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('error', 'Erreur de communication avec le serveur.');
+        } finally {
+            // Réactiver le bouton
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+// Ajouter novalidate à tous les formulaires
+document.querySelectorAll('form').forEach(form => {
+    if (!form.hasAttribute('novalidate')) {
+        form.setAttribute('novalidate', 'novalidate');
+    }
+});
+  
+  // =============================================
+  // NOUVELLES FONCTIONNALITÉS AJAX POUR LES EDITIONS
+  // =============================================
+  
+  // 1. Gestion des formulaires d'édition de posts
+document.querySelectorAll('form[id^="editPostForm"]').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const url = this.action;
+        const postId = this.getAttribute('data-post-id');
+        const modal = bootstrap.Modal.getInstance(document.getElementById(`modalEditPost${postId}`));
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Désactiver le bouton
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enregistrement...';
+        submitBtn.disabled = true;
+        
+        // Supprimer les anciennes erreurs
+        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Succès
+                if (modal) modal.hide();
+                showToast('success', data.message || 'Discussion modifiée avec succès !');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                // Afficher les erreurs
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(field => {
+                        const input = this.querySelector(`[name="${field}"]`);
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            
+                            let feedback = input.nextElementSibling;
+                            if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                                feedback = document.createElement('div');
+                                feedback.className = 'invalid-feedback';
+                                input.parentNode.insertBefore(feedback, input.nextSibling);
+                            }
+                            feedback.innerHTML = data.errors[field];
+                        }
+                    });
+                    
+                    showToast('error', 'Veuillez corriger les erreurs.');
+                } else {
+                    showToast('error', data.message || 'Une erreur est survenue.');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('error', 'Erreur de communication avec le serveur.');
+        } finally {
+            // Réactiver le bouton
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+});
+  
+  // 2. Gestion des formulaires de suppression de posts
+  document.querySelectorAll('form[id^="deletePostForm"]').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Demander confirmation
+      if (!confirm('Êtes-vous sûr de vouloir supprimer cette discussion ? Cette action est irréversible.')) {
+        return;
+      }
+      
+      const formData = new FormData(this);
+      const url = this.action;
+      const postId = form.id.replace('deletePostForm', '');
+      const modal = bootstrap.Modal.getInstance(document.getElementById(`modalDeletePost${postId}`));
+      
+      try {
+        // Afficher un indicateur de chargement
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Suppression...';
+        submitBtn.disabled = true;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        if (response.ok) {
+          // Fermer le modal
+          if (modal) modal.hide();
+          
+          // Afficher un message de succès
+          showToast('success', 'Discussion supprimée avec succès !');
+          
+          // Rafraîchir la page après un court délai
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          throw new Error('Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Une erreur est survenue. Veuillez réessayer.');
+        
+        // Réactiver le bouton
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  });
+  
+  // 3. Gestion des formulaires d'édition de commentaires
+  document.querySelectorAll('form[id^="editCommentForm"]').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const url = this.action;
+      const commentId = form.id.replace('editCommentForm', '');
+      const modal = bootstrap.Modal.getInstance(document.getElementById(`modalEditComment${commentId}`));
+      
+      try {
+        // Afficher un indicateur de chargement
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enregistrement...';
+        submitBtn.disabled = true;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        if (response.ok) {
+          // Fermer le modal
+          if (modal) modal.hide();
+          
+          // Afficher un message de succès
+          showToast('success', 'Commentaire modifié avec succès !');
+          
+          // Rafraîchir la page après un court délai
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          throw new Error('Erreur lors de la modification');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Une erreur est survenue. Veuillez réessayer.');
+        
+        // Réactiver le bouton
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  });
+  
+  // 4. Gestion des formulaires de suppression de commentaires
+  document.querySelectorAll('form[action*="/comment/"][method="post"]').forEach(form => {
+    if (form.id && form.id.includes('deleteComment')) return; // Éviter les doublons
+    
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Demander confirmation
+      if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+        return;
+      }
+      
+      const formData = new FormData(this);
+      const url = this.action;
+      const commentIdMatch = url.match(/comment\/(\d+)/);
+      
+      if (!commentIdMatch) return;
+      
+      const commentId = commentIdMatch[1];
+      const modal = bootstrap.Modal.getInstance(document.getElementById(`modalDeleteComment${commentId}`));
+      
+      try {
+        // Afficher un indicateur de chargement
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Suppression...';
+        submitBtn.disabled = true;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        if (response.ok) {
+          // Fermer le modal
+          if (modal) modal.hide();
+          
+          // Afficher un message de succès
+          showToast('success', 'Commentaire supprimé avec succès !');
+          
+          // Rafraîchir la page après un court délai
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          throw new Error('Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Une erreur est survenue. Veuillez réessayer.');
+        
+        // Réactiver le bouton
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  });
+  
+  // 5. Gestion des formulaires de commentaire rapide (déjà existant, ajout de l'AJAX)
+  document.querySelectorAll('.quick-comment-form form').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const url = this.action;
+      const postIdMatch = url.match(/post\/(\d+)/);
+      
+      if (!postIdMatch) return;
+      
+      const postId = postIdMatch[1];
+      const quickForm = document.getElementById(`quick-comment-${postId}`);
+      
+      try {
+        // Afficher un indicateur de chargement
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Envoi...';
+        submitBtn.disabled = true;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        if (response.ok) {
+          // Masquer le formulaire rapide
+          if (quickForm) quickForm.style.display = 'none';
+          
+          // Réinitialiser le formulaire
+          this.reset();
+          
+          // Afficher un message de succès
+          showToast('success', 'Commentaire ajouté avec succès !');
+          
+          // Rafraîchir la page après un court délai
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          throw new Error('Erreur lors de l\'ajout du commentaire');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Une erreur est survenue. Veuillez réessayer.');
+        
+        // Réactiver le bouton
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  });
+  
+  // Fonction pour afficher les notifications toast
+  function showToast(type, message) {
+    // Créer le conteneur de toasts s'il n'existe pas
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'toast-container';
+      toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+      toastContainer.style.zIndex = '9999';
+      document.body.appendChild(toastContainer);
+    }
+    
+    // Créer le toast
+    const toastId = 'toast-' + Date.now();
+    const toastHtml = `
+      <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Afficher le toast
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+      autohide: true,
+      delay: 3000
+    });
+    toast.show();
+    
+    // Supprimer le toast du DOM après sa disparition
+    toastElement.addEventListener('hidden.bs.toast', function () {
+      this.remove();
+    });
+  }
+  
+  // Initialiser tous les toasts existants
+  const toastElList = document.querySelectorAll('.toast');
+  const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl));
+  
+  // Ajouter un événement pour fermer les modals après soumission réussie
+  document.querySelectorAll('.modal form').forEach(form => {
+    form.addEventListener('submit', function() {
+      const modalId = this.closest('.modal').id;
+      const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+      if (modal) {
+        setTimeout(() => {
+          modal.hide();
+        }, 500);
+      }
+    });
+  });
+  
+  // Ajouter des styles CSS pour les toasts
+  const toastStyles = `
+    .toast-container {
+      z-index: 9999;
+    }
+    .toast {
+      min-width: 300px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .toast.bg-success {
+      background-color: #28a745 !important;
+    }
+    .toast.bg-error {
+      background-color: #dc3545 !important;
+    }
+    .toast.bg-warning {
+      background-color: #ffc107 !important;
+      color: #212529;
+    }
+  `;
+  
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = toastStyles;
+  document.head.appendChild(styleSheet);
+});
+</script>
+
+{% endblock %}

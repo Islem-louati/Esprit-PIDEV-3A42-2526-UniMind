@@ -1,0 +1,206 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Événements | Espace étudiant | UniMind{% endblock %}
+{% block breadcrumb_page %}Événements{% endblock %}
+{% block breadcrumb_title %}Liste des événements{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" action="{{ path('app_evenement_etudiant_index') }}" class="row g-3 align-items-end" id="evenement-search-form">
+            <input type="hidden" name="sort" value="{{ filters.sort|default('dateDebut') }}">
+            <input type="hidden" name="order" value="{{ filters.order|default('ASC') }}">
+            <div class="col-12 col-md-4">
+              <label class="form-label" for="q">Recherche</label>
+              <input id="q" name="q" class="form-control" value="{{ filters.q|default('') }}" placeholder="Titre, description, lieu">
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label" for="type">Type</label>
+              <select id="type" name="type" class="form-select">
+                <option value="">Tous</option>
+                {% for t in type_choices|default([]) %}
+                  <option value="{{ t.value }}" {{ (filters.type|default('') == t.value) ? 'selected' : '' }}>{{ t.getLabel() }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label" for="statut">Statut</label>
+              <select id="statut" name="statut" class="form-select">
+                <option value="">Tous</option>
+                {% for s in statut_choices|default([]) %}
+                  <option value="{{ s.value }}" {{ (filters.statut|default('') == s.value) ? 'selected' : '' }}>{{ s.getLabel() }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label" for="date_from">Du</label>
+              <input id="date_from" name="date_from" type="datetime-local" class="form-control" value="{{ filters.date_from|default('') }}">
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label" for="date_to">Au</label>
+              <input id="date_to" name="date_to" type="datetime-local" class="form-control" value="{{ filters.date_to|default('') }}">
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" type="submit">Filtrer</button>
+              <a class="btn btn-outline-secondary" href="{{ path('app_evenement_etudiant_index') }}">Réinitialiser</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>Événements à venir</h5>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if evenements|length > 0 %}
+            <div class="row p-4" id="evenement-cards">
+              {% for evenement in evenements %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                  <div class="card h-100 shadow-sm border-radius-lg">
+                    {% if evenement.image %}
+                      <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" class="card-img-top" alt="Affiche" style="height: 180px; object-fit: cover;">
+                    {% else %}
+                      <div class="d-flex align-items-center justify-content-center" style="height: 180px; background: rgba(0,0,0,0.03);">
+                        <span class="text-muted text-xs">Aucune affiche</span>
+                      </div>
+                    {% endif %}
+                    <div class="card-body p-3">
+                      <h6 class="text-dark font-weight-bold mb-2">{{ evenement.titre }}</h6>
+                      <p class="text-xs text-secondary mb-2">
+                        {{ evenement.getTypeFormate() }} – {{ evenement.getDateDebutFormatee() }}
+                      </p>
+                      <p class="text-sm text-body mb-3">{{ evenement.description|default('')|slice(0, 100) }}{% if evenement.description|default('')|length > 100 %}...{% endif %}</p>
+                      <div class="d-flex gap-2">
+                        <a href="{{ path('app_evenement_etudiant_show', { id: evenement.id }) }}" class="btn btn-outline-primary btn-sm">Voir le détail</a>
+
+                        {% set is_favori = favoris_by_evenement_id[evenement.id]|default(false) %}
+                        <form method="post" action="{{ path('app_favori_etudiant_toggle', { id: evenement.id }) }}" class="d-inline">
+                          <input type="hidden" name="_token" value="{{ csrf_token('toggle_favori_evenement_' ~ evenement.id) }}">
+                          <button type="submit" class="btn {{ is_favori ? 'btn-danger' : 'btn-outline-danger' }} btn-sm" aria-label="{{ is_favori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}">
+                            <i class="{{ is_favori ? 'fas fa-heart' : 'far fa-heart' }}"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="p-4" id="evenement-cards-empty">
+              <div class="alert alert-info text-white border-0" role="alert">
+                Aucun événement pour le moment.
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          const form = document.getElementById('evenement-search-form');
+          const cards = document.getElementById('evenement-cards');
+          const empty = document.getElementById('evenement-cards-empty');
+
+          if (!form) return;
+
+          const searchUrl = {{ path('app_evenement_etudiant_search')|json_encode|raw }};
+          const showBaseUrl = {{ path('app_evenement_etudiant_show', { id: 0 })|json_encode|raw }};
+          const toggleBaseUrl = {{ path('app_favori_etudiant_toggle', { id: 0 })|json_encode|raw }};
+
+          const debounce = (fn, wait) => {
+            let t;
+            return (...args) => {
+              clearTimeout(t);
+              t = setTimeout(() => fn(...args), wait);
+            };
+          };
+
+          const escapeHtml = (str) => {
+            return String(str ?? '')
+              .replaceAll('&', '&amp;')
+              .replaceAll('<', '&lt;')
+              .replaceAll('>', '&gt;')
+              .replaceAll('"', '&quot;')
+              .replaceAll("'", '&#039;');
+          };
+
+          const buildCard = (e) => {
+            const img = e.image
+              ? `<img src="/uploadsEvent/evenements/${encodeURIComponent(e.image)}" class="card-img-top" alt="Affiche" style="height: 180px; object-fit: cover;">`
+              : `<div class="d-flex align-items-center justify-content-center" style="height: 180px; background: rgba(0,0,0,0.03);"><span class="text-muted text-xs">Aucune affiche</span></div>`;
+
+            const desc = String(e.description ?? '');
+            const shortDesc = desc.length > 100 ? `${desc.slice(0, 100)}...` : desc;
+
+            const showUrl = showBaseUrl.replace('/0', `/${e.id}`);
+            const toggleUrl = toggleBaseUrl.replace('/0/', `/${e.id}/`);
+            const csrf = e.toggle_token || '';
+
+            const btnClass = e.is_favori ? 'btn-danger' : 'btn-outline-danger';
+            const iconClass = e.is_favori ? 'fas fa-heart' : 'far fa-heart';
+
+            return `
+              <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm border-radius-lg">
+                  ${img}
+                  <div class="card-body p-3">
+                    <h6 class="text-dark font-weight-bold mb-2">${escapeHtml(e.titre)}</h6>
+                    <p class="text-xs text-secondary mb-2">${escapeHtml(e.type_label)} – ${escapeHtml(e.date_debut)}</p>
+                    <p class="text-sm text-body mb-3">${escapeHtml(shortDesc)}</p>
+                    <div class="d-flex gap-2">
+                      <a href="${showUrl}" class="btn btn-outline-primary btn-sm">Voir le détail</a>
+                      <form method="post" action="${toggleUrl}" class="d-inline">
+                        <input type="hidden" name="_token" value="${escapeHtml(csrf)}">
+                        <button type="submit" class="btn ${btnClass} btn-sm" aria-label="Favori">
+                          <i class="${iconClass}"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          };
+
+          const doSearch = async () => {
+            const params = new URLSearchParams(new FormData(form));
+            const url = `${searchUrl}?${params.toString()}`;
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!res.ok) return;
+            const payload = await res.json();
+            const list = payload.evenements || [];
+
+            if (cards) {
+              cards.innerHTML = list.map(buildCard).join('') || '';
+            }
+
+            if (empty) {
+              empty.style.display = list.length > 0 ? 'none' : '';
+            }
+          };
+
+          const debounced = debounce(doSearch, 300);
+
+          form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            doSearch();
+          });
+
+          ['input', 'change'].forEach(evt => {
+            form.addEventListener(evt, (e) => {
+              const name = e.target && e.target.name;
+              if (!name) return;
+              if (name === 'q') debounced();
+              else doSearch();
+            });
+          });
+        })();
+      </script>
+    </div>
+  </div>
+{% endblock %}

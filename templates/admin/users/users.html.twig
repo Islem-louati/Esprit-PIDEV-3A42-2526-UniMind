@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Gestion des utilisateurs</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des utilisateurs</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom & Prénom</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Statut</th>
+                            <th>Actif</th>
+                            <th>Date d'inscription</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.userId }}</td>
+                            <td>{{ user.prenom }} {{ user.nom }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge badge-{{ user.role.value == 'Etudiant' ? 'info' : (user.role.value == 'Psychologue' ? 'warning' : 'success') }}">
+                                    {{ user.role.value }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ user.statut == 'actif' ? 'success' : (user.statut == 'en_attente' ? 'warning' : 'secondary') }}">
+                                    {{ user.statut }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ user.isActive ? 'success' : 'danger' }}">
+                                    {{ user.isActive ? 'Oui' : 'Non' }}
+                                </span>
+                            </td>
+                            <td>{{ user.createdAt|date('d/m/Y H:i') }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ path('admin_user_edit', {id: user.userId}) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ path('admin_user_toggle_active', {id: user.userId}) }}" class="btn btn-sm btn-{{ user.isActive ? 'warning' : 'success' }}">
+                                        <i class="fas fa-{{ user.isActive ? 'ban' : 'check' }}"></i>
+                                    </a>
+                                    <a href="{{ path('admin_user_delete', {id: user.userId}) }}" 
+                                       class="btn btn-sm btn-danger" 
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Retour au tableau de bord
+            </a>
+            <a href="{{ path('admin_users_pending') }}" class="btn btn-warning">
+                <i class="fas fa-clock mr-2"></i>Voir les inscriptions en attente
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

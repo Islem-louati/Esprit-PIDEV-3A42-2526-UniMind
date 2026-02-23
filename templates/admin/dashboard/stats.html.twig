@@ -1,0 +1,392 @@
+{# templates/admin/dashboard/stats.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques - UniMind{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-2">
+                <i class="fas fa-chart-line me-2"></i> Statistiques détaillées
+            </h1>
+            <p class="text-muted mb-0">Analyse approfondie des questionnaires et réponses</p>
+        </div>
+       <div>
+    <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Retour au tableau de bord
+    </a>
+</div>
+    </div>
+
+    <!-- Statistiques globales -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
+                    <h3 class="text-primary mb-0">{{ questionnaires_count|default(0) }}</h3>
+                    <p class="text-muted mb-0">Questionnaires</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-question-circle fa-3x text-success mb-3"></i>
+                    <h3 class="text-success mb-0">{{ questions_count|default(0) }}</h3>
+                    <p class="text-muted mb-0">Questions</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-3x text-warning mb-3"></i>
+                    <h3 class="text-warning mb-0">{{ reponses_count|default(0) }}</h3>
+                    <p class="text-muted mb-0">Réponses totales</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-percentage fa-3x text-info mb-3"></i>
+                    <h3 class="text-info mb-0">{{ taux_completion|default(0) }}%</h3>
+                    <p class="text-muted mb-0">Taux de complétion</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row mb-4">
+        <!-- Évolution des réponses -->
+        <div class="col-md-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i> Évolution des réponses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="evolutionChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Scores moyens par type -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-area me-2"></i> Scores moyens par type
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="scoresChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Répartition par type -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i> Répartition des réponses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des questionnaires incomplets -->
+    {% if questionnaires_incomplets|default([])|length > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Questionnaires incomplets
+                        <span class="badge bg-white text-warning ms-2">{{ questionnaires_incomplets|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Type</th>
+                                    <th>Questions attendues</th>
+                                    <th>Questions ajoutées</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for questionnaire in questionnaires_incomplets %}
+                                    <tr>
+                                        <td>{{ questionnaire.nom }}</td>
+                                        <td>
+                                            {% if questionnaire.type %}
+                                                <span class="badge bg-secondary">{{ questionnaire.type }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Non défini</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ questionnaire.nbreQuestions }}</td>
+                                        <td>{{ questionnaire.questions|length }}</td>
+                                        <td>
+                                            <span class="badge bg-danger">Incomplet</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistiques par type -->
+    {% if stats_par_type|default([])|length > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i> Détails par type de questionnaire
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for type, stats in stats_par_type %}
+                        <div class="mb-4">
+                            <h6 class="text-uppercase d-flex justify-content-between align-items-center">
+                                <span class="badge bg-{{ 
+                                    type == 'stress' ? 'danger' : 
+                                    type == 'anxiete' ? 'warning' : 
+                                    type == 'depression' ? 'secondary' : 'success' 
+                                }}">{{ type|upper }}</span>
+                                <small class="text-muted">{{ stats.total_reponses }} réponse(s)</small>
+                            </h6>
+                            
+                            {% if stats.questionnaires|default([])|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Questionnaire</th>
+                                                <th>Réponses</th>
+                                                <th>Score moyen</th>
+                                                <th>Score min</th>
+                                                <th>Score max</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in stats.questionnaires %}
+                                                <tr>
+                                                    <td>{{ item.questionnaire.nom }}</td>
+                                                    <td>{{ item.count }}</td>
+                                                    <td>{{ item.moyenne|number_format(2) }}</td>
+                                                    <td>{{ item.min }}</td>
+                                                    <td>{{ item.max }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            <tr class="table-info">
+                                                <td><strong>Total/Global</strong></td>
+                                                <td><strong>{{ stats.total_reponses }}</strong></td>
+                                                <td><strong>{{ stats.score_moyen_global|default(0)|number_format(2) }}</strong></td>
+                                                <td><strong>{{ stats.score_min_global|default(0) }}</strong></td>
+                                                <td><strong>{{ stats.score_max_global|default(0) }}</strong></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Aucune réponse pour ce type de questionnaire.
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Derniers questionnaires -->
+    {% if derniers_questionnaires|default([])|length > 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i> Derniers questionnaires ajoutés
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Type</th>
+                                    <th>Code</th>
+                                    <th>Questions</th>
+                                    <th>Date création</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for questionnaire in derniers_questionnaires %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ questionnaire.nom }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if questionnaire.type %}
+                                                <span class="badge bg-{{ 
+                                                    questionnaire.type == 'STRESS' ? 'danger' : 
+                                                    questionnaire.type == 'ANXIETE' ? 'warning' : 
+                                                    questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success' 
+                                                }}">
+                                                    {{ questionnaire.type }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Non défini</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <code>{{ questionnaire.code|default('N/A') }}</code>
+                                        </td>
+                                        <td>
+                                            {{ questionnaire.questions|length }}/{{ questionnaire.nbreQuestions }}
+                                            {% if questionnaire.questions|length < questionnaire.nbreQuestions %}
+                                                <span class="badge bg-warning ms-2">Incomplet</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ questionnaire.createdAt|default('')|date('d/m/Y') }}
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('admin_questionnaire_show', {'id': questionnaire.id}) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Configuration commune
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        }
+    };
+
+    // 1. Graphique d'évolution
+    const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+    new Chart(evolutionCtx, {
+        type: 'line',
+        data: {
+            labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7'],
+            datasets: [{
+                label: 'Réponses reçues',
+                data: {{ evolution_data|default([0,0,0,0,0,0,0])|json_encode|raw }},
+                borderColor: '#5e72e4',
+                backgroundColor: 'rgba(94, 114, 228, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: chartOptions
+    });
+
+    // 2. Scores moyens par type
+    const scoresCtx = document.getElementById('scoresChart').getContext('2d');
+    new Chart(scoresCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ types_labels|default(['stress','anxiete','depression','bienetre'])|json_encode|raw }},
+            datasets: [{
+                label: 'Score moyen',
+                data: {{ scores_moyens|default([0,0,0,0])|json_encode|raw }},
+                backgroundColor: [
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(108, 117, 125, 0.7)',
+                    'rgba(40, 167, 69, 0.7)'
+                ],
+                borderColor: [
+                    '#dc3545',
+                    '#ffc107',
+                    '#6c757d',
+                    '#28a745'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 3. Répartition par type
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ types_labels|default(['stress','anxiete','depression','bienetre'])|json_encode|raw }},
+            datasets: [{
+                data: {{ repartition_types|default([0,0,0,0])|json_encode|raw }},
+                backgroundColor: [
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(108, 117, 125, 0.7)',
+                    'rgba(40, 167, 69, 0.7)'
+                ]
+            }]
+        },
+        options: chartOptions
+    });
+});
+</script>
+{% endblock %}

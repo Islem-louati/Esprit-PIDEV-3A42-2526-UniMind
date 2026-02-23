@@ -1,0 +1,166 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques - Administration{% endblock %}
+
+{% block breadcrumb_title %}Statistiques{% endblock %}
+{% block page_title %}Statistiques des utilisateurs{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Statistiques</h1>
+            </div>
+
+            <!-- Statistiques par rôle -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Utilisateurs par rôle</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rôle</th>
+                                            <th>Nombre</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for stat in userStats %}
+                                            <tr>
+                                                <td>
+                                                    {% if stat.role.value == 'Etudiant' %}
+                                                        <span class="badge bg-info">Étudiant</span>
+                                                    {% elseif stat.role.value == 'Psychologue' %}
+                                                        <span class="badge bg-warning">Psychologue</span>
+                                                    {% elseif stat.role.value == 'Responsable Etudiant' %}
+                                                        <span class="badge bg-success">Responsable</span>
+                                                    {% else %}
+                                                        <span class="badge bg-primary">{{ stat.role.value }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td><strong>{{ stat.count }}</strong></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques par statut -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Utilisateurs par statut</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Statut</th>
+                                            <th>Nombre</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for stat in statusStats %}
+                                            <tr>
+                                                <td>
+                                                    {% if stat.statut == 'actif' %}
+                                                        <span class="badge bg-success">Actif</span>
+                                                    {% elseif stat.statut == 'en_attente' %}
+                                                        <span class="badge bg-warning">En attente</span>
+                                                    {% elseif stat.statut == 'inactif' %}
+                                                        <span class="badge bg-danger">Inactif</span>
+                                                    {% elseif stat.statut == 'rejeté' %}
+                                                        <span class="badge bg-secondary">Rejeté</span>
+                                                    {% else %}
+                                                        <span class="badge bg-dark">{{ stat.statut }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td><strong>{{ stat.count }}</strong></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques mensuelles -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Inscriptions mensuelles - {{ currentYear }}</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if monthlyStats|length > 0 %}
+                                {% set maxCount = 0 %}
+                                {% for month, count in monthlyStats %}
+                                    {% if count > maxCount %}
+                                        {% set maxCount = count %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Mois</th>
+                                                <th>Nombre d'inscriptions</th>
+                                                <th>Graphique</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for month, count in monthlyStats %}
+                                                <tr>
+                                                    <td>
+                                                        {% set monthNames = {
+                                                            1: 'Janvier', 2: 'Février', 3: 'Mars', 4: 'Avril',
+                                                            5: 'Mai', 6: 'Juin', 7: 'Juillet', 8: 'Août',
+                                                            9: 'Septembre', 10: 'Octobre', 11: 'Novembre', 12: 'Décembre'
+                                                        } %}
+                                                        {{ monthNames[month] }}
+                                                    </td>
+                                                    <td><strong>{{ count }}</strong></td>
+                                                    <td>
+                                                        <div class="progress" style="height: 20px;">
+                                                            {% set percentage = maxCount > 0 ? (count / maxCount * 100) : 0 %}
+                                                            <div class="progress-bar bg-primary" 
+                                                                 role="progressbar" 
+                                                                 style="width: {{ percentage }}%;"
+                                                                 aria-valuenow="{{ count }}" 
+                                                                 aria-valuemin="0" 
+                                                                 aria-valuemax="{{ maxCount }}">
+                                                                {{ count }}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-center text-muted">
+                                    <i class="bi bi-bar-chart display-4 mb-3"></i><br>
+                                    Aucune donnée d'inscription pour {{ currentYear }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

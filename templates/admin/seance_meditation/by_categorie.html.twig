@@ -1,0 +1,817 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Séances de Méditation - {{ categorie.nom }}{% endblock %}
+
+{% block breadcrumb_title %}{{ categorie.nom }}{% endblock %}
+
+{% block page_title %}Séances de Méditation - {{ categorie.nom }}{% endblock %}
+
+{% block body %}
+  
+  {# En-tête de la catégorie #}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            {% if categorie.iconUrl %}
+              <img src="{{ categorie.iconUrl }}" alt="{{ categorie.nom }}" 
+                   class="avatar avatar-lg me-3" style="object-fit: cover;">
+            {% else %}
+              <div class="avatar avatar-lg bg-gradient-dark me-3 d-flex align-items-center justify-content-center">
+                <i class="fas fa-spa text-white text-xl"></i>
+              </div>
+            {% endif %}
+            <div>
+              <h6 class="mb-0">{{ categorie.nom }}</h6>
+              <p class="text-sm text-secondary mb-0">
+                <i class="fas fa-info-circle me-1"></i>
+                {{ categorie.description|slice(0, 150) }}{% if categorie.description|length > 150 %}...{% endif %}
+              </p>
+            </div>
+          </div>
+          <button type="button" 
+                  class="btn btn-dark btn-sm mb-0" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#modalNouvelleSeance">
+            <i class="fas fa-plus me-1"></i> Nouvelle Séance
+          </button>
+        </div>
+        <div class="card-body pt-0">
+          <div class="row mt-3">
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <div class="icon icon-shape bg-gradient-info shadow text-center rounded-circle me-3">
+                  <i class="fas fa-list text-lg opacity-10"></i>
+                </div>
+                <div>
+                  <p class="text-sm mb-0">Séances totales</p>
+                  <h5 class="font-weight-bolder mb-0">{{ seance_meditations|length }}</h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <div class="icon icon-shape bg-gradient-success shadow text-center rounded-circle me-3">
+                  <i class="fas fa-check-circle text-lg opacity-10"></i>
+                </div>
+                <div>
+                  <p class="text-sm mb-0">Séances actives</p>
+                  <h5 class="font-weight-bolder mb-0">
+                    {{ seance_meditations|filter(s => s.isActif)|length }}
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <div class="icon icon-shape bg-gradient-warning shadow text-center rounded-circle me-3">
+                  <i class="fas fa-clock text-lg opacity-10"></i>
+                </div>
+                <div>
+                  <p class="text-sm mb-0">Durée totale</p>
+                  <h5 class="font-weight-bolder mb-0">
+                    {% set totalMinutes = 0 %} {% for seance in seance_meditations %} {% set totalMinutes = totalMinutes + seance.duree %} {% endfor %} {{ totalMinutes // 60}}min
+                  </h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Liste des séances #}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Liste des Séances</h6>
+          <p class="text-sm mb-0">
+            <i class="fas fa-music me-1"></i>
+            Gérez les séances de méditation de cette catégorie
+          </p>
+        </div>
+        
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if seance_meditations is not empty %}
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Séance</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type & Durée</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Niveau</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for seance in seance_meditations %}
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div>
+                        {% if seance.typeFichier == 'audio' %}
+                          <div class="avatar avatar-sm bg-gradient-info me-3 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-music text-white text-xs"></i>
+                          </div>
+                        {% else %}
+                          <div class="avatar avatar-sm bg-gradient-danger me-3 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-video text-white text-xs"></i>
+                          </div>
+                        {% endif %}
+                      </div>
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ seance.titre }}</h6>
+                        <p class="text-xs text-secondary mb-0">
+                          {{ seance.description|slice(0, 60) }}{% if seance.description|length > 60 %}...{% endif %}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-sm font-weight-bold mb-0">
+                      <i class="fas fa-file-{{ seance.typeFichier == 'audio' ? 'audio' : 'video' }} me-1"></i>
+                      {{ seance.typeFichier|capitalize }}
+                    </p>
+                    <p class="text-xs text-secondary mb-0">
+                      <i class="fas fa-clock me-1"></i>
+                      {{ seance.getDureeFormatee() }}
+                    </p>
+                  </td>
+                  <td class="align-middle text-center">
+                    <span class="badge badge-sm 
+                      {% if seance.niveau == 'débutant' %}bg-gradient-success
+                      {% elseif seance.niveau == 'intermédiaire' %}bg-gradient-warning
+                      {% else %}bg-gradient-danger{% endif %}">
+                      {{ seance.niveau|capitalize }}
+                    </span>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    <span class="badge badge-sm bg-gradient-{{ seance.isActif ? 'success' : 'secondary' }}">
+                      {{ seance.isActif ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="align-middle text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                      {# Bouton Écouter/Regarder #}
+                      {% if seance.fichier %}
+                      <button type="button" 
+        class="btn btn-sm mb-0 btn-action-play has-tooltip"
+        data-bs-toggle="modal" 
+        data-bs-target="#modalMedia{{ seance.seanceId }}"
+        data-bs-placement="top" 
+        title="{{ seance.typeFichier == 'audio' ? 'Écouter' : 'Regarder' }}">
+    <i class="fas fa-play text-primary"></i>
+</button>
+                      {% endif %}
+                      
+                      {# Bouton Modifier #}
+                      <button type="button" 
+        class="btn btn-sm mb-0 btn-action-edit btn-edit-seance has-tooltip"
+        data-bs-toggle="modal" 
+        data-bs-target="#modalEditSeance"
+        data-id="{{ seance.seanceId }}"
+        data-action="{{ path('admin_seance_meditation_edit', {'id': seance.seanceId}) }}"
+        data-bs-placement="top" 
+        title="Modifier">
+    <i class="fas fa-edit text-warning"></i>
+</button>
+                      
+                      {# Bouton Activer/Désactiver #}
+                      <form method="post" 
+                            action="{{ path('admin_seance_meditation_toggle_active', {'id': seance.seanceId}) }}" 
+                            class="d-inline" 
+                            onsubmit="return confirm('{{ seance.isActif ? 'Désactiver' : 'Activer' }} cette séance ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle-active' ~ seance.seanceId) }}">
+                        <button type="submit" 
+        class="btn btn-sm mb-0 btn-action-toggle has-tooltip"
+        data-bs-placement="top" 
+        title="{{ seance.isActif ? 'Désactiver' : 'Activer' }}">
+    <i class="fas {{ seance.isActif ? 'fa-toggle-off' : 'fa-toggle-on' }} text-{{ seance.isActif ? 'secondary' : 'success' }}"></i>
+</button>
+                      </form>
+                      
+                      {# Bouton Supprimer #}
+                      <form method="post" 
+                            action="{{ path('admin_seance_meditation_delete', {'id': seance.seanceId}) }}" 
+                            class="d-inline" 
+                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette séance ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ seance.seanceId) }}">
+                        <button type="submit" 
+        class="btn btn-sm mb-0 btn-action-delete has-tooltip"
+        data-bs-placement="top" 
+        title="Supprimer">
+    <i class="fas fa-trash-alt text-danger"></i>
+</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                
+                
+                
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <div class="avatar avatar-xl bg-gradient-info rounded-circle mx-auto mb-3">
+              <i class="fas fa-headphones text-white text-2xl"></i>
+            </div>
+            <h6 class="text-gradient text-info mb-0">Aucune séance trouvée</h6>
+            <p class="text-sm mb-4">
+              Commencez par créer votre première séance de méditation
+            </p>
+            <button type="button" 
+                    class="btn btn-info btn-sm" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#modalNouvelleSeance">
+              <i class="fas fa-plus me-1"></i> Créer une séance
+            </button>
+          </div>
+          {% endif %}
+        </div>
+        
+        {% if seance_meditations is not empty %}
+        <div class="card-footer d-flex justify-content-between align-items-center">
+          <p class="text-sm text-secondary mb-0">
+            <i class="fas fa-list-check me-1"></i>
+            {{ seance_meditations|length }} séance(s) trouvée(s)
+          </p>
+          <a href="{{ path('admin_categorie_meditation_index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Retour aux catégories
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# === MODALS MÉDIA – placés APRÈS la carte === #}
+  {% for seance in seance_meditations %}
+    {% if seance.fichier %}
+      <div class="modal fade" id="modalMedia{{ seance.seanceId }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fas fa-{{ seance.typeFichier == 'audio' ? 'music' : 'video' }} me-2"></i>
+                {{ seance.titre }}
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+              {% if seance.typeFichier == 'audio' %}
+                <audio controls style="width: 100%;" class="mb-3">
+                  <source src="{{ asset('uploadsmed/' ~ seance.fichier) }}" type="audio/mpeg">
+                </audio>
+              {% else %}
+                <video controls style="width: 100%; max-height: 70vh;" class="mb-3">
+                  <source src="{{ asset('uploadsmed/' ~ seance.fichier) }}" type="video/mp4">
+                </video>
+              {% endif %}
+              <div class="text-start">
+                <p><strong>Description :</strong> {{ seance.description }}</p>
+                <p><strong>Durée :</strong> {{ seance.getDureeFormatee() }}</p>
+                <p><strong>Niveau :</strong> {{ seance.niveau|capitalize }}</p>
+                <p><strong>Créée le :</strong> {{ seance.createdAt|date('d/m/Y H:i') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+
+{# Modal pour créer une nouvelle séance #}
+<div class="modal fade" id="modalNouvelleSeance" tabindex="-1" aria-labelledby="modalNouvelleSeanceLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalNouvelleSeanceLabel">
+          <i class="fas fa-plus-circle me-2"></i>Nouvelle Séance de Méditation
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {# Le formulaire sera chargé ici via AJAX #}
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="mt-2">Chargement du formulaire...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal pour modifier une séance - VIDE au départ #}
+<div class="modal fade" id="modalEditSeance" tabindex="-1" aria-labelledby="modalEditSeanceLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditSeanceLabel">
+          <i class="fas fa-edit me-2"></i>Modifier la Séance
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalEditSeanceBody">
+        <!-- Le formulaire sera chargé ici via AJAX -->
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="mt-2">Chargement du formulaire...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* Styles pour les boutons d'action */
+.btn-action-play,
+.btn-action-edit,
+.btn-action-toggle,
+.btn-action-delete {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Bouton Play - Lecture */
+.btn-action-play {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-color: #81c784;
+}
+
+.btn-action-play:hover {
+    background: linear-gradient(135deg, #c8e6c9 0%, #81c784 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-action-play i {
+    color: #388e3c;
+    font-size: 14px;
+}
+
+/* Bouton Modifier - Édition */
+.btn-action-edit {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+    border-color: #ffd54f;
+}
+
+.btn-action-edit:hover {
+    background: linear-gradient(135deg, #ffecb3 0%, #ffd54f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+.btn-action-edit i {
+    color: #ff8f00;
+    font-size: 14px;
+}
+
+/* Bouton Toggle - Activation/Désactivation */
+.btn-action-toggle {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    border-color: #ba68c8;
+}
+
+.btn-action-toggle:hover {
+    background: linear-gradient(135deg, #e1bee7 0%, #ba68c8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(186, 104, 200, 0.3);
+}
+
+/* Bouton Supprimer - Suppression */
+.btn-action-delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-color: #ef9a9a;
+}
+
+.btn-action-delete:hover {
+    background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.btn-action-delete i {
+    color: #d32f2f;
+    font-size: 14px;
+}
+
+/* Animation au survol */
+.btn-action-play:before,
+.btn-action-edit:before,
+.btn-action-toggle:before,
+.btn-action-delete:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn-action-play:hover:before,
+.btn-action-edit:hover:before,
+.btn-action-toggle:hover:before,
+.btn-action-delete:hover:before {
+    width: 100%;
+    height: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .btn-action-play,
+    .btn-action-edit,
+    .btn-action-toggle,
+    .btn-action-delete {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .btn-action-play i,
+    .btn-action-edit i,
+    .btn-action-toggle i,
+    .btn-action-delete i {
+        font-size: 12px;
+    }
+}
+
+/* Style pour les modaux média */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+}
+
+/* Style pour le lecteur média */
+audio, video {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.invalid-feedback {
+    display: block !important;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script séances chargé');
+    
+    // ============ GESTION MODAL NOUVELLE SÉANCE ============
+    const modalNewSeance = document.getElementById('modalNouvelleSeance');
+    if (modalNewSeance) {
+        modalNewSeance.addEventListener('show.bs.modal', function() {
+            console.log('Ouverture modal nouvelle séance');
+            
+            // Charger le formulaire via AJAX
+            const action = "{{ path('admin_seance_meditation_new', {'categorieId': categorie.categorieId}) }}";
+            
+            // Afficher loader
+            const modalBody = this.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Chargement du formulaire...</p>
+                    </div>
+                `;
+            }
+            
+            // Charger le formulaire
+            fetch(action, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Données chargées:', data);
+                
+                if (data.success && data.html) {
+                    if (modalBody) {
+                        modalBody.innerHTML = data.html;
+                        // Attacher l'événement de soumission
+                        const newForm = modalBody.querySelector('form');
+                        if (newForm) {
+                            newForm.addEventListener('submit', handleSeanceFormSubmit);
+                        }
+                    }
+                } else {
+                    if (modalBody) {
+                        modalBody.innerHTML = '<div class="alert alert-danger">Erreur de chargement du formulaire</div>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur chargement:', error);
+                if (modalBody) {
+                    modalBody.innerHTML = `<div class="alert alert-danger">Erreur: ${error.message}</div>`;
+                }
+            });
+        });
+    }
+    
+    // ============ GESTION MODAL ÉDITION SÉANCE ============
+    const modalEditSeance = document.getElementById('modalEditSeance');
+    if (modalEditSeance) {
+        modalEditSeance.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const action = button.getAttribute('data-action');
+            
+            console.log('Ouverture modal édition séance, action:', action);
+            
+            // Afficher loader
+            document.getElementById('modalEditSeanceBody').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement du formulaire...</p>
+                </div>
+            `;
+            
+            // Charger le formulaire via AJAX
+            fetch(action, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Données chargées pour édition:', data);
+                
+                if (data.success && data.html) {
+                    document.getElementById('modalEditSeanceBody').innerHTML = data.html;
+                    // Attacher l'événement de soumission
+                    const newForm = document.querySelector('#modalEditSeance form');
+                    if (newForm) {
+                        newForm.addEventListener('submit', handleSeanceFormSubmit);
+                    }
+                } else {
+                    document.getElementById('modalEditSeanceBody').innerHTML = 
+                        '<div class="alert alert-danger">Erreur de chargement du formulaire</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur chargement édition:', error);
+                document.getElementById('modalEditSeanceBody').innerHTML = 
+                    `<div class="alert alert-danger">Erreur: ${error.message}</div>`;
+            });
+        });
+        
+        // Réinitialiser quand le modal se ferme
+        modalEditSeance.addEventListener('hidden.bs.modal', function() {
+            document.getElementById('modalEditSeanceBody').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement du formulaire...</p>
+                </div>
+            `;
+        });
+    }
+    
+    // ============ GESTION SOUMISSION FORMULAIRES SÉANCE ============
+    function handleSeanceFormSubmit(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> En cours...';
+    submitBtn.disabled = true;
+    
+    const formData = new FormData(form);
+    const isEdit = form.action.includes('/edit');
+    
+    console.log('Soumission formulaire séance:', form.action);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Réponse soumission:', data);
+        
+        if (data.success) {
+            // Succès
+            // Utiliser une notification plus élégante
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = data.message || 'Opération réussie!';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 2000);
+            
+            // Fermer le modal
+            let modal;
+            if (isEdit) {
+                modal = bootstrap.Modal.getInstance(document.getElementById('modalEditSeance'));
+            } else {
+                modal = bootstrap.Modal.getInstance(document.getElementById('modalNouvelleSeance'));
+            }
+            
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Recharger la page après un délai
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            // 🔴 ÉCHEC - Afficher les erreurs
+            if (data.html) {
+                // Remplacer le contenu du modal par le nouveau HTML
+                let modalBody;
+                if (isEdit) {
+                    modalBody = document.getElementById('modalEditSeanceBody');
+                } else {
+                    modalBody = document.querySelector('#modalNouvelleSeance .modal-body');
+                }
+                
+                if (modalBody) {
+                    modalBody.innerHTML = data.html;
+                    
+                    // 🔴 IMPORTANT : Ajouter la classe is-invalid aux champs en erreur
+                    if (data.errors) {
+                        Object.keys(data.errors).forEach(field => {
+                            // Chercher l'input correspondant
+                            const input = modalBody.querySelector(`[name="seance_meditation[${field}]"]`);
+                            if (input) {
+                                input.classList.add('is-invalid');
+                                
+                                // Ajouter un message d'erreur personnalisé si nécessaire
+                                const feedback = input.closest('.mb-3')?.querySelector('.invalid-feedback');
+                                if (feedback) {
+                                    // Le feedback existe déjà dans le HTML, mais on peut le vider
+                                    // pour éviter les doublons
+                                    feedback.innerHTML = `<ul><li>${data.errors[field]}</li></ul>`;
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Réattacher l'événement au nouveau formulaire
+                    const newForm = modalBody.querySelector('form');
+                    if (newForm) {
+                        newForm.addEventListener('submit', handleSeanceFormSubmit);
+                    }
+                    
+                    // Faire défiler jusqu'au premier champ en erreur
+                    const firstError = modalBody.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            } else {
+                // Fallback si pas de HTML
+                alert('Erreur de validation: ' + JSON.stringify(data.errors || data.message || 'Inconnue'));
+            }
+            
+            // Restaurer le bouton
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur soumission:', error);
+        alert('Erreur réseau: ' + error.message);
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+    
+    // ============ GESTION SUPPRESSION AJAX ============
+    document.querySelectorAll('form[action*="delete"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette séance ?')) {
+                return;
+            }
+            
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            submitBtn.disabled = true;
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Séance supprimée avec succès!');
+                    location.reload();
+                } else {
+                    throw new Error('Erreur lors de la suppression');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur suppression:', error);
+                alert('Erreur lors de la suppression');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    });
+    
+    // Initialiser les tooltips
+    document.querySelectorAll('.has-tooltip').forEach(el => {
+    new bootstrap.Tooltip(el);
+});
+    
+    // Gérer la lecture automatique dans les modaux média
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function () {
+            // Arrêter tous les médias quand le modal se ferme
+            this.querySelectorAll('audio, video').forEach(media => {
+                media.pause();
+                media.currentTime = 0;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

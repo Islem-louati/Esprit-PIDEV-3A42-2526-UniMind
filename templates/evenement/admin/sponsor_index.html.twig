@@ -1,0 +1,193 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Sponsors & Contributions | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}Sponsors & Contributions{% endblock %}
+{% block breadcrumb_title %}Sponsors & Contributions{% endblock %}
+
+{% block body %}
+  {% if not show_sponsors %}
+    <div class="alert alert-warning" role="alert">Accès non autorisé.</div>
+  {% else %}
+  {# Flash messages globaux #}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+  {% endfor %}
+
+  {# Table unifiée : contributions avec infos sponsor #}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5>Sponsors & Contributions</h5>
+          {% if route_prefix == 'app_admin_' %}
+            <a href="{{ path(route_prefix ~ 'sponsor_new') }}" class="btn btn-primary btn-sm">Ajouter un sponsor</a>
+          {% else %}
+            <a href="{{ path(route_prefix ~ 'sponsor_sponsor_contribution_new') }}" class="btn btn-primary btn-sm">Ajouter un sponsor & contribution</a>
+          {% endif %}
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <form method="get" action="{{ path(route_prefix ~ 'sponsor_index') }}" class="p-4 pb-0 d-flex gap-2 flex-wrap align-items-end">
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            <div class="flex-grow-1" style="min-width: 200px;">
+              <label for="search_q" class="form-label small mb-0">Rechercher (événement, sponsor, email, domaine)</label>
+              <input type="text" name="q" id="search_q" class="form-control form-control-sm" value="{{ q }}" placeholder="Mot-clé…">
+            </div>
+            <button type="submit" class="btn btn-outline-primary btn-sm">Rechercher</button>
+            <a href="{{ path(route_prefix ~ 'sponsor_index') }}" class="btn btn-outline-secondary btn-sm">Réinitialiser</a>
+          </form>
+          {% if evenement_sponsors|length > 0 or sponsors_sans_contribution|length > 0 %}
+            <div class="table-responsive p-4">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'sponsor_index', { q: q, sort: 'evenement_titre', order: sort == 'evenement_titre' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Événement {{ sort == 'evenement_titre' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Logo</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'sponsor_index', { q: q, sort: 'sponsor_nom', order: sort == 'sponsor_nom' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Sponsor {{ sort == 'sponsor_nom' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'sponsor_index', { q: q, sort: 'statut', order: sort == 'statut' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Statut {{ sort == 'statut' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'sponsor_index', { q: q, sort: 'dateContribution', order: sort == 'dateContribution' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Date {{ sort == 'dateContribution' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {# Contributions (avec sponsor) #}
+                  {% for es in evenement_sponsors %}
+                    <tr>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ es.evenement ? es.evenement.titre : '–' }}</p>
+                      </td>
+                      <td>
+                        {% if es.sponsor and es.sponsor.logo %}
+                          <img src="{{ asset('uploadsEvent/sponsors/' ~ es.sponsor.logo) }}" alt="Logo" class="img-thumbnail" style="max-height: 40px; max-width: 60px;">
+                        {% else %}
+                          <span class="text-muted text-xs">–</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ es.sponsor ? es.sponsor.nomSponsor : '–' }}</p>
+                        {% if es.sponsor and es.sponsor.domaineActivite %}
+                          <p class="text-xs text-muted mb-0">{{ es.sponsor.domaineActivite }}</p>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ es.sponsor and es.sponsor.typeSponsor ? es.sponsor.typeSponsor.label() : '–' }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ es.sponsor ? es.sponsor.emailContact : '–' }}</p>
+                      </td>
+                      <td>
+                        <span class="badge badge-sm bg-gradient-secondary">{{ es.getStatutFormate() }}</span>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ es.getDateContributionFormatee() }}</p>
+                      </td>
+                      <td class="align-middle">
+                        <a href="{{ path(route_prefix ~ 'sponsor_show', { id: es.sponsor.sponsorId }) }}" class="btn btn-link text-info px-2 mb-0">Voir</a>
+                        {% if route_prefix == 'app_admin_' %}
+                          <a href="{{ path(route_prefix ~ 'sponsor_edit', { id: es.sponsor.sponsorId }) }}" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+                          <form method="post" action="{{ path(route_prefix ~ 'sponsor_delete', { id: es.sponsor.sponsorId }) }}" class="d-inline" onsubmit="return confirm('Supprimer ce sponsor ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_sponsor_' ~ es.sponsor.sponsorId) }}">
+                            <button type="submit" class="btn btn-link text-danger px-2 mb-0">Supprimer</button>
+                          </form>
+                        {% else %}
+                          <a href="{{ path(route_prefix ~ 'sponsor_edit_unified', { id: es.sponsor.sponsorId }) }}" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+                          <button type="button" class="btn btn-link text-danger px-2 mb-0" data-bs-toggle="modal" data-bs-target="#deleteModal{{ es.sponsor.sponsorId }}">
+                            Supprimer
+                          </button>
+                          <div class="modal fade" id="deleteModal{{ es.sponsor.sponsorId }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Supprimer : {{ es.sponsor.nomSponsor }}</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <p>Que souhaitez-vous supprimer ?</p>
+                                  <div class="d-grid gap-2">
+                                    <form method="post" action="{{ path(route_prefix ~ 'sponsor_contribution_delete', { id: es.id }) }}">
+                                      <input type="hidden" name="_token" value="{{ csrf_token('delete_evenement_sponsor_' ~ es.id) }}">
+                                      <button type="submit" class="btn btn-outline-danger w-100">Supprimer uniquement cette contribution</button>
+                                    </form>
+                                    <form method="post" action="{{ path(route_prefix ~ 'sponsor_delete', { id: es.sponsor.sponsorId }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce sponsor et TOUTES ses contributions ?');">
+                                      <input type="hidden" name="_token" value="{{ csrf_token('delete_sponsor_' ~ es.sponsor.sponsorId) }}">
+                                      <button type="submit" class="btn btn-danger w-100">Supprimer le sponsor et toutes ses contributions</button>
+                                    </form>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                  {# Sponsors sans contribution #}
+                  {% for sponsor in sponsors_sans_contribution %}
+                    <tr>
+                      <td><p class="text-xs text-muted mb-0">–</p></td>
+                      <td>
+                        {% if sponsor.logo %}
+                          <img src="{{ asset('uploadsEvent/sponsors/' ~ sponsor.logo) }}" alt="Logo" class="img-thumbnail" style="max-height: 40px; max-width: 60px;">
+                        {% else %}
+                          <span class="text-muted text-xs">–</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ sponsor.nomSponsor }}</p>
+                        {% if sponsor.domaineActivite %}
+                          <p class="text-xs text-muted mb-0">{{ sponsor.domaineActivite }}</p>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ sponsor.typeSponsor ? sponsor.typeSponsor.label() : '–' }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ sponsor.emailContact }}</p>
+                      </td>
+                      <td><span class="badge badge-sm bg-gradient-secondary">{{ sponsor.getStatutFormate() }}</span></td>
+                      <td><p class="text-xs text-muted mb-0">–</p></td>
+                      <td class="align-middle">
+                        <a href="{{ path(route_prefix ~ 'sponsor_show', { id: sponsor.sponsorId }) }}" class="btn btn-link text-info px-2 mb-0">Voir</a>
+                        {% if route_prefix == 'app_admin_' %}
+                          <a href="{{ path(route_prefix ~ 'sponsor_edit', { id: sponsor.sponsorId }) }}" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+                        {% else %}
+                          <a href="{{ path(route_prefix ~ 'sponsor_edit_unified', { id: sponsor.sponsorId }) }}" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+                        {% endif %}
+                        <form method="post" action="{{ path(route_prefix ~ 'sponsor_delete', { id: sponsor.sponsorId }) }}" class="d-inline" onsubmit="return confirm('Supprimer ce sponsor ?');">
+                          <input type="hidden" name="_token" value="{{ csrf_token('delete_sponsor_' ~ sponsor.sponsorId) }}">
+                          <button type="submit" class="btn btn-link text-danger px-2 mb-0">Supprimer</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted p-4">Aucun sponsor ni contribution. <a href="{{ path(route_prefix ~ 'sponsor_sponsor_contribution_new') }}">Ajouter un sponsor & contribution</a>.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}

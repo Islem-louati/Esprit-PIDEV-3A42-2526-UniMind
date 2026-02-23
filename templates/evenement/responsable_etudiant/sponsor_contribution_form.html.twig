@@ -1,0 +1,129 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set sponsorVar = sponsor|default(null) %}
+{% set is_edit = sponsorContribution is defined and sponsorContribution and sponsorContribution.id %}
+
+{% block title %}{{ sponsorVar ? 'Modifier' : 'Ajouter' }} un sponsor & contribution | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}Sponsors & Contributions{% endblock %}
+{% block breadcrumb_title %}{{ sponsorVar ? 'Modifier' : 'Ajouter' }} un sponsor & contribution{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>{{ sponsorVar ? 'Modifier' : 'Ajouter' }} un sponsor et une contribution</h5>
+        </div>
+        <div class="card-body">
+          {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+          <h6 class="text-uppercase text-muted mb-3">Informations du sponsor</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.nomSponsor) }}
+              {{ form_widget(form.nomSponsor, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.nomSponsor) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.typeSponsor) }}
+              {{ form_widget(form.typeSponsor, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.typeSponsor) }}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.emailContact) }}
+              {{ form_widget(form.emailContact, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.emailContact) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.telephone) }}
+              {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.telephone) }}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.siteWeb) }}
+              {{ form_widget(form.siteWeb, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.siteWeb) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.domaineActivite) }}
+              {{ form_widget(form.domaineActivite, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.domaineActivite) }}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.logoFile) }}
+              {{ form_widget(form.logoFile, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.logoFile) }}</div>
+              {% if sponsorVar and sponsorVar.logo %}
+                <div class="mt-2">
+                  <img src="{{ asset('uploadsEvent/sponsors/' ~ sponsorVar.logo) }}" alt="Logo" class="img-thumbnail" style="max-height: 60px;">
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12 mb-4">
+              {{ form_label(form.adresse) }}
+              {{ form_widget(form.adresse, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.adresse) }}</div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <h6 class="text-uppercase text-muted mb-3">Contribution</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.evenement) }}
+              {{ form_widget(form.evenement, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.evenement) }}</div>
+              <small class="form-text text-muted">{{ form_help(form.evenement) }}</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.montantContribution) }}
+              {{ form_widget(form.montantContribution, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.montantContribution) }}</div>
+              <small class="form-text text-muted">{{ form_help(form.montantContribution) }}</small>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.typeContribution) }}
+              {{ form_widget(form.typeContribution, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.typeContribution) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.statut) }}
+              {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.statut) }}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.dateContribution) }}
+              {{ form_widget(form.dateContribution, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.dateContribution) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.descriptionContribution) }}
+              {{ form_widget(form.descriptionContribution, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.descriptionContribution) }}</div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{{ path(route_prefix ~ 'sponsor_index') }}" class="btn btn-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary">{{ sponsorVar ? 'Mettre à jour' : 'Ajouter' }}</button>
+          </div>
+
+          {{ form_end(form) }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

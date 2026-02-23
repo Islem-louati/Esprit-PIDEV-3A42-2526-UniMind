@@ -1,0 +1,468 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - UniMind{% endblock %}
+
+{% block unauthenticated_body %}
+<section>
+    <div class="page-header min-vh-100">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0 mx-auto">
+                    <div class="card card-plain">
+                        <div class="card-header pb-0 text-start">
+                            <h4 class="font-weight-bolder">Inscription</h4>
+                            <p class="mb-0">Créez votre compte UniMind</p>
+                        </div>
+                        
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success alert-dismissible fade show mx-4 mt-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                        
+                        {% for message in app.flashes('error') %}
+                            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="card-body">
+                            <!-- Étape 1 : Sélection du rôle -->
+                            <div id="roleSelectionStep" class="step">
+                                <h6 class="text-dark mb-4">Sélectionnez votre rôle :</h6>
+                                
+                                <div class="row text-center">
+                                    <div class="col-md-12 mb-3">
+                                        <button type="button" class="btn btn-outline-primary btn-lg w-100 mb-3" onclick="selectRole('Etudiant')">
+                                            <i class="fas fa-user-graduate me-2"></i>
+                                            <strong>Étudiant</strong>
+                                            <p class="text-sm mb-0 mt-1">Je suis étudiant et je cherche du soutien psychologique</p>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="col-md-12 mb-3">
+                                        <button type="button" class="btn btn-outline-success btn-lg w-100 mb-3" onclick="selectRole('Psychologue')">
+                                            <i class="fas fa-heartbeat me-2"></i>
+                                            <strong>Psychologue</strong>
+                                            <p class="text-sm mb-0 mt-1">Je suis psychologue et je veux proposer mes services</p>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="col-md-12 mb-3">
+                                        <button type="button" class="btn btn-outline-warning btn-lg w-100 mb-3" onclick="selectRole('Responsable Etudiant')">
+                                            <i class="fas fa-user-tie me-2"></i>
+                                            <strong>Responsable Étudiant</strong>
+                                            <p class="text-sm mb-0 mt-1">Je suis responsable d'étudiants dans un établissement</p>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-4">
+                                    <p class="text-sm text-muted">
+                                        <i class="fas fa-info-circle text-info me-1"></i>
+                                        Les comptes administrateur ne sont pas accessibles via l'inscription publique.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Étape 2 : Formulaire d'inscription -->
+                            <div id="registrationFormStep" class="step" style="display: none;">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h6 class="text-dark mb-0">Inscription - <span id="selectedRoleLabel"></span></h6>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goBackToRoleSelection()">
+                                        <i class="fas fa-arrow-left me-1"></i> Changer de rôle
+                                    </button>
+                                </div>
+                                
+                                {{ form_start(registrationForm, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'id': 'registrationForm'}}) }}
+                                
+                                <!-- Champ rôle caché - Version simplifiée -->
+                                <input type="hidden" 
+                                       id="roleInput" 
+                                       name="registration_form[role]" 
+                                       value="">
+                                
+                                <!-- Champs communs à tous -->
+                                <h6 class="text-dark mb-3"><i class="fas fa-user-circle me-2"></i>Informations personnelles</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ registrationForm.nom.vars.id }}" class="form-label">
+                                                <i class="fas fa-user me-1"></i> Nom *
+                                            </label>
+                                            {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(registrationForm.nom) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ registrationForm.prenom.vars.id }}" class="form-label">
+                                                <i class="fas fa-user me-1"></i> Prénom *
+                                            </label>
+                                            {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(registrationForm.prenom) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ registrationForm.email.vars.id }}" class="form-label">
+                                                <i class="fas fa-envelope me-1"></i> Email *
+                                            </label>
+                                            {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(registrationForm.email) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ registrationForm.cin.vars.id }}" class="form-label">
+                                                <i class="fas fa-id-card me-1"></i> CIN *
+                                            </label>
+                                            {{ form_widget(registrationForm.cin, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(registrationForm.cin) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Champs Étudiant -->
+                                <div id="studentFields" class="role-fields" style="display: none;">
+                                    <hr class="horizontal dark">
+                                    <h6 class="text-dark mb-3"><i class="fas fa-graduation-cap me-2"></i>Informations étudiant</h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ registrationForm.identifiant.vars.id }}" class="form-label">
+                                            <i class="fas fa-id-badge me-1"></i> Identifiant étudiant *
+                                        </label>
+                                        {{ form_widget(registrationForm.identifiant, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form_errors(registrationForm.identifiant) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ registrationForm.nom_etablissement.vars.id }}" class="form-label">
+                                            <i class="fas fa-school me-1"></i> Nom de l'établissement *
+                                        </label>
+                                        {{ form_widget(registrationForm.nom_etablissement, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form_errors(registrationForm.nom_etablissement) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Champs Psychologue -->
+                                <div id="psychologueFields" class="role-fields" style="display: none;">
+                                    <hr class="horizontal dark">
+                                    <h6 class="text-dark mb-3"><i class="fas fa-heartbeat me-2"></i>Informations psychologue</h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ registrationForm.specialite.vars.id }}" class="form-label">
+                                            <i class="fas fa-stethoscope me-1"></i> Spécialité *
+                                        </label>
+                                        {{ form_widget(registrationForm.specialite, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form_errors(registrationForm.specialite) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ registrationForm.adresse.vars.id }}" class="form-label">
+                                            <i class="fas fa-map-marker-alt me-1"></i> Adresse *
+                                        </label>
+                                        {{ form_widget(registrationForm.adresse, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form_errors(registrationForm.adresse) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ registrationForm.telephone.vars.id }}" class="form-label">
+                                            <i class="fas fa-phone me-1"></i> Téléphone *
+                                        </label>
+                                        {{ form_widget(registrationForm.telephone, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form_errors(registrationForm.telephone) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Champs Responsable -->
+                                <div id="responsableFields" class="role-fields" style="display: none;">
+                                    <hr class="horizontal dark">
+                                    <h6 class="text-dark mb-3"><i class="fas fa-user-tie me-2"></i>Informations responsable</h6>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ registrationForm.poste.vars.id }}" class="form-label">
+                                                    <i class="fas fa-briefcase me-1"></i> Poste *
+                                                </label>
+                                                {{ form_widget(registrationForm.poste, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form_errors(registrationForm.poste) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ registrationForm.etablissement.vars.id }}" class="form-label">
+                                                    <i class="fas fa-university me-1"></i> Établissement *
+                                                </label>
+                                                {{ form_widget(registrationForm.etablissement, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form_errors(registrationForm.etablissement) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Mot de passe -->
+                                <hr class="horizontal dark">
+                                <h6 class="text-dark mb-3"><i class="fas fa-lock me-2"></i>Sécurité du compte</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form_label(registrationForm.plainPassword.first) }}
+                                            {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(registrationForm.plainPassword.first) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form_label(registrationForm.plainPassword.second) }}
+                                            {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form_errors(registrationForm.plainPassword.second) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        <i class="fas fa-file-contract me-1"></i>
+                                        J'accepte les <a href="#" class="text-primary">conditions d'utilisation</a> et la <a href="#" class="text-primary">politique de confidentialité</a>
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        Vous devez accepter les conditions d'utilisation.
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">
+                                        <i class="fas fa-user-plus me-2"></i>Créer mon compte
+                                    </button>
+                                </div>
+                                
+                                {{ form_end(registrationForm) }}
+                            </div>
+                        </div>
+                        <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                            <p class="mb-4 text-sm mx-auto">
+                                Vous avez déjà un compte ?
+                                <a href="{{ path('app_login') }}" class="text-primary text-gradient font-weight-bold">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Se connecter
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
+                    <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden" 
+                         style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80'); 
+                                background-size: cover;">
+                        <span class="mask bg-gradient-primary opacity-6"></span>
+                        <h4 class="mt-5 text-white font-weight-bolder position-relative">"Rejoignez notre communauté de soutien"</h4>
+                        <p class="text-white position-relative">Accédez à un accompagnement psychologique adapté à vos besoins académiques.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    let selectedRole = '';
+    
+    function selectRole(role) {
+        selectedRole = role;
+        
+        // Mettre à jour le label du rôle sélectionné
+        document.getElementById('selectedRoleLabel').textContent = role;
+        
+        // Définir la valeur du champ caché
+        const roleInput = document.getElementById('roleInput');
+        if (roleInput) {
+            // Utiliser les valeurs exactes du enum
+            const roleMapping = {
+                'Etudiant': 'Etudiant',
+                'Psychologue': 'Psychologue', 
+                'Responsable Etudiant': 'Responsable Etudiant'
+            };
+            roleInput.value = roleMapping[role] || role;
+            console.log('Rôle défini:', roleInput.value);
+        }
+        
+        // Afficher/cacher les champs spécifiques
+        document.querySelectorAll('.role-fields').forEach(field => {
+            field.style.display = 'none';
+        });
+        
+        if (role === 'Etudiant') {
+            document.getElementById('studentFields').style.display = 'block';
+            // Rendre les champs requis
+            const identifiantField = document.getElementById('{{ registrationForm.identifiant.vars.id }}');
+            const nomEtablissementField = document.getElementById('{{ registrationForm.nom_etablissement.vars.id }}');
+            if (identifiantField) identifiantField.required = true;
+            if (nomEtablissementField) nomEtablissementField.required = true;
+        } else if (role === 'Psychologue') {
+            document.getElementById('psychologueFields').style.display = 'block';
+            const specialiteField = document.getElementById('{{ registrationForm.specialite.vars.id }}');
+            const adresseField = document.getElementById('{{ registrationForm.adresse.vars.id }}');
+            const telephoneField = document.getElementById('{{ registrationForm.telephone.vars.id }}');
+            if (specialiteField) specialiteField.required = true;
+            if (adresseField) adresseField.required = true;
+            if (telephoneField) telephoneField.required = true;
+        } else if (role === 'Responsable Etudiant') {
+            document.getElementById('responsableFields').style.display = 'block';
+            const posteField = document.getElementById('{{ registrationForm.poste.vars.id }}');
+            const etablissementField = document.getElementById('{{ registrationForm.etablissement.vars.id }}');
+            if (posteField) posteField.required = true;
+            if (etablissementField) etablissementField.required = true;
+        }
+        
+        // Passer à l'étape 2
+        document.getElementById('roleSelectionStep').style.display = 'none';
+        document.getElementById('registrationFormStep').style.display = 'block';
+    }
+    
+    function goBackToRoleSelection() {
+        document.getElementById('roleSelectionStep').style.display = 'block';
+        document.getElementById('registrationFormStep').style.display = 'none';
+        
+        const roleInput = document.getElementById('roleInput');
+        if (roleInput) roleInput.value = '';
+        
+        document.querySelectorAll('.role-fields').forEach(field => {
+            field.style.display = 'none';
+        });
+    }
+    
+    // Validation simple
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registrationForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                // Vérification minimale
+                const roleInput = document.getElementById('roleInput');
+                if (!roleInput || !roleInput.value) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    alert('Veuillez sélectionner un rôle.');
+                    goBackToRoleSelection();
+                    return;
+                }
+                
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        }
+    });
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .role-fields {
+        margin-top: 1rem;
+        padding: 1.5rem;
+        background-color: #f8f9fc;
+        border-radius: 0.5rem;
+        border-left: 4px solid #5e72e4;
+        transition: all 0.3s ease;
+    }
+    
+    #psychologueFields {
+        border-left-color: #2dce89;
+    }
+    
+    #responsableFields {
+        border-left-color: #fb6340;
+    }
+    
+    .step {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid #5e72e4;
+        color: #5e72e4;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #5e72e4;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-success {
+        border: 2px solid #2dce89;
+        color: #2dce89;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-success:hover {
+        background-color: #2dce89;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-warning {
+        border: 2px solid #fb6340;
+        color: #fb6340;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-warning:hover {
+        background-color: #fb6340;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .invalid-feedback {
+        display: block !important;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-check-label {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

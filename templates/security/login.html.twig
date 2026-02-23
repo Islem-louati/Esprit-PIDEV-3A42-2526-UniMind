@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - UniMind{% endblock %}
+
+{% block unauthenticated_body %}
+
+
+<section>
+    <div class="page-header min-vh-100">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0 mx-auto">
+                    <div class="card card-plain">
+                        <div class="card-header pb-0 text-start">
+                            <h4 class="font-weight-bolder">Connexion à UniMind</h4>
+                            <p class="mb-0">Entrez votre email et mot de passe pour accéder à votre compte</p>
+                        </div>
+                        
+                        {% if error %}
+                            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+                                {{ error.messageKey|trans(error.messageData, 'security') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+
+                        {% for flash_error in app.flashes('error') %}
+                            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+                                {{ flash_error }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+
+                        {% for flash_success in app.flashes('success') %}
+                            <div class="alert alert-success alert-dismissible fade show mx-4 mt-3" role="alert">
+                                {{ flash_success }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="card-body">
+                            <form method="post" class="user" role="form">
+                                <div class="mb-3">
+                                    <input type="email" name="email" id="inputEmail" 
+                                           class="form-control form-control-lg {{ error ? 'is-invalid' : '' }}"
+                                           value="{{ last_username }}" 
+                                           placeholder="Adresse email" 
+                                           aria-label="Email" required autofocus>
+                                    {% if error %}
+                                        <div class="invalid-feedback">
+                                            Email ou mot de passe incorrect
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <input type="password" name="password" id="inputPassword" 
+                                           class="form-control form-control-lg {{ error ? 'is-invalid' : '' }}"
+                                           placeholder="Mot de passe" 
+                                           aria-label="Password" required>
+                                    {% if error %}
+                                        <div class="invalid-feedback">
+                                            Email ou mot de passe incorrect
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe" name="_remember_me">
+                                    <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
+                                </div>
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">
+                                        Se connecter
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                            <p class="mb-4 text-sm mx-auto">
+                                Mot de passe oublié ?
+                                <a href="{{ path('app_forgot_password') }}" class="text-primary text-gradient font-weight-bold">
+                                    Réinitialiser
+                                </a>
+                            </p>
+                            <p class="mb-4 text-sm mx-auto">
+                                Vous n'avez pas de compte ?
+                                <a href="{{ path('app_register') }}" class="text-primary text-gradient font-weight-bold">
+                                    Créer un compte
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
+                    <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden" style="background-image: url('https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80');
+                        background-size: cover;">
+                        <span class="mask bg-gradient-primary opacity-6"></span>
+                        <h4 class="mt-5 text-white font-weight-bolder position-relative">"La santé mentale n'est pas une destination, mais un voyage"</h4>
+                        <p class="text-white position-relative">Prendre soin de son bien-être mental est essentiel pour une vie équilibrée et épanouissante.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

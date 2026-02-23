@@ -1,0 +1,950 @@
+{# templates/psy/disponibilite/index.html.twig #}
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Mes Disponibilités | UniMind{% endblock %}
+{% block page_title %}Mes Disponibilités{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+  
+  <style>
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .form-control.is-invalid {
+      border-color: #f5365c;
+      padding-right: calc(1.5em + 0.75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23f5365c'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23f5365c' stroke='none'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-control.is-valid {
+      border-color: #2dce89;
+      padding-right: calc(1.5em + 0.75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%232dce89' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .invalid-feedback {
+      display: none;
+      width: 100%;
+      margin-top: 0.25rem;
+      font-size: 0.875em;
+      color: #f5365c;
+    }
+    
+    .is-invalid ~ .invalid-feedback {
+      display: block;
+    }
+    
+    .time-picker-container {
+      position: relative;
+    }
+    
+    .flatpickr-calendar {
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-action-group {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+    
+    .btn-action-group .btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+    
+    .statut-badge {
+      font-size: 0.65rem;
+      padding: 0.25rem 0.5rem;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  {# Messages Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+        <span class="alert-text text-white">{{ message }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+  
+  {# Bouton Nouvelle Disponibilité #}
+  <div class="row mb-4">
+    <div class="col-12">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNouvelleDisponibilite">
+        <i class="fas fa-plus me-2"></i>Nouvelle Disponibilité
+      </button>
+    </div>
+  </div>
+  
+  {# Disponibilités Futures #}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Disponibilités à venir ({{ disponibilites_futures|length }})</h6>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if disponibilites_futures is empty %}
+            <div class="text-center py-4">
+              <i class="ni ni-calendar-grid-58 text-secondary" style="font-size: 3rem;"></i>
+              <p class="text-sm text-secondary mb-0 mt-3">Aucune disponibilité programmée</p>
+              <button type="button" class="btn btn-sm btn-outline-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalNouvelleDisponibilite">
+                Créer une disponibilité
+              </button>
+            </div>
+          {% else %}
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Horaires</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lieu</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for dispo in disponibilites_futures %}
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">{{ dispo.dateDispo|date('d/m/Y') }}</h6>
+                            <p class="text-xs text-secondary mb-0">{{ dispo.dateDispo|date('l') }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">
+                          {{ dispo.heureDebut|date('H:i') }} - {{ dispo.heureFin|date('H:i') }}
+                        </p>
+                        <p class="text-xs text-secondary mb-0">Durée: {{ dispo.duree }}</p>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        {% if dispo.isPresentiel %}
+                          <span class="badge badge-sm bg-gradient-info">
+                            <i class="fas fa-building me-1"></i>Présentiel
+                          </span>
+                        {% else %}
+                          <span class="badge badge-sm bg-gradient-success">
+                            <i class="fas fa-video me-1"></i>En ligne
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-xs font-weight-bold">
+                          {{ dispo.lieu ?? '-' }}
+                        </span>
+                      </td>
+                      <td class="align-middle text-center">
+                        {% if dispo.isDisponible %}
+                          <span class="badge badge-sm bg-gradient-success">
+                            <i class="fas fa-check-circle me-1"></i>Disponible
+                          </span>
+                        {% elseif dispo.isReserve %}
+                          <span class="badge badge-sm bg-gradient-warning">
+                            <i class="fas fa-lock me-1"></i>Réservé
+                          </span>
+                        {% else %}
+                          <span class="badge badge-sm bg-gradient-secondary">
+                            <i class="fas fa-times-circle me-1"></i>Annulé
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle text-center">
+                        <div class="btn-action-group">
+                          <button type="button" 
+                                  class="btn btn-outline-info btn-sm edit-dispo-btn"
+                                  data-dispo-id="{{ dispo.dispoId }}"
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#modalModifierDisponibilite"
+                                  data-bs-toggle="tooltip" 
+                                  title="Modifier">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          
+                          {% if not dispo.isReserve %}
+                            <form method="post" 
+                                  action="{{ path('app_psy_disponibilite_delete', {id: dispo.dispoId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ dispo.dispoId) }}">
+                              <button type="submit" 
+                                      class="btn btn-outline-danger btn-sm" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            </form>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Disponibilités Passées #}
+  {% if disponibilites_passees is not empty %}
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header pb-0">
+            <h6>Historique ({{ disponibilites_passees|length }} dernières)</h6>
+          </div>
+          <div class="card-body px-0 pt-0 pb-2">
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Horaires</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for dispo in disponibilites_passees|slice(0, 10) %}
+                    <tr class="opacity-75">
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm text-secondary">{{ dispo.dateDispo|date('d/m/Y') }}</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <p class="text-xs text-secondary mb-0">
+                          {{ dispo.heureDebut|date('H:i') }} - {{ dispo.heureFin|date('H:i') }}
+                        </p>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="badge badge-sm bg-gradient-secondary">
+                          {{ dispo.typeConsultEnum.label }}
+                        </span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="badge badge-sm bg-gradient-secondary">
+                          {{ dispo.statutEnum.label }}
+                        </span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  
+  {# ========================================== #}
+  {# MODAL NOUVELLE DISPONIBILITÉ #}
+  {# ========================================== #}
+  <div class="modal fade" id="modalNouvelleDisponibilite" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabel">
+            <i class="ni ni-calendar-grid-58 me-2"></i>
+            Nouvelle Disponibilité
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="formNouvelleDisponibilite" method="post" action="{{ path('app_psy_disponibilites') }}" novalidate>
+          <div class="modal-body">
+            {# CSRF Token #}
+            <input type="hidden" name="_token" value="{{ csrf_token('new_disponibilite') }}">
+            
+            {# Date #}
+            <div class="mb-3">
+              <label for="date_dispo" class="form-label">
+                Date <span class="text-danger">*</span>
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     id="date_dispo" 
+                     name="disponibilite[date_dispo]" 
+                     placeholder="Sélectionnez une date"
+                     required>
+              <div class="invalid-feedback">Veuillez sélectionner une date.</div>
+            </div>
+            
+            {# Horaires #}
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="heure_debut" class="form-label">
+                    Heure de début <span class="text-danger">*</span>
+                  </label>
+                  <div class="time-picker-container">
+                    <input type="time" 
+                           class="form-control" 
+                           id="heure_debut" 
+                           name="disponibilite[heure_debut]"
+                           required>
+                    <div class="invalid-feedback">Heure de début requise.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="heure_fin" class="form-label">
+                    Heure de fin <span class="text-danger">*</span>
+                  </label>
+                  <div class="time-picker-container">
+                    <input type="time" 
+                           class="form-control" 
+                           id="heure_fin" 
+                           name="disponibilite[heure_fin]"
+                           required>
+                    <div class="invalid-feedback" id="heure_fin_error">Heure de fin requise.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {# Type de consultation #}
+            <div class="mb-3">
+              <label for="type_consult" class="form-label">
+                Type de consultation <span class="text-danger">*</span>
+              </label>
+              <select class="form-select form-control" 
+                      id="type_consult" 
+                      name="disponibilite[type_consult]"
+                      required>
+                <option value="">-- Sélectionnez --</option>
+                {% for key, value in types_consultation %}
+                  <option value="{{ value }}">{{ value }}</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">Veuillez sélectionner un type de consultation.</div>
+            </div>
+            
+            {# Lieu #}
+            <div class="mb-3" id="lieu_container" style="display: none;">
+              <label for="lieu" class="form-label">
+                Lieu
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     id="lieu" 
+                     name="disponibilite[lieu]"
+                     placeholder="Ex: Bureau 203, Bâtiment A"
+                     maxlength="255">
+              <small class="form-text text-muted">
+                Indiquez le lieu pour une consultation présentielle.
+              </small>
+            </div>
+            
+            {# Récapitulatif #}
+            <div class="alert alert-info mt-3" id="recapitulatif" style="display: none;">
+              <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>Récapitulatif
+              </h6>
+              <p class="mb-0" id="recap_text"></p>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-2"></i>Annuler
+            </button>
+            <button type="submit" class="btn btn-primary" id="btnSubmit">
+              <i class="fas fa-save me-2"></i>Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {# ========================================== #}
+  {# MODAL MODIFIER DISPONIBILITÉ #}
+  {# ========================================== #}
+  <div class="modal fade" id="modalModifierDisponibilite" tabindex="-1" aria-labelledby="modalEditLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEditLabel">
+            <i class="ni ni-calendar-grid-58 me-2"></i>
+            Modifier Disponibilité
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="formModifierDisponibilite" method="post" action="" novalidate>
+          <div class="modal-body">
+            {# CSRF Token #}
+            <input type="hidden" name="_token" value="{{ csrf_token('edit_disponibilite') }}">
+            <input type="hidden" id="edit_dispo_id" name="disponibilite[id]">
+            
+            {# Date #}
+            <div class="mb-3">
+              <label for="edit_date_dispo" class="form-label">
+                Date <span class="text-danger">*</span>
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     id="edit_date_dispo" 
+                     name="disponibilite[date_dispo]" 
+                     placeholder="Sélectionnez une date"
+                     required>
+              <div class="invalid-feedback">Veuillez sélectionner une date.</div>
+            </div>
+            
+            {# Horaires #}
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="edit_heure_debut" class="form-label">
+                    Heure de début <span class="text-danger">*</span>
+                  </label>
+                  <div class="time-picker-container">
+                    <input type="time" 
+                           class="form-control" 
+                           id="edit_heure_debut" 
+                           name="disponibilite[heure_debut]"
+                           required>
+                    <div class="invalid-feedback">Heure de début requise.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="edit_heure_fin" class="form-label">
+                    Heure de fin <span class="text-danger">*</span>
+                  </label>
+                  <div class="time-picker-container">
+                    <input type="time" 
+                           class="form-control" 
+                           id="edit_heure_fin" 
+                           name="disponibilite[heure_fin]"
+                           required>
+                    <div class="invalid-feedback" id="edit_heure_fin_error">Heure de fin requise.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {# Type de consultation #}
+            <div class="mb-3">
+              <label for="edit_type_consult" class="form-label">
+                Type de consultation <span class="text-danger">*</span>
+              </label>
+              <select class="form-select form-control" 
+                      id="edit_type_consult" 
+                      name="disponibilite[type_consult]"
+                      required>
+                <option value="">-- Sélectionnez --</option>
+                {% for key, value in types_consultation %}
+                  <option value="{{ value }}">{{ value }}</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">Veuillez sélectionner un type de consultation.</div>
+            </div>
+            
+            {# Lieu #}
+            <div class="mb-3" id="edit_lieu_container" style="display: none;">
+              <label for="edit_lieu" class="form-label">
+                Lieu
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     id="edit_lieu" 
+                     name="disponibilite[lieu]"
+                     placeholder="Ex: Bureau 203, Bâtiment A"
+                     maxlength="255">
+              <small class="form-text text-muted">
+                Indiquez le lieu pour une consultation présentielle.
+              </small>
+            </div>
+            
+            {# Statut #}
+            <div class="mb-3">
+              <label for="edit_statut" class="form-label">
+                Statut <span class="text-danger">*</span>
+              </label>
+              <select class="form-select form-control" 
+                      id="edit_statut" 
+                      name="disponibilite[statut]"
+                      required>
+                <option value="">-- Sélectionnez --</option>
+                {% for key, value in statuts %}
+                  <option value="{{ value }}">{{ value }}</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">Veuillez sélectionner un statut.</div>
+            </div>
+            
+            {# Récapitulatif #}
+            <div class="alert alert-info mt-3" id="edit_recapitulatif" style="display: none;">
+              <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>Récapitulatif
+              </h6>
+              <p class="mb-0" id="edit_recap_text"></p>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-2"></i>Annuler
+            </button>
+            <button type="submit" class="btn btn-primary" id="btnEditSubmit">
+              <i class="fas fa-save me-2"></i>Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  
+  {# Flatpickr pour le calendrier #}
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialiser le calendrier pour le modal d'ajout
+      const datePicker = flatpickr("#date_dispo", {
+        locale: "fr",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        inline: false,
+        onChange: function(selectedDates, dateStr, instance) {
+          validateField(document.getElementById('date_dispo'));
+          updateRecapitulatif();
+        }
+      });
+      
+      // Initialiser le calendrier pour le modal de modification
+      const editDatePicker = flatpickr("#edit_date_dispo", {
+        locale: "fr",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        inline: false,
+        onChange: function(selectedDates, dateStr, instance) {
+          validateField(document.getElementById('edit_date_dispo'));
+          updateEditRecapitulatif();
+        }
+      });
+      
+      // Gestion des boutons de modification
+      const editButtons = document.querySelectorAll('.edit-dispo-btn');
+      const modalModifier = document.getElementById('modalModifierDisponibilite');
+      const formModifier = document.getElementById('formModifierDisponibilite');
+      
+      editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const dispoId = this.getAttribute('data-dispo-id');
+          
+          // Récupérer les données de la disponibilité via AJAX
+          fetch(`/psy/disponibilites/${dispoId}/get`)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Erreur lors de la récupération des données');
+              }
+              return response.json();
+            })
+            .then(data => {
+              // Remplir le formulaire avec les données
+              document.getElementById('edit_dispo_id').value = data.id;
+              document.getElementById('edit_date_dispo').value = data.date_dispo;
+              document.getElementById('edit_heure_debut').value = data.heure_debut;
+              document.getElementById('edit_heure_fin').value = data.heure_fin;
+              document.getElementById('edit_type_consult').value = data.type_consult;
+              document.getElementById('edit_statut').value = data.statut;
+              
+              if (data.lieu) {
+                document.getElementById('edit_lieu').value = data.lieu;
+                document.getElementById('edit_lieu_container').style.display = 'block';
+              }
+              
+              // Afficher/masquer le champ lieu selon le type
+              if (data.type_consult === 'présentiel') {
+                document.getElementById('edit_lieu_container').style.display = 'block';
+              } else {
+                document.getElementById('edit_lieu_container').style.display = 'none';
+              }
+              
+              // Mettre à jour l'action du formulaire
+              formModifier.action = `/psy/disponibilites/${dispoId}/modifier`;
+              
+              // Mettre à jour le récapitulatif
+              updateEditRecapitulatif();
+              
+              // Réinitialiser les états de validation
+              resetEditValidation();
+            })
+            .catch(error => {
+              console.error('Erreur:', error);
+              alert('Erreur lors du chargement des données de la disponibilité.');
+            });
+        });
+      });
+      
+      // Validation pour le modal de modification
+      const editDateInput = document.getElementById('edit_date_dispo');
+      const editHeureDebutInput = document.getElementById('edit_heure_debut');
+      const editHeureFinInput = document.getElementById('edit_heure_fin');
+      const editTypeConsultInput = document.getElementById('edit_type_consult');
+      const editLieuInput = document.getElementById('edit_lieu');
+      const editStatutInput = document.getElementById('edit_statut');
+      const editLieuContainer = document.getElementById('edit_lieu_container');
+      
+      // Afficher/masquer le champ lieu selon le type pour l'édition
+      editTypeConsultInput.addEventListener('change', function() {
+        if (this.value === 'présentiel') {
+          editLieuContainer.style.display = 'block';
+        } else {
+          editLieuContainer.style.display = 'none';
+          editLieuInput.value = '';
+        }
+        validateField(this);
+        updateEditRecapitulatif();
+      });
+      
+      // Validation des heures pour l'édition
+      editHeureDebutInput.addEventListener('change', function() {
+        validateField(this);
+        validateEditHeures();
+        updateEditRecapitulatif();
+      });
+      
+      editHeureFinInput.addEventListener('change', function() {
+        validateField(this);
+        validateEditHeures();
+        updateEditRecapitulatif();
+      });
+      
+      editDateInput.addEventListener('change', function() {
+        validateField(this);
+        updateEditRecapitulatif();
+      });
+      
+      editStatutInput.addEventListener('change', function() {
+        validateField(this);
+      });
+      
+      // Fonction de validation d'un champ
+      function validateField(field) {
+        if (field.value.trim() === '' && field.hasAttribute('required')) {
+          field.classList.add('is-invalid');
+          field.classList.remove('is-valid');
+          return false;
+        } else {
+          field.classList.remove('is-invalid');
+          field.classList.add('is-valid');
+          return true;
+        }
+      }
+      
+      // Fonction de validation des heures pour l'édition
+      function validateEditHeures() {
+        const debut = editHeureDebutInput.value;
+        const fin = editHeureFinInput.value;
+        
+        if (debut && fin) {
+          if (debut >= fin) {
+            editHeureFinInput.classList.add('is-invalid');
+            editHeureFinInput.classList.remove('is-valid');
+            document.getElementById('edit_heure_fin_error').textContent = 'L\'heure de fin doit être après l\'heure de début.';
+            return false;
+          } else {
+            // Calculer la durée
+            const [hD, mD] = debut.split(':').map(Number);
+            const [hF, mF] = fin.split(':').map(Number);
+            const durationMinutes = (hF * 60 + mF) - (hD * 60 + mD);
+            
+            if (durationMinutes < 15) {
+              editHeureFinInput.classList.add('is-invalid');
+              editHeureFinInput.classList.remove('is-valid');
+              document.getElementById('edit_heure_fin_error').textContent = 'La durée minimale est de 15 minutes.';
+              return false;
+            } else {
+              editHeureFinInput.classList.remove('is-invalid');
+              editHeureFinInput.classList.add('is-valid');
+              return true;
+            }
+          }
+        }
+        return true;
+      }
+      
+      // Fonction de mise à jour du récapitulatif pour l'édition
+      function updateEditRecapitulatif() {
+        const date = editDateInput.value;
+        const debut = editHeureDebutInput.value;
+        const fin = editHeureFinInput.value;
+        const type = editTypeConsultInput.value;
+        const lieu = editLieuInput.value;
+        const statut = editStatutInput.value;
+        
+        if (date && debut && fin && type && statut) {
+          const recapDiv = document.getElementById('edit_recapitulatif');
+          const recapText = document.getElementById('edit_recap_text');
+          
+          // Formater la date
+          const dateObj = new Date(date);
+          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+          const dateFormatted = dateObj.toLocaleDateString('fr-FR', options);
+          
+          // Calculer la durée
+          const [hD, mD] = debut.split(':').map(Number);
+          const [hF, mF] = fin.split(':').map(Number);
+          const durationMinutes = (hF * 60 + mF) - (hD * 60 + mD);
+          const hours = Math.floor(durationMinutes / 60);
+          const minutes = durationMinutes % 60;
+          let durationText = '';
+          if (hours > 0) durationText += hours + 'h';
+          if (minutes > 0) durationText += (hours > 0 ? ' ' : '') + minutes + 'min';
+          
+          let text = `<strong>${dateFormatted}</strong><br>`;
+          text += `De ${debut} à ${fin} (${durationText})<br>`;
+          text += `Type: <strong>${type}</strong><br>`;
+          text += `Statut: <strong>${statut}</strong>`;
+          if (type === 'présentiel' && lieu) {
+            text += `<br>Lieu: ${lieu}`;
+          }
+          
+          recapText.innerHTML = text;
+          recapDiv.style.display = 'block';
+        } else {
+          document.getElementById('edit_recapitulatif').style.display = 'none';
+        }
+      }
+      
+      // Réinitialiser la validation pour l'édition
+      function resetEditValidation() {
+        const fields = [
+          editDateInput, 
+          editHeureDebutInput, 
+          editHeureFinInput, 
+          editTypeConsultInput,
+          editStatutInput
+        ];
+        
+        fields.forEach(field => {
+          field.classList.remove('is-valid', 'is-invalid');
+        });
+      }
+      
+      // Soumission du formulaire de modification
+      formModifier.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Valider tous les champs
+        let isValid = true;
+        
+        isValid = validateField(editDateInput) && isValid;
+        isValid = validateField(editHeureDebutInput) && isValid;
+        isValid = validateField(editHeureFinInput) && isValid;
+        isValid = validateField(editTypeConsultInput) && isValid;
+        isValid = validateField(editStatutInput) && isValid;
+        isValid = validateEditHeures() && isValid;
+        
+        if (isValid) {
+          // Soumettre le formulaire
+          this.submit();
+        } else {
+          // Afficher un message d'erreur
+          const firstInvalid = formModifier.querySelector('.is-invalid');
+          if (firstInvalid) {
+            firstInvalid.focus();
+          }
+        }
+      });
+      
+      // Réinitialiser le modal de modification à la fermeture
+      if (modalModifier) {
+        modalModifier.addEventListener('hidden.bs.modal', function () {
+          formModifier.reset();
+          resetEditValidation();
+          document.getElementById('edit_recapitulatif').style.display = 'none';
+          editLieuContainer.style.display = 'none';
+          editDatePicker.clear();
+        });
+      }
+      
+      // Validation pour le modal d'ajout (garder le code existant)
+      const form = document.getElementById('formNouvelleDisponibilite');
+      const dateInput = document.getElementById('date_dispo');
+      const heureDebutInput = document.getElementById('heure_debut');
+      const heureFinInput = document.getElementById('heure_fin');
+      const typeConsultInput = document.getElementById('type_consult');
+      const lieuInput = document.getElementById('lieu');
+      const lieuContainer = document.getElementById('lieu_container');
+      
+      // Afficher/masquer le champ lieu selon le type pour l'ajout
+      typeConsultInput.addEventListener('change', function() {
+        if (this.value === 'présentiel') {
+          lieuContainer.style.display = 'block';
+        } else {
+          lieuContainer.style.display = 'none';
+          lieuInput.value = '';
+        }
+        validateField(this);
+        updateRecapitulatif();
+      });
+      
+      // Validation de la date pour l'ajout
+      dateInput.addEventListener('change', function() {
+        validateField(this);
+        updateRecapitulatif();
+      });
+      
+      // Validation des heures pour l'ajout
+      heureDebutInput.addEventListener('change', function() {
+        validateField(this);
+        validateHeures();
+        updateRecapitulatif();
+      });
+      
+      heureFinInput.addEventListener('change', function() {
+        validateField(this);
+        validateHeures();
+        updateRecapitulatif();
+      });
+      
+      lieuInput.addEventListener('input', updateRecapitulatif);
+      
+      // Fonction de validation des heures pour l'ajout
+      function validateHeures() {
+        const debut = heureDebutInput.value;
+        const fin = heureFinInput.value;
+        
+        if (debut && fin) {
+          if (debut >= fin) {
+            heureFinInput.classList.add('is-invalid');
+            heureFinInput.classList.remove('is-valid');
+            document.getElementById('heure_fin_error').textContent = 'L\'heure de fin doit être après l\'heure de début.';
+            return false;
+          } else {
+            // Calculer la durée
+            const [hD, mD] = debut.split(':').map(Number);
+            const [hF, mF] = fin.split(':').map(Number);
+            const durationMinutes = (hF * 60 + mF) - (hD * 60 + mD);
+            
+            if (durationMinutes < 15) {
+              heureFinInput.classList.add('is-invalid');
+              heureFinInput.classList.remove('is-valid');
+              document.getElementById('heure_fin_error').textContent = 'La durée minimale est de 15 minutes.';
+              return false;
+            } else {
+              heureFinInput.classList.remove('is-invalid');
+              heureFinInput.classList.add('is-valid');
+              return true;
+            }
+          }
+        }
+        return true;
+      }
+      
+      // Fonction de mise à jour du récapitulatif pour l'ajout
+      function updateRecapitulatif() {
+        const date = dateInput.value;
+        const debut = heureDebutInput.value;
+        const fin = heureFinInput.value;
+        const type = typeConsultInput.value;
+        const lieu = lieuInput.value;
+        
+        if (date && debut && fin && type) {
+          const recapDiv = document.getElementById('recapitulatif');
+          const recapText = document.getElementById('recap_text');
+          
+          // Formater la date
+          const dateObj = new Date(date);
+          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+          const dateFormatted = dateObj.toLocaleDateString('fr-FR', options);
+          
+          // Calculer la durée
+          const [hD, mD] = debut.split(':').map(Number);
+          const [hF, mF] = fin.split(':').map(Number);
+          const durationMinutes = (hF * 60 + mF) - (hD * 60 + mD);
+          const hours = Math.floor(durationMinutes / 60);
+          const minutes = durationMinutes % 60;
+          let durationText = '';
+          if (hours > 0) durationText += hours + 'h';
+          if (minutes > 0) durationText += (hours > 0 ? ' ' : '') + minutes + 'min';
+          
+          let text = `<strong>${dateFormatted}</strong><br>`;
+          text += `De ${debut} à ${fin} (${durationText})<br>`;
+          text += `Type: <strong>${type}</strong>`;
+          if (type === 'présentiel' && lieu) {
+            text += `<br>Lieu: ${lieu}`;
+          }
+          
+          recapText.innerHTML = text;
+          recapDiv.style.display = 'block';
+        } else {
+          document.getElementById('recapitulatif').style.display = 'none';
+        }
+      }
+      
+      // Soumission du formulaire d'ajout
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Valider tous les champs
+        let isValid = true;
+        
+        isValid = validateField(dateInput) && isValid;
+        isValid = validateField(heureDebutInput) && isValid;
+        isValid = validateField(heureFinInput) && isValid;
+        isValid = validateField(typeConsultInput) && isValid;
+        isValid = validateHeures() && isValid;
+        
+        if (isValid) {
+          // Soumettre le formulaire
+          this.submit();
+        } else {
+          // Afficher un message d'erreur
+          const firstInvalid = form.querySelector('.is-invalid');
+          if (firstInvalid) {
+            firstInvalid.focus();
+          }
+        }
+      });
+      
+      // Réinitialiser le formulaire à la fermeture du modal d'ajout
+      const modal = document.getElementById('modalNouvelleDisponibilite');
+      if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+          form.reset();
+          form.querySelectorAll('.is-valid, .is-invalid').forEach(field => {
+            field.classList.remove('is-valid', 'is-invalid');
+          });
+          document.getElementById('recapitulatif').style.display = 'none';
+          lieuContainer.style.display = 'none';
+          datePicker.clear();
+        });
+      }
+    });
+  </script>
+{% endblock %}

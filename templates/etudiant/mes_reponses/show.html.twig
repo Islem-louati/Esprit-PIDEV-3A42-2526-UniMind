@@ -1,0 +1,99 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Détail de la réponse{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 text-dark">{{ reponse.questionnaire.nom }}</h1>
+                    <p class="text-muted">Soumis le {{ reponse.createdAt|date('d/m/Y à H:i') }}</p>
+                </div>
+                <a href="{{ path('etudiant_mes_reponses') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+
+            <!-- Résumé -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h5>Score total</h5>
+                            <h2>{{ reponse.scoreTotale }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h5>Niveau</h5>
+                            <h2 class="text-uppercase">{{ reponse.niveau }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h5>Interprétation</h5>
+                            <p class="mb-0">{{ reponse.interpretation }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détail des réponses -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Détail de vos réponses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>Réponse</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for detail in reponses_detaillees %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ detail.question_texte }}</td>
+                                        <td>
+                                            {% if detail.reponse is iterable %}
+                                                {{ detail.reponse|json_encode }}
+                                            {% else %}
+                                                {{ detail.reponse }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 
+                                                detail.score < 2 ? 'success' : 
+                                                (detail.score < 3 ? 'warning' : 'danger') 
+                                            }}">
+                                                {{ detail.score }}/4
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-primary">
+                                    <th colspan="3" class="text-end">Score total:</th>
+                                    <th>{{ reponse.scoreTotale }}/{{ reponse.scoreMaxPossible }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

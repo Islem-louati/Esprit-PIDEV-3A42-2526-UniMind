@@ -1,0 +1,308 @@
+{# templates/admin/questionnaire/show.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ questionnaire.nom }} - Détails{% endblock %}
+
+{% block body %}
+{# Définir la couleur du type en fonction de sa valeur #}
+{% set typeColor = questionnaire.type == 'depression' ? 'info' : (questionnaire.type == 'anxiete' or questionnaire.type == 'anxiété' ? 'warning' : (questionnaire.type == 'stress' ? 'danger' : 'secondary')) %}
+
+<div class="row">
+    <div class="col-12">
+        {# Messages flash #}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        <!-- En-tête -->
+        <div class="card mb-4 bg-gradient-{{ questionnaire.isComplete ? 'success' : 'warning' }}">
+            <div class="card-body p-3">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <h5 class="text-white mb-1">
+                            📄 {{ questionnaire.nom }}
+                        </h5>
+                        <p class="text-white text-sm mb-0 opacity-8">
+                            <span class="badge badge-sm bg-white text-dark me-2">
+                                {{ questionnaire.code }}
+                            </span>
+                            <span class="badge badge-sm bg-white text-{{ typeColor }} me-2">
+                                {{ questionnaire.typeLabel }}
+                            </span>
+                            <span class="badge badge-sm {{ questionnaire.isComplete ? 'bg-success' : 'bg-warning' }}">
+                                {% if questionnaire.isComplete %}
+                                    ✓ Complet
+                                {% else %}
+                                    ⚠ Incomplet ({{ questionnaire.completionPercentage|number_format(0) }}%)
+                                {% endif %}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-5 text-end">
+                        <div class="btn-group">
+                            <a href="{{ path('admin_questionnaire_index') }}" class="btn btn-sm bg-white text-dark">
+                                <i class="fas fa-arrow-left me-1"></i>Retour
+                            </a>
+                            <a href="{{ path('admin_questionnaire_edit', {'id': questionnaire.questionnaireId}) }}" class="btn btn-sm bg-white text-warning">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            {# BOUTON DUPLIQUER SUPPRIMÉ TEMPORAIREMENT
+                            <button type="button" class="btn btn-sm bg-white text-info" data-bs-toggle="modal" data-bs-target="#duplicateModal">
+                                <i class="fas fa-copy me-1"></i>Dupliquer
+                            </button>
+                            #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations générales -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header pb-0">
+                        <h6 class="mb-0">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>
+                            Informations générales
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold">ID :</td>
+                                <td>#{{ questionnaire.questionnaireId }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Code :</td>
+                                <td><code>{{ questionnaire.code }}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Type :</td>
+                                <td>
+                                    <span class="badge bg-{{ typeColor }}">
+                                        {{ questionnaire.typeLabel }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Questions :</td>
+                                <td>
+                                    {{ questionnaire.questions|length }} / {{ questionnaire.nbreQuestions }}
+                                    {% if not questionnaire.isComplete %}
+                                        <small class="text-warning ms-2">
+                                            ({{ questionnaire.nbreQuestions - questionnaire.questions|length }} manquante(s))
+                                        </small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Description :</td>
+                                <td>{{ questionnaire.description }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Créé le :</td>
+                                <td>{{ questionnaire.createdAt|date('d/m/Y à H:i') }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header pb-0">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-pie me-2 text-info"></i>
+                            Statistiques
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body p-3">
+                                        <h3 class="mb-0">{{ questionnaire.questions|length }}</h3>
+                                        <small>Questions</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body p-3">
+                                        <h3 class="mb-0">{{ questionnaire.nombreReponses }}</h3>
+                                        <small>Réponses</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Complétion</span>
+                                <span class="fw-bold">{{ questionnaire.completionPercentage|number_format(0) }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-{{ questionnaire.isComplete ? 'success' : 'warning' }}" 
+                                     style="width: {{ questionnaire.completionPercentage }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seuils -->
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <h6 class="mb-0">
+                    <i class="fas fa-sliders-h me-2 text-primary"></i>
+                    Seuils d'interprétation
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body">
+                                <i class="fas fa-smile fa-3x text-success mb-2"></i>
+                                <h3 class="text-success">{{ questionnaire.seuilLeger }}</h3>
+                                <p class="mb-0">Seuil léger</p>
+                                <small class="text-muted">Score ≤ {{ questionnaire.seuilLeger }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <i class="fas fa-meh fa-3x text-warning mb-2"></i>
+                                <h3 class="text-warning">{{ questionnaire.seuilModere }}</h3>
+                                <p class="mb-0">Seuil modéré</p>
+                                <small class="text-muted">{{ questionnaire.seuilLeger + 1 }} - {{ questionnaire.seuilModere }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-danger">
+                            <div class="card-body">
+                                <i class="fas fa-frown fa-3x text-danger mb-2"></i>
+                                <h3 class="text-danger">{{ questionnaire.seuilSevere }}</h3>
+                                <p class="mb-0">Seuil sévère</p>
+                                <small class="text-muted">Score > {{ questionnaire.seuilModere }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des questions -->
+        {% if questionnaire.questions|length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2 text-primary"></i>
+                        Questions ({{ questionnaire.questions|length }})
+                    </h6>
+                    <a href="{{ path('admin_question_new', {'questionnaire_id': questionnaire.questionnaireId}) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Ajouter
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>Options</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for question in questionnaire.questions %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ question.texte|length > 50 ? question.texte|slice(0, 50) ~ '...' : question.texte }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ question.optionsQuest|length }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('admin_question_show', {'id': question.questionId}) }}" 
+                                               class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ path('admin_question_edit', {'id': question.questionId}) }}" 
+                                               class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card mb-4">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune question</h5>
+                    <a href="{{ path('admin_question_new', {'questionnaire_id': questionnaire.questionnaireId}) }}" 
+                       class="btn btn-primary mt-2">
+                        <i class="fas fa-plus me-2"></i>Ajouter une question
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Zone de danger -->
+        <div class="card border-danger">
+            <div class="card-header bg-transparent border-danger">
+                <h6 class="text-danger mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Zone de danger
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    <strong>Attention :</strong> La suppression est définitive et irréversible.
+                    {% if questionnaire.nombreReponses > 0 %}
+                        <br>
+                        <span class="text-danger">
+                            ⚠️ {{ questionnaire.nombreReponses }} réponse(s) seront supprimées
+                        </span>
+                    {% endif %}
+                </p>
+                <form method="post" 
+                      action="{{ path('admin_questionnaire_delete', {'id': questionnaire.questionnaireId}) }}" 
+                      onsubmit="return confirm('⚠️ Confirmer la suppression de ce questionnaire ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ questionnaire.questionnaireId) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# MODAL DE DUPLICATION SUPPRIMÉ COMPLÈTEMENT #}
+{# Le modal de duplication a été retiré pour éviter l'erreur de route #}
+
+{% endblock %}

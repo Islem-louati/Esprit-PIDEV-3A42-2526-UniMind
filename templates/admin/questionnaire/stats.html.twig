@@ -1,0 +1,287 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques globales{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-4">📊 Tableau de bord statistique</h1>
+
+    <!-- Cartes statistiques générales -->
+    <div class="row">
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white text-uppercase mb-2">Questionnaires</h6>
+                            <h2 class="mb-0">{{ stats.generales.questionnaires_count }}</h2>
+                        </div>
+                        <i class="fas fa-question-circle fa-3x opacity-50"></i>
+                    </div>
+                    <small>{{ stats.generales.questionnaires_complets }} complets</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white text-uppercase mb-2">Questions</h6>
+                            <h2 class="mb-0">{{ stats.generales.questions_count }}</h2>
+                        </div>
+                        <i class="fas fa-list fa-3x opacity-50"></i>
+                    </div>
+                    <small>Total questions</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white text-uppercase mb-2">Réponses</h6>
+                            <h2 class="mb-0">{{ stats.generales.reponses_count }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                    <small>{{ stats.generales.utilisateurs_uniques }} étudiants uniques</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white text-uppercase mb-2">Taux complétion</h6>
+                            <h2 class="mb-0">{{ stats.generales.taux_completion_moyen }}%</h2>
+                        </div>
+                        <i class="fas fa-chart-line fa-3x opacity-50"></i>
+                    </div>
+                    <small>Questionnaires complets</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques d'évolution -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📈 Évolution des réponses (12 derniers mois)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="evolutionChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">🥧 Répartition par niveau</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="niveauxChart" height="250"></canvas>
+                    <div class="mt-3 text-center">
+                        <span class="badge bg-success me-2">Léger: {{ stats.reponses.pourcentage_niveaux.leger }}%</span>
+                        <span class="badge bg-warning me-2">Modéré: {{ stats.reponses.pourcentage_niveaux.modere }}%</span>
+                        <span class="badge bg-danger">Sévère: {{ stats.reponses.pourcentage_niveaux.severe }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques par type -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📋 Statistiques par type de questionnaire</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Questionnaires</th>
+                                    <th>Questions</th>
+                                    <th>Réponses</th>
+                                    <th>Score moyen</th>
+                                    <th>Min - Max</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for type, data in stats.questionnaires %}
+                                    <tr>
+                                        <td><span class="badge bg-info">{{ data.nom }}</span></td>
+                                        <td>{{ data.nb_questionnaires }}</td>
+                                        <td>{{ data.nb_questions }}</td>
+                                        <td>{{ data.nb_reponses }}</td>
+                                        <td>
+                                            {% if data.score_moyen > 0 %}
+                                                <span class="badge bg-{{ data.score_moyen < 10 ? 'success' : (data.score_moyen < 20 ? 'warning' : 'danger') }}">
+                                                    {{ data.score_moyen }}
+                                                </span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ data.score_min }} - {{ data.score_max }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières réponses -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">🕒 Dernières réponses</h6>
+                    <div>
+                        <a href="{{ path('admin_statistiques_export_csv') }}" class="btn btn-sm btn-success">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </a>
+                        <a href="{{ path('admin_statistiques_export_json') }}" class="btn btn-sm btn-info ms-2">
+                            <i class="fas fa-file-code"></i> Export JSON
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Questionnaire</th>
+                                    <th>Score</th>
+                                    <th>Niveau</th>
+                                    <th>Besoin psy</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reponse in stats.reponses.dernieres_reponses %}
+                                    <tr>
+                                        <td>{{ reponse.date }}</td>
+                                        <td>{{ reponse.questionnaire }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ reponse.score < 10 ? 'success' : (reponse.score < 20 ? 'warning' : 'danger') }}">
+                                                {{ reponse.score }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ reponse.niveau == 'leger' ? 'success' : (reponse.niveau == 'modere' ? 'warning' : 'danger') }}">
+                                                {{ reponse.niveau }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if reponse.besoin_psy %}
+                                                <span class="badge bg-danger">⚠️ Oui</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Non</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts pour les graphiques -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique d'évolution
+    const ctx1 = document.getElementById('evolutionChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: {{ stats.evolution.mois|json_encode|raw }},
+            datasets: [{
+                label: 'Nombre de réponses',
+                data: {{ stats.evolution.reponses|json_encode|raw }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                yAxisID: 'y'
+            }, {
+                label: 'Score moyen',
+                data: {{ stats.evolution.scores|json_encode|raw }},
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Nombre de réponses'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Score moyen'
+                    }
+                }
+            }
+        }
+    });
+
+    // Graphique circulaire des niveaux
+    const ctx2 = document.getElementById('niveauxChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Léger', 'Modéré', 'Sévère'],
+            datasets: [{
+                data: [
+                    {{ stats.reponses.repartition_niveaux.leger }},
+                    {{ stats.reponses.repartition_niveaux.modere }},
+                    {{ stats.reponses.repartition_niveaux.severe }}
+                ],
+                backgroundColor: [
+                    'rgb(40, 167, 69)',
+                    'rgb(255, 193, 7)',
+                    'rgb(220, 53, 69)'
+                ]
+            }]
+        }
+    });
+});
+</script>
+{% endblock %}

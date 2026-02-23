@@ -1,0 +1,209 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel utilisateur - Administration{% endblock %}
+
+{% block breadcrumb_title %}Nouvel utilisateur{% endblock %}
+{% block page_title %}Créer un nouvel utilisateur{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6>Créer un nouvel utilisateur</h6>
+                        <a href="{{ path('admin_users') }}" class="btn btn-secondary btn-sm ms-auto">
+                            <i class="bi bi-arrow-left me-1"></i> Retour
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span class="alert-icon"><i class="bi bi-check-circle"></i></span>
+                            <span class="alert-text">{{ message }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span class="alert-icon"><i class="bi bi-exclamation-triangle"></i></span>
+                            <span class="alert-text">{{ message }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form) }}
+                    
+                    <h6 class="text-uppercase text-sm mb-4">Informations personnelles</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.nom) }}
+                                {{ form_widget(form.nom, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.nom.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': 'Nom'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.nom) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.prenom) }}
+                                {{ form_widget(form.prenom, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.prenom.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': 'Prénom'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.prenom) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.email) }}
+                                {{ form_widget(form.email, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.email.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': 'email@exemple.com'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.email) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.cin) }}
+                                {{ form_widget(form.cin, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.cin.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': 'CIN'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.cin) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark my-4">
+                    
+                    <h6 class="text-uppercase text-sm mb-4">Informations du compte</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.role) }}
+                                {{ form_widget(form.role, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.role.vars.errors|length ? ' is-invalid' : '')
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.role) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.statut) }}
+                                {{ form_widget(form.statut, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.statut.vars.errors|length ? ' is-invalid' : '')
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.statut) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.plainPassword.first) }}
+                                {{ form_widget(form.plainPassword.first, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.plainPassword.first.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': 'Mot de passe'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.plainPassword.first) }}
+                                </div>
+                                <small class="form-text text-muted">
+                                    Minimum 8 caractères
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.plainPassword.second) }}
+                                {{ form_widget(form.plainPassword.second, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.plainPassword.second.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': 'Confirmation du mot de passe'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.plainPassword.second) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                {{ form_widget(form.isActive, {
+                                    'attr': {
+                                        'class': 'form-check-input',
+                                        'role': 'switch'
+                                    }
+                                }) }}
+                                {{ form_label(form.isActive) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                {{ form_widget(form.isVerified, {
+                                    'attr': {
+                                        'class': 'form-check-input',
+                                        'role': 'switch'
+                                    }
+                                }) }}
+                                {{ form_label(form.isVerified) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-plus-circle me-2"></i>Créer l'utilisateur
+                        </button>
+                        <a href="{{ path('admin_users') }}" class="btn btn-secondary btn-lg px-5">
+                            <i class="bi bi-x-circle me-2"></i>Annuler
+                        </a>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,228 @@
+{# templates/etudiant/mes_reponses/index.html.twig #}
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Mes Réponses{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .badge-score {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .badge-low { background-color: #d4edda; color: #155724; }
+    .badge-medium { background-color: #fff3cd; color: #856404; }
+    .badge-high { background-color: #f8d7da; color: #721c24; }
+    .type-header {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 10px 15px;
+        margin: 20px 0 10px 0;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Mes Réponses</h1>
+    
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">Tous</option>
+                        {% for type in types_questionnaire|default([]) %}
+                            <option value="{{ type }}" {{ (filters.type|default('')) == type ? 'selected' : '' }}>
+                                {{ type }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Du</label>
+                    <input type="date" name="date_from" class="form-control" 
+                           value="{{ filters.date_from|default('') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Au</label>
+                    <input type="date" name="date_to" class="form-control" 
+                           value="{{ filters.date_to|default('') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trier par</label>
+                    <select name="sort" class="form-select">
+                        <option value="created_at_desc" {{ (filters.sort|default('created_at_desc')) == 'created_at_desc' ? 'selected' : '' }}>
+                            Plus récent
+                        </option>
+                        <option value="created_at_asc" {{ (filters.sort|default('')) == 'created_at_asc' ? 'selected' : '' }}>
+                            Plus ancien
+                        </option>
+                        <option value="score_desc" {{ (filters.sort|default('')) == 'score_desc' ? 'selected' : '' }}>
+                            Meilleur score
+                        </option>
+                        <option value="score_asc" {{ (filters.sort|default('')) == 'score_asc' ? 'selected' : '' }}>
+                            Score plus bas
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Recherche</label>
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Rechercher..." value="{{ filters.search|default('') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Score min</label>
+                    <input type="number" name="score_min" class="form-control" 
+                           value="{{ filters.score_min|default('') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Score max</label>
+                    <input type="number" name="score_max" class="form-control" 
+                           value="{{ filters.score_max|default('') }}">
+                </div>
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filtrer
+                        </button>
+                        <a href="{{ path('etudiant_mes_reponses') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Réinitialiser
+                        </a>
+                        {# ✅ CORRECTION : Utiliser path() au lieu d'une URL en dur #}
+                       <a href="{{ path('etudiant_mes_reponses_export') }}" class="btn btn-success">
+    <i class="fas fa-file-csv"></i> Exporter CSV
+</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h3>{{ total_reponses|default(0) }}</h3>
+                    <p class="text-muted mb-0">Total Réponses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h3>{{ score_moyen|default(0) }}%</h3>
+                    <p class="text-muted mb-0">Score Moyen</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h3>{{ meilleur_score|default(0) }}%</h3>
+                    <p class="text-muted mb-0">Meilleur Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h3>{{ (stats_par_type|default([]))|length }}</h3>
+                    <p class="text-muted mb-0">Types différents</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des réponses -->
+    {% if reponses is defined and reponses|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Questionnaire</th>
+                        <th>Date</th>
+                        <th>Score</th>
+                        <th>Niveau</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reponse in reponses %}
+                        <tr>
+                            <td>{{ reponse.questionnaire.nom }}</td>
+                            <td>{{ reponse.createdAt|date('d/m/Y H:i') }}</td>
+                            <td>{{ reponse.scoreTotale }}</td>
+                            <td>
+                                <span class="badge bg-{{ 
+                                    reponse.niveau == 'léger' ? 'success' :
+                                    reponse.niveau == 'modéré' ? 'warning' : 'danger'
+                                }}">
+                                    {{ reponse.niveau }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ path('etudiant_mes_reponses_detail', {'id': reponse.reponseQuestionnaireId}) }}" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Détails
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages is defined and total_pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if current_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('etudiant_mes_reponses', filters|merge({'page': current_page - 1})) }}">
+                                &laquo; Précédent
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page in 1..total_pages %}
+                        <li class="page-item {{ page == current_page ? 'active' : '' }}">
+                            <a class="page-link" href="{{ path('etudiant_mes_reponses', filters|merge({'page': page})) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if current_page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('etudiant_mes_reponses', filters|merge({'page': current_page + 1})) }}">
+                                Suivant &raquo;
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+        
+    {% else %}
+        <div class="alert alert-info">
+            <h4 class="alert-heading">Aucune réponse trouvée</h4>
+            <p>Vous n'avez pas encore répondu à des questionnaires, ou aucun résultat ne correspond à vos filtres.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary">
+                    <i class="fas fa-clipboard-list"></i> Passer un questionnaire
+                </a>
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

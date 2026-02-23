@@ -1,0 +1,294 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - Administration{% endblock %}
+
+{% block breadcrumb_title %}Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Total Users Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Utilisateurs totaux</p>
+                                <h5 class="font-weight-bolder">
+                                    {{ stats.total_users }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                                <i class="bi bi-people text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Users Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">En attente de validation</p>
+                                <h5 class="font-weight-bolder">
+                                    {{ stats.pending_users }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                                <i class="bi bi-clock text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Users Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Utilisateurs actifs</p>
+                                <h5 class="font-weight-bolder">
+                                    {{ stats.active_users }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                                <i class="bi bi-person-check text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Étudiants</p>
+                                <h5 class="font-weight-bolder">
+                                    {{ stats.students }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                                <i class="bi bi-person-badge text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Recent Users Table -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Derniers utilisateurs inscrits</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Rôle</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date d'inscription</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div>
+                                                {% if user.profil and user.profil.photo %}
+                                                    <img src="{{ asset('uploads/photos/' ~ user.profil.photo) }}" 
+                                                         class="avatar avatar-sm me-3" alt="{{ user.prenom }} {{ user.nom }}">
+                                                {% else %}
+                                                    <div class="avatar avatar-sm bg-gradient-primary me-3">
+                                                        <span class="text-white">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ user.prenom }} {{ user.nom }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ user.email }}</p>
+                                    </td>
+                                    <td>
+                                        {% if user.role.value == 'Etudiant' %}
+                                            <span class="badge badge-sm bg-gradient-info">Étudiant</span>
+                                        {% elseif user.role.value == 'Psychologue' %}
+                                            <span class="badge badge-sm bg-gradient-warning">Psychologue</span>
+                                        {% elseif user.role.value == 'Responsable Etudiant' %}
+                                            <span class="badge badge-sm bg-gradient-success">Responsable</span>
+                                        {% else %}
+                                            <span class="badge badge-sm bg-gradient-primary">{{ user.role.value }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ user.createdAt|date('d/m/Y') }}</p>
+                                    </td>
+                                    <td>
+                                        {% if user.statut == 'actif' %}
+                                            <span class="badge badge-sm bg-gradient-success">Actif</span>
+                                        {% elseif user.statut == 'en_attente' %}
+                                            <span class="badge badge-sm bg-gradient-warning">En attente</span>
+                                        {% else %}
+                                            <span class="badge badge-sm bg-gradient-secondary">{{ user.statut }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Aucun utilisateur récent</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Distribution -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Distribution par rôle</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="rolePieChart" 
+                                data-students="{{ stats.students }}" 
+                                data-psychologues="{{ stats.psychologues }}" 
+                                data-responsables="{{ stats.responsables }}"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="me-3">
+                            <i class="bi bi-circle-fill text-primary me-1"></i> Étudiants
+                        </span>
+                        <span class="me-3">
+                            <i class="bi bi-circle-fill text-success me-1"></i> Psychologues
+                        </span>
+                        <span class="me-3">
+                            <i class="bi bi-circle-fill text-info me-1"></i> Responsables
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Actions rapides</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin_users') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-people me-2"></i>Gérer les utilisateurs
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin_pending_users') }}" class="btn btn-warning w-100">
+                                <i class="bi bi-clock me-2"></i>Valider les inscriptions
+                                {% if stats.pending_users > 0 %}
+                                    <span class="badge bg-danger">{{ stats.pending_users }}</span>
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin_statistics') }}" class="btn btn-info w-100">
+                                <i class="bi bi-bar-chart me-2"></i>Voir les statistiques
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-success w-100">
+                                <i class="bi bi-file-earmark-arrow-down me-2"></i>Exporter les données
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Pie Chart Example
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById("rolePieChart");
+        if (ctx) {
+            var students = parseInt(ctx.dataset.students) || 0;
+            var psychologues = parseInt(ctx.dataset.psychologues) || 0;
+            var responsables = parseInt(ctx.dataset.responsables) || 0;
+            
+            var rolePieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ["Étudiants", "Psychologues", "Responsables"],
+                    datasets: [{
+                        data: [students, psychologues, responsables],
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+                        hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                    legend: {
+                        display: false
+                    },
+                    cutoutPercentage: 80,
+                },
+            });
+        }
+    });
+</script>
+{% endblock %}

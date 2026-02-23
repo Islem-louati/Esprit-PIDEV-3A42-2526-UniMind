@@ -1,0 +1,190 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Tableau de bord | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}Tableau de bord{% endblock %}
+{% block breadcrumb_title %}Tableau de bord{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="text-sm text-secondary mb-0">Total événements</p>
+              <h4 class="font-weight-bolder mb-0">{{ kpis.total_evenements|default(0) }}</h4>
+            </div>
+            <div class="icon icon-shape bg-gradient-dark shadow text-center border-radius-md">
+              <i class="ni ni-calendar-grid-58 text-lg opacity-10" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="text-sm text-secondary mb-0">Événements à venir</p>
+              <h4 class="font-weight-bolder mb-0">{{ kpis.evenements_a_venir|default(0) }}</h4>
+            </div>
+            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
+              <i class="ni ni-time-alarm text-lg opacity-10" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-12 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="text-sm text-secondary mb-0">Total participations</p>
+              <h4 class="font-weight-bolder mb-0">{{ kpis.total_participations|default(0) }}</h4>
+            </div>
+            <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
+              <i class="ni ni-badge text-lg opacity-10" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Prochains événements</h6>
+            <a href="{{ path(route_prefix ~ 'evenement_index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if prochains_evenements|default([])|length > 0 %}
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Titre</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lieu</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Places</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for e in prochains_evenements %}
+                    <tr>
+                      <td>
+                        <div class="d-flex px-3 py-1">
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">{{ e.titre }}</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="align-middle">
+                        <span class="text-xs font-weight-bold">{{ e.getDateDebutFormatee() }}</span>
+                      </td>
+                      <td class="align-middle">
+                        <span class="text-xs font-weight-bold">{{ e.lieu }}</span>
+                      </td>
+                      <td class="align-middle">
+                        <span class="text-xs font-weight-bold">{{ e.nombreInscrits }} / {{ e.capaciteMax }}</span>
+                      </td>
+                      <td class="align-middle">
+                        <span class="badge bg-secondary">{{ e.getStatutFormate() }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="p-4">
+              <div class="alert alert-info text-white border-0" role="alert">Aucun événement à venir.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Dernières participations</h6>
+            <a href="{{ path(route_prefix ~ 'participation_index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if dernieres_participations|default([])|length > 0 %}
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Étudiant</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Événement</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Inscription</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in dernieres_participations %}
+                    <tr>
+                      <td>
+                        <div class="d-flex px-3 py-1">
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">{{ p.etudiant ? p.etudiant.getFullName() : 'N/A' }}</h6>
+                            <p class="text-xs text-secondary mb-0">{{ p.etudiant ? p.etudiant.email : '' }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="align-middle">
+                        <span class="text-xs font-weight-bold">{{ p.evenement ? p.evenement.titre : 'N/A' }}</span>
+                      </td>
+                      <td class="align-middle">
+                        <span class="text-xs font-weight-bold">{{ p.dateInscription ? p.dateInscription|date('d/m/Y H:i') : '' }}</span>
+                      </td>
+                      <td class="align-middle">
+                        <span class="badge bg-secondary">{{ p.getStatut().getLabel() }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="p-4">
+              <div class="alert alert-info text-white border-0" role="alert">Aucune participation récente.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3 mb-md-0">
+              <p class="text-sm text-secondary mb-0">Sponsors</p>
+              <h5 class="mb-0">{{ kpis.total_sponsors|default(0) }}</h5>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0">
+              <p class="text-sm text-secondary mb-0">Contributions</p>
+              <h5 class="mb-0">{{ kpis.total_contributions|default(0) }}</h5>
+            </div>
+            <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+              {% if show_sponsors %}
+                <a href="{{ path(route_prefix ~ 'sponsor_index') }}" class="btn btn-sm btn-primary">Gérer sponsors & contributions</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

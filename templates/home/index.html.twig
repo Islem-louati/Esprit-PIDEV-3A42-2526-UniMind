@@ -1,0 +1,891 @@
+{% extends 'baselog.html.twig' %}
+
+{% block title %}Accueil - UniMind{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .event-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      height: 320px;
+      background: #fff;
+      transform: translateZ(0);
+    }
+
+    .event-card__image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1);
+      transition: transform 300ms ease;
+    }
+
+    .event-card__placeholder {
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .event-card__gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.0) 15%, rgba(0,0,0,0.70) 100%);
+      opacity: 0.9;
+      transition: opacity 300ms ease;
+      pointer-events: none;
+    }
+
+    .event-card__content {
+      position: absolute;
+      inset: 0;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      color: #fff;
+    }
+
+    .event-card__meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .event-card__date {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .event-card__title {
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #ffffff;
+      text-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    .event-card__desc {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.35;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity 250ms ease, max-height 300ms ease;
+    }
+
+    .event-card__cta {
+      margin-top: 12px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 250ms ease, transform 250ms ease;
+    }
+
+    .event-card:hover .event-card__image {
+      transform: scale(1.06);
+    }
+
+    .event-card:hover .event-card__gradient {
+      opacity: 1;
+    }
+
+    .event-card:hover .event-card__desc {
+      opacity: 0.95;
+      max-height: 120px;
+    }
+
+    .event-card:hover .event-card__cta {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <header id="header" class="header d-flex align-items-center sticky-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+
+      <a href="{{ path('app_home') }}" class="logo d-flex align-items-center me-auto">
+    <img src="{{ asset('acceuil/img/logo unimind.png') }}" 
+         id="main-logo"
+         class="unimind-logo">
+</a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="#hero" class="active">Acceuil</a></li>
+          <li><a href="#about">A propos</a></li>
+          <li><a href="#features">Fonctionnalités</a></li>
+          <li><a href="#evenements">Evenements</a></li>
+          <!--<li><a href="#gallery">Gallery</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">F.A.Q</a></li>
+          <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="#">Dropdown 1</a></li>
+              <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                <ul>
+                  <li><a href="#">Deep Dropdown 1</a></li>
+                  <li><a href="#">Deep Dropdown 2</a></li>
+                  <li><a href="#">Deep Dropdown 3</a></li>
+                  <li><a href="#">Deep Dropdown 4</a></li>
+                  <li><a href="#">Deep Dropdown 5</a></li>
+                </ul>
+              </li>
+              <li><a href="#">Dropdown 2</a></li>
+              <li><a href="#">Dropdown 3</a></li>
+              <li><a href="#">Dropdown 4</a></li>
+            </ul>
+          </li>-->
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+      <a class="btn-getstarted" href="{{ path('app_register') }}">s'inscrire</a>
+      <a class="btn-getstarted" href="{{ path('app_login') }}">se conneter</a>
+
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Hero Section -->
+    <section id="hero" class="hero section">
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-lg-6 order-lg-last hero-img" data-aos="zoom-out" data-aos-delay="100">
+            <img src="{{ asset('acceuil/img/hero-img.png') }}" class="img-fluid animated" alt="">
+          </div>
+          <div class="col-lg-6  d-flex flex-column justify-content-center text-center text-md-start" data-aos="fade-in">
+            <h2>UniMind</h2>
+            <p>Prenez soin de votre esprit !</p>
+            <div class="d-flex mt-4 justify-content-center justify-content-md-start">
+              <a href="#" class="download-btn"><span style="margin-right: 10px;">Commencez maintenant</span><i class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- /Hero Section -->
+
+    <!-- About Section -->
+    <section id="about" class="about section light-background">
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>A propos</h2>
+        <!--<p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>-->
+      </div><!-- End Section Title -->
+
+      <div class="container">
+        <div class="row gy-4">
+          <div class="content" data-aos="fade-up" data-aos-delay="100">
+            <p style="line-height: 2;">
+              Chez MindCare, nous croyons profondément que la santé mentale est un pilier fondamental de la réussite étudiante. Fondée en 2025 par une équipe de professionnels de la santé, de pédagogues et de développeurs engagés, 
+              notre plateforme a été spécialement conçue pour répondre aux défis uniques auxquels font face les étudiants d'aujourd'hui. Dans un contexte académique souvent exigeant et stressant, nous offrons un espace numérique sécurisé où prévention, 
+              accompagnement et autonomie se rencontrent. Notre approche combine l'expertise humaine de psychologues qualifiés avec des outils technologiques innovants - du suivi émotionnel personnalisé aux ressources de méditation guidée -
+              pour créer un écosystème complet de bien-être. Plus qu'une simple application, UniMind s'engage à briser les tabous entourant la santé psychologique dans le milieu universitaire, à démocratiser l'accès au soutien professionnel et à favoriser une culture 
+              de prévention proactive. Chaque fonctionnalité a été pensée avec et pour les étudiants, dans le respect absolu de la confidentialité et de l'éthique médicale, pour bâtir ensemble une génération plus résiliente, épanouie et équilibrée.
+            </p>
+            <!--<ul>
+              <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+              <li><i class="bi bi-check2-circle"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
+              <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo</span></li>
+            </ul>
+          </div>
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+            <p>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. </p>
+            <a href="#" class="read-more"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
+          </div>-->
+        </div>
+      </div>
+    </section><!-- /About Section -->
+
+    <!-- Features Section -->
+    <section id="features" class="features section">
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Fonctionnalités</h2>
+        <p>Tout ce dont vous avez besoin ! Des outils conçus pour vous accompagner dans votre parcours de bien-être mental.</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+        <div class="row gy-5">
+          <div class="col-xl-5 d-flex align-items-center" data-aos="fade-up" data-aos-delay="100">
+            <img src="{{ asset('acceuil/img/features.svg') }}" class="img-fluid" alt="">
+          </div>
+          <div class="col-xl-7 d-flex" data-aos="fade-up" data-aos-delay="200">
+            <div class="row align-self-center gy-5">
+              <div class="col-md-6 icon-box">
+                <i class="bi bi-award"></i>
+                <div>
+                  <h4>Rendez-vous en ligne</h4>
+                  <p>Planifiez facilement vos séances avec des psychologues certifiés.</p>
+                </div>
+              </div><!-- End Feature Item -->
+
+              <div class="col-md-6 icon-box">
+                <i class="bi bi-card-checklist"></i>
+                <div>
+                  <h4>Suivi de l'humeur</h4>
+                  <p>Enregistrez votre humeur quotidienne et visualisez vos tendances.</p>
+                </div>
+              </div><!-- End Feature Item -->
+
+              <div class="col-md-6 icon-box">
+                <i class="bi bi-dribbble"></i>
+                <div>
+                  <h4>Méditation guidée</h4>
+                  <p>Accédez à des séances de relaxation adaptées à vos besoins.</p>
+                </div>
+              </div><!-- End Feature Item -->
+
+              <div class="col-md-6 icon-box">
+                <i class="bi bi-filter-circle"></i>
+                <div>
+                  <h4>Journal personnel</h4>
+                  <p>Exprimez vos pensées dans un espace privé et sécurisé.</p>
+                </div>
+              </div><!-- End Feature Item -->
+
+              <div class="col-md-6 icon-box">
+                <i class="bi bi-lightning-charge"></i>
+                <div>
+                  <h4>Chat virtuel 24/7</h4>
+                  <p>Discutez avec notre assistant bienveillant à tout moment.</p>
+                </div>
+              </div><!-- End Feature Item -->
+
+              <div class="col-md-6 icon-box">
+                <i class="bi bi-patch-check"></i>
+                <div>
+                  <h4>Questionnaires</h4>
+                  <p>Évaluez votre bien-être avec des outils psychologiques validés.</p>
+                </div>
+              </div><!-- End Feature Item -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- /Features Section -->
+
+    <!-- Feature Details Section -->
+    <section id="feature-details" class="feature-details section">
+      <div class="container">
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-md-5 d-flex align-items-center" data-aos="zoom-out" data-aos-delay="100">
+            <img src="{{ asset('acceuil/img/features-1.png') }}" class="img-fluid" alt="">
+          </div>
+          <div class="col-md-7" data-aos="fade-up" data-aos-delay="100">
+            <h3>Accompagnement personnalisé pour le bien-être étudiant.</h3>
+            <p class="fst-italic">
+              Nos psychologues partenaires offrent un suivi thérapeutique adapté aux défis spécifiques de la vie universitaire,
+              combinant expertise clinique et outils numériques innovants.
+            </p>
+            <ul>
+              <li><i class="bi bi-check"></i><span> Consultations et planification flexible.</span></li>
+              <li><i class="bi bi-check"></i> <span>Prescription de parcours thérapeutiques sur mesure.</span></li>
+              <li><i class="bi bi-check"></i> <span>Synthèse et recommandations basées sur des données objectives.</span></li>
+            </ul>
+          </div>
+        </div><!-- Features Item -->
+
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-md-5 order-1 order-md-2 d-flex align-items-center" data-aos="zoom-out" data-aos-delay="200">
+            <img src="{{ asset('acceuil/img/features-2.png') }}" class="img-fluid" alt="">
+          </div>
+          <div class="col-md-7 order-2 order-md-1" data-aos="fade-up" data-aos-delay="200">
+            <h3>Analyse proactive du bien-être étudiant.</h3>
+            <p class="fst-italic">
+              Notre plateforme offre aux responsables d'établissement des tableaux de bord analytiques pour monitorer en temps réel la santé mentale collective des étudiants,
+              avec des indicateurs clés anonymisés et segmentés.
+            </p>
+            <p>
+              Identifiez les problématiques émergentes (stress académique, isolement, anxiété) grâce à des visualisations de données et
+              produisez des rapports synthétiques pour la direction, mettant en lumière les zones d'intervention prioritaires et l'impact des mesures de prévention mises en place.
+            </p>
+          </div>
+        </div><!-- Features Item -->
+
+        <!--<div class="row gy-4 align-items-center features-item">
+          <div class="col-md-5 d-flex align-items-center" data-aos="zoom-out">
+            <img src="{{ asset('acceuil/img/features-3.png') }}" class="img-fluid" alt="">
+          </div>
+          <div class="col-md-7" data-aos="fade-up">
+            <h3>Sunt consequatur ad ut est nulla consectetur reiciendis animi voluptas</h3>
+            <p>Cupiditate placeat cupiditate placeat est ipsam culpa. Delectus quia minima quod. Sunt saepe odit aut quia voluptatem hic voluptas dolor doloremque.</p>
+            <ul>
+              <li><i class="bi bi-check"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+              <li><i class="bi bi-check"></i><span> Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
+              <li><i class="bi bi-check"></i> <span>Facilis ut et voluptatem aperiam. Autem soluta ad fugiat</span>.</li>
+            </ul>
+          </div>
+        </div><!-- Features Item -->
+
+        <!--<div class="row gy-4 align-items-center features-item">
+          <div class="col-md-5 order-1 order-md-2 d-flex align-items-center" data-aos="zoom-out">
+            <img src="{{ asset('acceuil/img/features-4.png') }}" class="img-fluid" alt="">
+          </div>
+          <div class="col-md-7 order-2 order-md-1" data-aos="fade-up">
+            <h3>Quas et necessitatibus eaque impedit ipsum animi consequatur incidunt in</h3>
+            <p class="fst-italic">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+              magna aliqua.
+            </p>
+            <p>
+              Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+              velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+              culpa qui officia deserunt mollit anim id est laborum
+            </p>
+          </div>
+        </div><!-- Features Item -->
+      </div>
+    </section><!-- /Feature Details Section -->
+
+    <section id="evenements" class="section light-background">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Événements à venir</h2>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        {% if evenements is defined and evenements|length > 0 %}
+          <div class="row g-4">
+            {% for evenement in evenements %}
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="event-card shadow-sm">
+                  {% if evenement.image %}
+                    <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" class="event-card__image" alt="Affiche">
+                  {% else %}
+                    <div class="event-card__placeholder">
+                      <span class="text-muted text-xs">Aucune affiche</span>
+                    </div>
+                  {% endif %}
+
+                  <div class="event-card__gradient"></div>
+
+                  <div class="event-card__content">
+                    <div class="event-card__meta">
+                      <span class="badge bg-light text-dark">{{ evenement.getTypeFormate() }}</span>
+                      <span class="event-card__date">{{ evenement.getDateDebutFormatee() }}</span>
+                    </div>
+                    <h5 class="event-card__title">{{ evenement.titre }}</h5>
+                    <p class="event-card__desc">
+                      {{ evenement.description|default('')|slice(0, 120) }}{% if evenement.description|default('')|length > 120 %}...{% endif %}
+                    </p>
+                    <div class="event-card__cta">
+                      <a href="{{ path('app_login') }}" class="btn btn-outline-light btn-sm">Voir détails</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="alert alert-info" role="alert">
+            Aucun événement pour le moment.
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <!--<section id="gallery" class="gallery section">
+      <!-- Section Title -->
+      <!--<div class="container section-title" data-aos="fade-up">
+        <h2>Gallery</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+
+      <!--<div class="container-fluid" data-aos="fade-up" data-aos-delay="100">
+        <div class="swiper init-swiper">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 5000
+              },
+              "slidesPerView": "auto",
+              "centeredSlides": true,
+              "pagination": {
+                "el": ".swiper-pagination",
+                "type": "bullets",
+                "clickable": true
+              },
+              "breakpoints": {
+                "320": {
+                  "slidesPerView": 1,
+                  "spaceBetween": 0
+                },
+                "768": {
+                  "slidesPerView": 3,
+                  "spaceBetween": 30
+                },
+                "992": {
+                  "slidesPerView": 5,
+                  "spaceBetween": 30
+                },
+                "1200": {
+                  "slidesPerView": 7,
+                  "spaceBetween": 30
+                }
+              }
+            }
+          </script>
+          <div class="swiper-wrapper align-items-center">
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-1.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-1.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-2.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-2.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-3.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-3.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-4.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-4.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-5.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-5.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-6.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-6.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-7.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-7.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-8.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-8.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-9.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-9.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-10.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-10.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-11.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-11.png') }}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery-full" href="{{ asset('assets/img/app-gallery/app-gallery-12.png') }}"><img src="{{ asset('assets/img/app-gallery/app-gallery-12.png') }}" class="img-fluid" alt=""></a></div>
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>
+    </section><!-- /Gallery Section -->
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials section light-background">
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Témoignages</h2>
+        <p>Ce que disent nos étudiants ! Découvrez comment UniMind a transformé le quotidien de milliers d'étudiants.</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="swiper init-swiper">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 5000
+              },
+              "slidesPerView": "auto",
+              "pagination": {
+                "el": ".swiper-pagination",
+                "type": "bullets",
+                "clickable": true
+              },
+              "breakpoints": {
+                "320": {
+                  "slidesPerView": 1,
+                  "spaceBetween": 40
+                },
+                "1200": {
+                  "slidesPerView": 2,
+                  "spaceBetween": 20
+                }
+              }
+            }
+          </script>
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              <div class="testimonial-wrap">
+                <div class="testimonial-item">
+                  <img src="{{ asset('acceuil/img/testimonials/testimonials-1.jpg') }}" class="testimonial-img" alt="">
+                  <h3>Bader D.</h3>
+                  <h4>Étudiant en ingénierie</h4>
+                  <div class="stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                  </div>
+                  <p>
+                    <i class="bi bi-quote quote-icon-left"></i>
+                    <span>Les séances de méditation sont parfaites pour décompresser après une longue journée de cours.</span>
+                    <i class="bi bi-quote quote-icon-right"></i>
+                  </p>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-wrap">
+                <div class="testimonial-item">
+                  <img src="{{ asset('acceuil/img/testimonials/testimonials-2.jpg') }}" class="testimonial-img" alt="">
+                  <h3>Mariem L.</h3>
+                  <h4>Étudiante en médecine</h4>
+                  <div class="stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                  </div>
+                  <p>
+                    <i class="bi bi-quote quote-icon-left"></i>
+                    <span>UniMind m'a vraiment aidée à gérer mon stress pendant mes examens. Le suivi d'humeur est devenu un rituel quotidien.</span>
+                    <i class="bi bi-quote quote-icon-right"></i>
+                  </p>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-wrap">
+                <div class="testimonial-item">
+                  <img src="{{ asset('acceuil/img/testimonials/testimonials-3.jpg') }}" class="testimonial-img" alt="">
+                  <h3>Sarah M.</h3>
+                  <h4>Étudiante en lettres</h4>
+                  <div class="stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                  </div>
+                  <p>
+                    <i class="bi bi-quote quote-icon-left"></i>
+                    <span>Pouvoir consulter un psychologue facilement a changé ma vie universitaire.</span>
+                    <i class="bi bi-quote quote-icon-right"></i>
+                  </p>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-wrap">
+                <div class="testimonial-item">
+                  <img src="{{ asset('acceuil/img/testimonials/testimonials-4.jpg') }}" class="testimonial-img" alt="">
+                  <h3> Dr Skander</h3>
+                  <h4>Psychologue clinicien partenaire</h4>
+                  <div class="stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                  </div>
+                  <p>
+                    <i class="bi bi-quote quote-icon-left"></i>
+                    <span>Cette plateforme révolutionne l'accompagnement thérapeutique des étudiants. Je peux prescrire des exercices personnalisés et suivre leur réalisation en temps réel.</span>
+                    <i class="bi bi-quote quote-icon-right"></i>
+                  </p>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-wrap">
+                <div class="testimonial-item">
+                  <img src="{{ asset('acceuil/img/testimonials/testimonials-5.jpg') }}" class="testimonial-img" alt="">
+                  <h3>John Larson</h3>
+                  <h4>Etudiant en Master de Data Science</h4>
+                  <div class="stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                  </div>
+                  <p>
+                    <i class="bi bi-quote quote-icon-left"></i>
+                    <span>UniMind a transformé ma manière de gérer le stress universitaire. Grâce au mood tracker et aux séances de méditation guidée, j'ai appris à identifier mes signaux d'épuisement plus tôt.</span>
+                    <i class="bi bi-quote quote-icon-right"></i>
+                  </p>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>
+    </section><!-- /Testimonials Section -->
+
+    <!-- Pricing Section -->
+    <!--<section id="pricing" class="pricing section">
+      <!-- Section Title -->
+      <!--<div class="container section-title" data-aos="fade-up">
+        <h2>Pricing</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+
+      <!--<div class="container">
+        <div class="row g-4 g-lg-0">
+          <div class="col-lg-4" data-aos="zoom-in" data-aos-delay="100">
+            <div class="pricing-item">
+              <h3>Free Plan</h3>
+              <h4><sup>$</sup>0<span> / month</span></h4>
+              <ul>
+                <li><i class="bi bi-check"></i> <span>Quam adipiscing vitae proin</span></li>
+                <li><i class="bi bi-check"></i> <span>Nec feugiat nisl pretium</span></li>
+                <li><i class="bi bi-check"></i> <span>Nulla at volutpat diam uteera</span></li>
+                <li class="na"><i class="bi bi-x"></i> <span>Pharetra massa massa ultricies</span></li>
+                <li class="na"><i class="bi bi-x"></i> <span>Massa ultricies mi quis hendrerit</span></li>
+              </ul>
+              <div class="text-center"><a href="#" class="buy-btn">Buy Now</a></div>
+            </div>
+          </div><!-- End Pricing Item -->
+
+          <!--<div class="col-lg-4 featured" data-aos="zoom-in" data-aos-delay="200">
+            <div class="pricing-item">
+              <h3>Business Plan</h3>
+              <h4><sup>$</sup>29<span> / month</span></h4>
+              <ul>
+                <li><i class="bi bi-check"></i> <span>Quam adipiscing vitae proin</span></li>
+                <li><i class="bi bi-check"></i> <span>Nec feugiat nisl pretium</span></li>
+                <li><i class="bi bi-check"></i> <span>Nulla at volutpat diam uteera</span></li>
+                <li><i class="bi bi-check"></i> <span>Pharetra massa massa ultricies</span></li>
+                <li><i class="bi bi-check"></i> <span>Massa ultricies mi quis hendrerit</span></li>
+              </ul>
+              <div class="text-center"><a href="#" class="buy-btn">Buy Now</a></div>
+            </div>
+          </div><!-- End Pricing Item -->
+
+          <!--<div class="col-lg-4" data-aos="zoom-in" data-aos-delay="100">
+            <div class="pricing-item">
+              <h3>Developer Plan</h3>
+              <h4><sup>$</sup>49<span> / month</span></h4>
+              <ul>
+                <li><i class="bi bi-check"></i> <span>Quam adipiscing vitae proin</span></li>
+                <li><i class="bi bi-check"></i> <span>Nec feugiat nisl pretium</span></li>
+                <li><i class="bi bi-check"></i> <span>Nulla at volutpat diam uteera</span></li>
+                <li><i class="bi bi-check"></i> <span>Pharetra massa massa ultricies</span></li>
+                <li><i class="bi bi-check"></i> <span>Massa ultricies mi quis hendrerit</span></li>
+              </ul>
+              <div class="text-center"><a href="#" class="buy-btn">Buy Now</a></div>
+            </div>
+          </div><!-- End Pricing Item 
+        </div>
+      </div>
+    </section><!-- /Pricing Section -->
+
+    <!-- Faq Section -->
+    <!--<section id="faq" class="faq section light-background">
+      <!-- Section Title -->
+      <!--<div class="container section-title" data-aos="fade-up">
+        <h2>Frequently Asked Questions</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+
+      <!--<div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="faq-container">
+              <div class="faq-item faq-active" data-aos="fade-up" data-aos-delay="200">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>Non consectetur a erat nam at lectus urna duis?</h3>
+                <div class="faq-content">
+                  <p>Feugiat pretium nibh ipsum consequat. Tempus iaculis urna id volutpat lacus laoreet non curabitur gravida. Venenatis lectus magna fringilla urna porttitor rhoncus dolor purus non.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <!--<div class="faq-item" data-aos="fade-up" data-aos-delay="300">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>Feugiat scelerisque varius morbi enim nunc faucibus a pellentesque?</h3>
+                <div class="faq-content">
+                  <p>Dolor sit amet consectetur adipiscing elit pellentesque habitant morbi. Id interdum velit laoreet id donec ultrices. Fringilla phasellus faucibus scelerisque eleifend donec pretium. Est pellentesque elit ullamcorper dignissim. Mauris ultrices eros in cursus turpis massa tincidunt dui.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <!--<div class="faq-item" data-aos="fade-up" data-aos-delay="400">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>Dolor sit amet consectetur adipiscing elit pellentesque?</h3>
+                <div class="faq-content">
+                  <p>Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis orci. Faucibus pulvinar elementum integer enim. Sem nulla pharetra diam sit amet nisl suscipit. Rutrum tellus pellentesque eu tincidunt. Lectus urna duis convallis convallis tellus. Urna molestie at elementum eu facilisis sed odio morbi quis</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <!--<div class="faq-item" data-aos="fade-up" data-aos-delay="500">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>Ac odio tempor orci dapibus. Aliquam eleifend mi in nulla?</h3>
+                <div class="faq-content">
+                  <p>Dolor sit amet consectetur adipiscing elit pellentesque habitant morbi. Id interdum velit laoreet id donec ultrices. Fringilla phasellus faucibus scelerisque eleifend donec pretium. Est pellentesque elit ullamcorper dignissim. Mauris ultrices eros in cursus turpis massa tincidunt dui.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <!--<div class="faq-item" data-aos="fade-up" data-aos-delay="600">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>Tempus quam pellentesque nec nam aliquam sem et tortor consequat?</h3>
+                <div class="faq-content">
+                  <p>Molestie a iaculis at erat pellentesque adipiscing commodo. Dignissim suspendisse in est ante in. Nunc vel risus commodo viverra maecenas accumsan. Sit amet nisl suscipit adipiscing bibendum est. Purus gravida quis blandit turpis cursus in</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- /Faq Section -->
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Contact</h2>
+        <p>Votre bien-être nous concerne - Contactez-nous pour toute question, suggestion ou besoin d'assistance, notre équipe est à votre écoute pour vous accompagner vers un équilibre mental durable.</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-6">
+
+            <div class="row gy-4">
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="200">
+                  <i class="bi bi-geo-alt"></i>
+                  <h3>Addresse</h3>
+                  <p>Lac 2</p>
+                  <p>Tunis</p>
+                </div>
+              </div><!-- End Info Item -->
+
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="300">
+                  <i class="bi bi-telephone"></i>
+                  <h3>Appelez-nous</h3>
+                  <p>+216 71 829 865</p>
+                  <p>+216 56 236 158</p>
+                </div>
+              </div><!-- End Info Item -->
+
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="400">
+                  <i class="bi bi-envelope"></i>
+                  <h3>Envoyez un email</h3>
+                  <p>unimind@gmail.com</p>
+                  <p>unimindservice@gmail.com</p>
+                </div>
+              </div><!-- End Info Item -->
+
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="500">
+                  <i class="bi bi-clock"></i>
+                  <h3>Heures d'ouverture</h3>
+                  <p>Lundi - Vendredi</p>
+                  <p>9:00h - 17:00h</p>
+                </div>
+              </div><!-- End Info Item -->
+
+            </div>
+
+          </div>
+
+          <div class="col-lg-6">
+            <form action="forms/contact.php" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="200">
+              <div class="row gy-4">
+
+                <div class="col-md-6">
+                  <input type="text" name="name" class="form-control" placeholder="Nom" required="">
+                </div>
+
+                <div class="col-md-6 ">
+                  <input type="email" class="form-control" name="email" placeholder="Email" required="">
+                </div>
+
+                <div class="col-12">
+                  <input type="text" class="form-control" name="subject" placeholder="Objet" required="">
+                </div>
+
+                <div class="col-12">
+                  <textarea class="form-control" name="message" rows="6" placeholder="Message" required=""></textarea>
+                </div>
+
+                <div class="col-12 text-center">
+                  <div class="loading">Chargement</div>
+                  <div class="error-message"></div>
+                  <div class="sent-message">Votre message a été envoyé. Merci!</div>
+
+                  <button type="submit">Envoyer message</button>
+                </div>
+
+              </div>
+            </form>
+          </div><!-- End Contact Form -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Contact Section -->
+
+  </main>
+
+  <footer id="footer" class="footer">
+
+    <!--<div class="footer-newsletter">
+      <div class="container">
+        <div class="row justify-content-center text-center">
+          <div class="col-lg-6">
+            <h4>Join Our Newsletter</h4>
+            <p>Subscribe to our newsletter and receive the latest news about our products and services!</p>
+            <form action="forms/newsletter.php" method="post" class="php-email-form">
+              <div class="newsletter-form"><input type="email" name="email"><input type="submit" value="Subscribe"></div>
+              <div class="loading">Loading</div>
+              <div class="error-message"></div>
+              <div class="sent-message">Your subscription request has been sent. Thank you!</div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>-->
+
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="index.html" class="d-flex align-items-center">
+            <span class="sitename">UniMind</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <p>Lac 2</p>
+            <p>Tunis</p>
+            <p class="mt-3"><strong>Tel:</strong> <span>+216 71 829 865</span></p>
+            <p><strong>Email:</strong> <span>unimind@gmail.com</span></p>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Liens utiles</h4>
+          <ul>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Acceuil</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">A propos</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Fonctionnalités</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Ressources</h4>
+          <ul>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Aide en ligne</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">FAQ</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Blog</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Témoignages</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+          <h4>Suivez-nous</h4>
+          <p>Rejoignez notre communauté bien-être sur les réseaux sociaux pour découvrir nos conseils quotidiens!</p>
+          <div class="social-links d-flex">
+            <a href=""><i class="bi bi-twitter-x"></i></a>
+            <a href=""><i class="bi bi-facebook"></i></a>
+            <a href=""><i class="bi bi-instagram"></i></a>
+            <a href=""><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>2026</span> <strong class="px-1 sitename">UniMind.</strong> <span>Tous droits réservés.</span></p>
+      <!--<div class="credits">
+        <!-- All the links in the footer should remain intact. -->
+        <!-- You can delete the links only if you've purchased the pro version. -->
+        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+        <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] 
+        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a> | <a href="https://bootstrapmade.com/tools/">DevTools</a>
+      </div>
+    </div>-->
+
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+{% endblock %}

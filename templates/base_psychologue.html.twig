@@ -1,0 +1,162 @@
+{# templates/base_psychologue.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body_class %}g-sidenav-show bg-gray-100{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  {# Assurez-vous que FontAwesome est chargé #}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  {# Style supplémentaire pour harmoniser #}
+  <style>
+    /* Supprimer la bande foncée du haut */
+    .min-height-300.bg-dark {
+      display: none !important;
+    }
+    
+    /* Ajuster le padding du main content */
+    .main-content {
+      padding-top: 0 !important;
+    }
+    
+    /* Style du breadcrumb plus léger */
+    .breadcrumb-simple {
+      background: transparent;
+      padding: 1rem 1.5rem 0;
+    }
+    
+    .breadcrumb-simple .breadcrumb-item a {
+      color: #5e72e4;
+      text-decoration: none;
+    }
+    
+    .breadcrumb-simple .breadcrumb-item.active {
+      color: #6c757d;
+    }
+    
+    /* Titre de page */
+    .page-title {
+      color: #344767;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+    }
+    
+    .page-title i {
+      color: #5e72e4;
+      margin-right: 0.5rem;
+    }
+    
+    /* Corriger le z-index des modals pour qu'ils apparaissent au-dessus de la sidebar */
+    .modal-backdrop {
+      z-index: 1199 !important;
+    }
+    
+    .modal {
+      z-index: 1200 !important;
+    }
+    
+    /* S'assurer que la sidebar est en dessous des modals */
+    .sidenav, #sidenav-main {
+      z-index: 1099 !important;
+    }
+  </style>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block body %}
+  <main class="main-content position-relative border-radius-xl">
+    <!-- Flash Messages -->
+    {% for label, messages in app.flashes %}
+      {% for message in messages %}
+        <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show position-fixed top-1 end-1 z-index-9999" role="alert" style="min-width: 300px; z-index: 9999;">
+          <span class="alert-icon"><i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'error' ? 'exclamation-triangle' : 'info-circle') }} me-2"></i></span>
+          <span class="alert-text">{{ message }}</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endfor %}
+    
+    {# Contenu principal #}
+    <div class="container-fluid px-4 py-2">
+      {% block content %}{% endblock %}
+      
+      <footer class="footer pt-5 mt-4">
+        <div class="container-fluid">
+          <div class="row align-items-center justify-content-lg-between">
+            <div class="col-lg-6 mb-lg-0 mb-4">
+              <div class="copyright text-center text-sm text-muted text-lg-start">
+                © {{ "now"|date("Y") }} <span style="color: #5e72e4;">UniMind</span> - Dashboard Psychologue
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <ul class="nav nav-footer justify-content-center justify-content-lg-end">
+                <li class="nav-item">
+                  <a href="https://www.unimind.com" class="nav-link text-muted" target="_blank">
+                    <i class="fas fa-globe me-1"></i>UniMind
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="https://www.unimind.com/about" class="nav-link text-muted" target="_blank">
+                    <i class="fas fa-info-circle me-1"></i>À propos
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="https://www.unimind.com/contact" class="nav-link pe-0 text-muted" target="_blank">
+                    <i class="fas fa-envelope me-1"></i>Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </main>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle sidebar on mobile
+      const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
+      const iconSidenav = document.getElementById('iconSidenav');
+      const sidenavMain = document.getElementById('sidenav-main');
+      
+      if (iconNavbarSidenav) {
+        iconNavbarSidenav.addEventListener('click', toggleSidenav);
+      }
+      
+      if (iconSidenav) {
+        iconSidenav.addEventListener('click', toggleSidenav);
+      }
+      
+      function toggleSidenav() {
+        if (window.innerWidth < 1200) {
+          sidenavMain.classList.toggle('g-sidenav-pinned');
+          sidenavMain.classList.toggle('g-sidenav-hidden');
+        }
+      }
+      
+      // Auto-hide alerts after 5 seconds
+      setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert.position-fixed');
+        alerts.forEach(function(alert) {
+          if (alert) {
+            var bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        });
+      }, 5000);
+      
+      // Initialize tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+    });
+  </script>
+{% endblock %}

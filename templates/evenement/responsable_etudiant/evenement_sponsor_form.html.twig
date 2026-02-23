@@ -1,0 +1,62 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ is_edit ? 'Modifier' : 'Nouvelle contribution' }} | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}{{ is_edit ? 'Modifier la contribution' : 'Nouvelle contribution' }}{% endblock %}
+{% block breadcrumb_title %}{{ is_edit ? 'Modifier' : 'Ajouter' }} une contribution{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>{{ is_edit ? 'Modifier la contribution' : 'Nouvelle contribution (Événement–Sponsor)' }}</h5>
+        </div>
+        <div class="card-body">
+          {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.evenement) }}
+              {{ form_widget(form.evenement, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.evenement) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.sponsor) }}
+              {{ form_widget(form.sponsor, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.sponsor) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.montantContribution) }}
+              {{ form_widget(form.montantContribution, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.montantContribution) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.typeContribution) }}
+              {{ form_widget(form.typeContribution, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.typeContribution) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.dateContribution) }}
+              {{ form_widget(form.dateContribution, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.dateContribution) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.statut) }}
+              {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.statut) }}</div>
+            </div>
+            <div class="col-md-12 mb-3">
+              {{ form_label(form.descriptionContribution) }}
+              {{ form_widget(form.descriptionContribution, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.descriptionContribution) }}</div>
+            </div>
+          </div>
+          <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ path(route_prefix ~ 'contribution_index') }}" class="btn btn-secondary me-2">Annuler</a>
+            <button type="submit" class="btn btn-primary">{{ is_edit ? 'Enregistrer' : 'Créer' }}</button>
+          </div>
+          {{ form_end(form) }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

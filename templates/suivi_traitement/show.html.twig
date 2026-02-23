@@ -1,0 +1,240 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Suivi #{{ suivi.id }}{% endblock %}
+{% block page_title %}Suivi #{{ suivi.id }}{% endblock %}
+{% block breadcrumb_title %}Détails Suivi{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-calendar-heart me-2"></i>
+                        Détails du Suivi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Informations principales -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>Informations générales
+                                    </h6>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="text-muted fw-bold">ID Suivi:</td>
+                                            <td>#{{ suivi.id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Date du suivi:</td>
+                                            <td>{{ suivi.dateSuivi ? suivi.dateSuivi|date('d/m/Y') : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Statut:</td>
+                                            <td>
+                                                <span class="badge bg-{{ suivi.couleurStatut }}">{{ suivi.statutDetaille }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Validé:</td>
+                                            <td>
+                                                {% if suivi.valide %}
+                                                    <span class="badge bg-success">Oui</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Non</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Effectué:</td>
+                                            <td>
+                                                {% if suivi.effectue %}
+                                                    <span class="badge bg-success">Oui</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Non</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Saisi par:</td>
+                                            <td>
+                                                {% if suivi.saisiPar == 'ETUDIANT' %}
+                                                    <span class="badge bg-info">Étudiant</span>
+                                                {% elseif suivi.saisiPar == 'PSYCHOLOGUE' %}
+                                                    <span class="badge bg-warning">Psychologue</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ suivi.saisiPar }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Créé le:</td>
+                                            <td>{{ suivi.createdAt|date('d/m/Y H:i') }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-warning mb-3">
+                                        <i class="fas fa-clock me-2"></i>Horaires
+                                    </h6>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="text-muted fw-bold">Heure prévue:</td>
+                                            <td>{{ suivi.heurePrevue ? suivi.heurePrevue|date('H:i') : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Heure effective:</td>
+                                            <td>{{ suivi.heureEffective ? suivi.heureEffective|date('H:i') : 'Non effectuée' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Date de saisie:</td>
+                                            <td>{{ suivi.dateSaisie ? suivi.dateSaisie|date('d/m/Y H:i') : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Jour de la semaine:</td>
+                                            <td>{{ suivi.jourSemaine }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Délai depuis le suivi:</td>
+                                            <td>{{ suivi.dureeDepuisSuivi }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Traitement associé -->
+                    {% if suivi.traitement %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-stethoscope me-2"></i>Traitement associé
+                                    </h6>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">{{ suivi.traitement.titre }}</h6>
+                                            <small class="text-muted">Catégorie: {{ suivi.traitement.categorie }}</small>
+                                            {% if suivi.traitement.etudiant %}
+                                                <br><small class="text-muted">Étudiant: {{ suivi.traitement.etudiant.prenom }} {{ suivi.traitement.etudiant.nom }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <a href="{{ path('app_traitement_show', {'id': suivi.traitement.id}) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>Voir le traitement
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Évaluation et ressenti (étudiant) -->
+                    {% if suivi.ressenti or suivi.evaluation %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-success mb-3">
+                                        <i class="fas fa-star me-2"></i>Évaluation et ressenti
+                                    </h6>
+                                    <div class="row">
+                                        {% if suivi.ressenti %}
+                                            <div class="col-md-6">
+                                                <p class="mb-2"><strong>Ressenti:</strong></p>
+                                                <span class="badge bg-info">{{ suivi.ressenti }}</span>
+                                            </div>
+                                        {% endif %}
+                                        {% if suivi.evaluation %}
+                                            <div class="col-md-6">
+                                                <p class="mb-2"><strong>Évaluation:</strong></p>
+                                                <div>
+                                                    <span class="badge bg-warning">{{ suivi.evaluation }}/10</span>
+                                                    <div class="mt-1">
+                                                        <small class="text-muted">{{ suivi.evaluationEtoiles }}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Observations étudiant -->
+                    {% if suivi.observations %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-user me-2"></i>Observations de l'étudiant
+                                    </h6>
+                                    <div class="bg-white p-3 rounded border">
+                                        <p class="mb-0">{{ suivi.observations }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Observations psychologue -->
+                    {% if suivi.observationsPsy %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-warning mb-3">
+                                        <i class="fas fa-user-md me-2"></i>Observations du psychologue
+                                    </h6>
+                                    <div class="bg-white p-3 rounded border">
+                                        <p class="mb-0">{{ suivi.observationsPsy }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="text-center mt-4">
+                        <a href="{{ path('app_suivi_traitement_index') }}" class="btn btn-outline-secondary btn-lg me-3">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                        </a>
+                        
+                        {% if is_granted('ROLE_PSYCHOLOGUE') and not suivi.valide %}
+                            <form method="post" action="{{ path('app_suivi_traitement_valider', {'id': suivi.id}) }}" 
+                                  class="d-inline" onsubmit="return confirm('Valider ce suivi ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('validate' ~ suivi.id) }}">
+                                <button type="submit" class="btn btn-success btn-lg me-3">
+                                    <i class="fas fa-check me-2"></i>Valider le suivi
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        {% if is_granted('ROLE_PSYCHOLOGUE') %}
+                            <a href="{{ path('app_suivi_traitement_edit', {'id': suivi.id}) }}" class="btn btn-warning btn-lg">
+                                <i class="fas fa-edit me-2"></i>Modifier
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

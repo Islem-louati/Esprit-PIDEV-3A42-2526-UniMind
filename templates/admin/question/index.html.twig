@@ -1,0 +1,159 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Liste des Questions{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item text-sm text-white active" aria-current="page">Questions</li>
+{% endblock %}
+
+{% block page_title %}Gestion des Questions{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Liste des Questions</h6>
+                        <div class="dropdown">
+                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="addQuestionDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-plus me-1"></i> Ajouter une question
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="addQuestionDropdown">
+                                {% for questionnaire in questionnaires %}
+                                    <li>
+                                        <a class="dropdown-item" 
+                                           href="{{ path('admin_question_new', {'questionnaire_id': questionnaire.id}) }}">
+                                            {{ questionnaire.nom }}
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li><a class="dropdown-item disabled">Aucun questionnaire disponible</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtres -->
+                <div class="card-body pt-0">
+                    <form method="get" class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <label for="questionnaire_filter" class="form-label">Filtrer par questionnaire:</label>
+                            <select name="questionnaire_id" id="questionnaire_filter" class="form-select" onchange="this.form.submit()">
+                                <option value="">Tous les questionnaires</option>
+                                {% for questionnaire in questionnaires %}
+                                    <option value="{{ questionnaire.id }}" 
+                                            {{ selected_questionnaire == questionnaire.id ? 'selected' : '' }}>
+                                        {{ questionnaire.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Rechercher:</label>
+                            <div class="input-group">
+                                <input type="text" name="search" id="search" class="form-control" 
+                                       placeholder="Rechercher une question..." value="{{ search }}">
+                                <button class="btn btn-outline-secondary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            {% if selected_questionnaire or search %}
+                                <a href="{{ path('admin_question_index') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i> Réinitialiser
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tableau des questions -->
+                <div class="card-body">
+                    {% if questions|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Question</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Questionnaire</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for question in questions %}
+                                        <tr>
+                                            <td>
+                                                <span class="text-xs font-weight-bold">{{ question.id }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex px-2 py-1">
+                                                    <div>
+                                                        <h6 class="mb-0 text-sm">{{ question.texte|slice(0, 50) }}{{ question.texte|length > 50 ? '...' : '' }}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 
+                                                    question.typeQuestion == 'likert' ? 'primary' :
+                                                    question.typeQuestion == 'multiple' ? 'success' :
+                                                    question.typeQuestion == 'yesno' ? 'warning' :
+                                                    question.typeQuestion == 'text' ? 'info' : 'secondary'
+                                                }}">
+                                                    {{ question.typeQuestion|upper }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="text-xs font-weight-bold">{{ question.questionnaire.nom }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-xs text-secondary">{{ question.createdAt|date('d/m/Y') }}</span>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{{ path('admin_question_show', {'id': question.id}) }}" 
+                                                       class="btn btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_question_edit', {'id': question.id}) }}" 
+                                                       class="btn btn-warning" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_question_delete', {'id': question.id}) }}" 
+                                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?');"
+                                                          style="display: inline;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ question.id) }}">
+                                                        <button type="submit" class="btn btn-danger" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Aucune question trouvée.
+                            {% if selected_questionnaire %}
+                                <a href="{{ path('admin_question_new', {'questionnaire_id': selected_questionnaire}) }}" 
+                                   class="alert-link">Ajouter une question à ce questionnaire</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

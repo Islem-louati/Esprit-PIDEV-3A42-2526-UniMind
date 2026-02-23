@@ -1,0 +1,164 @@
+{# templates/etudiant/mes_evaluations/index.html.twig #}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Évaluations - Unimind</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body { background: #f8f9fc; font-family: 'Segoe UI'; }
+        .navbar-custom { background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); }
+        .profile-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .avatar { width: 80px; height: 80px; background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: bold; }
+        .result-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #e3e6f0; transition: all 0.3s ease; }
+        .result-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); border-color: #4e73df; }
+        .score-badge { padding: 10px 25px; border-radius: 50px; font-size: 1.2rem; font-weight: bold; color: white; }
+        .score-excellent { background: #1cc88a; }
+        .score-good { background: #36b9cc; }
+        .score-average { background: #f6c23e; color: #000; }
+        .score-weak { background: #e74a3b; }
+        .stat-box { background: white; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .stat-value { font-size: 2.5rem; font-weight: bold; color: #4e73df; }
+        .interpretation { padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 5px solid; }
+        .interpretation-success { background: rgba(28, 200, 138, 0.1); border-left-color: #1cc88a; }
+        .interpretation-warning { background: rgba(246, 194, 62, 0.1); border-left-color: #f6c23e; }
+        .interpretation-danger { background: rgba(231, 74, 59, 0.1); border-left-color: #e74a3b; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-brain me-2"></i>
+                <strong>Unimind</strong> - Mes Évaluations
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Profil Étudiant -->
+        <div class="profile-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-4">
+                            {{ etudiant.prenom[0] }}{{ etudiant.nom[0] }}
+                        </div>
+                        <div>
+                            <h1 class="h3 mb-2">{{ etudiant.prenom }} {{ etudiant.nom }}</h1>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-id-card me-1"></i> Matricule: {{ etudiant.matricule }}
+                            </p>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-envelope me-1"></i> {{ etudiant.email }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-primary fs-6">
+                        <i class="fas fa-user-graduate me-1"></i> Étudiant
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ statistiques.nombre }}</div>
+                    <div class="text-muted">Évaluations</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ statistiques.score_moyen }}%</div>
+                    <div class="text-muted">Score moyen</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ statistiques.meilleur_score }}%</div>
+                    <div class="text-muted">Meilleur score</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ statistiques.pire_score }}%</div>
+                    <div class="text-muted">Score minimal</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des résultats -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i> 
+                    Mes résultats pour "{{ questionnaire_selectionne.nom }}"
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if mes_reponses is empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h4>Aucun résultat trouvé</h4>
+                        <p>Vous n'avez pas encore répondu à ce questionnaire.</p>
+                    </div>
+                {% else %}
+                    {% for reponse in mes_reponses %}
+                        {% if reponse.score >= 90 %}
+                            {% set score_class = 'score-excellent' %}
+                            {% set interp_class = 'interpretation-success' %}
+                        {% elseif reponse.score >= 70 %}
+                            {% set score_class = 'score-good' %}
+                            {% set interp_class = 'interpretation-success' %}
+                        {% elseif reponse.score >= 50 %}
+                            {% set score_class = 'score-average' %}
+                            {% set interp_class = 'interpretation-warning' %}
+                        {% else %}
+                            {% set score_class = 'score-weak' %}
+                            {% set interp_class = 'interpretation-danger' %}
+                        {% endif %}
+                        
+                        <div class="result-card">
+                            <div class="row align-items-center">
+                                <div class="col-md-2 text-center">
+                                    <div class="score-badge {{ score_class }}">
+                                        {{ reponse.score|number_format(1) }}%
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="mb-2">Tentative #{{ loop.index }}</h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        {{ reponse.date|date('d/m/Y à H:i') }}
+                                    </p>
+                                    <div class="interpretation {{ interp_class }}">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        {{ reponse.interpretation }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <a href="{{ path('etudiant_mes_evaluations_detail', {'id': reponse.id}) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-eye me-1"></i> Voir le détail
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

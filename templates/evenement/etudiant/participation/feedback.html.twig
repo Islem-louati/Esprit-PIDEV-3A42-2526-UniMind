@@ -1,0 +1,28 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Feedback | Espace étudiant | UniMind{% endblock %}
+{% block breadcrumb_page %}Mes événements{% endblock %}
+{% block breadcrumb_title %}Feedback{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12 col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>Feedback – {{ participation.evenement.titre }}</h5>
+          <p class="text-sm text-secondary mb-0">{{ participation.evenement.getDateDebutFormatee() }} · {{ participation.evenement.lieu }}</p>
+        </div>
+        <div class="card-body">
+          {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_row(form.noteSatisfaction) }}
+            {{ form_row(form.feedbackCommentaire) }}
+            <div class="mt-3 d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Envoyer</button>
+              <a class="btn btn-outline-secondary" href="{{ path('app_mes_evenements_index') }}">Annuler</a>
+            </div>
+          {{ form_end(form) }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Email vérifié - UniMind{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-check-circle"></i> Email vérifié avec succès</h4>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    <h3 class="card-title mb-3">Félicitations !</h3>
+                    <p class="card-text mb-4">
+                        Votre adresse email a été vérifiée avec succès.
+                        Votre compte doit maintenant être activé par un administrateur.
+                        Vous recevrez une notification lorsque votre compte sera activé.
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ path('app_login') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Se connecter
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="text-muted mb-0">
+                        Si vous avez des questions, contactez-nous à 
+                        <a href="mailto:louatiislem74@gmail.com">louatiislem74@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+    }
+</style>
+{% endblock %}

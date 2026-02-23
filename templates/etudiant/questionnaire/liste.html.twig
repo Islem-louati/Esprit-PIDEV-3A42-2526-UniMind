@@ -1,0 +1,133 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Questionnaires{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 text-dark">Questionnaires disponibles</h1>
+            <p class="text-muted">Sélectionnez un questionnaire pour commencer</p>
+        </div>
+    </div>
+    
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ path('etudiant_questionnaire_liste') }}" 
+                           class="btn btn-{{ type_selectionne == 'tous' ? 'primary' : 'outline-primary' }}">
+                            Tous
+                        </a>
+                        <a href="{{ path('etudiant_questionnaire_liste', {'type': 'stress'}) }}" 
+                           class="btn btn-{{ type_selectionne == 'stress' ? 'danger' : 'outline-danger' }}">
+                            STRESS
+                        </a>
+                        <a href="{{ path('etudiant_questionnaire_liste', {'type': 'anxiete'}) }}" 
+                           class="btn btn-{{ type_selectionne == 'anxiete' ? 'warning' : 'outline-warning' }}">
+                            ANXIÉTÉ
+                        </a>
+                        <a href="{{ path('etudiant_questionnaire_liste', {'type': 'depression'}) }}" 
+                           class="btn btn-{{ type_selectionne == 'depression' ? 'secondary' : 'outline-secondary' }}">
+                            DÉPRESSION
+                        </a>
+                        <a href="{{ path('etudiant_questionnaire_liste', {'type': 'bienetre'}) }}" 
+                           class="btn btn-{{ type_selectionne == 'bienetre' ? 'success' : 'outline-success' }}">
+                            BIEN-ÊTRE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des questionnaires -->
+    <div class="row">
+        {% if questionnaires|length > 0 %}
+            {% for questionnaire in questionnaires %}
+                {# ✅ CORRECTION : Utiliser questionnaire.questionnaireId au lieu de questionnaire.id #}
+                {% set isCompleted = questionnaire.questionnaireId in questionnaires_completes_ids %}
+                
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header bg-{{ 
+                            isCompleted ? 'success' :
+                            questionnaire.type == 'STRESS' ? 'danger' :
+                            questionnaire.type == 'ANXIETE' ? 'warning' :
+                            questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success'
+                        }} text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-{{ 
+                                    questionnaire.type == 'STRESS' ? 'fire' :
+                                    questionnaire.type == 'ANXIETE' ? 'heartbeat' :
+                                    questionnaire.type == 'DEPRESSION' ? 'cloud-rain' : 'smile'
+                                }} me-2"></i>
+                                {{ questionnaire.nom }}
+                            </h5>
+                        </div>
+                        
+                        <div class="card-body">
+                            <p class="card-text">{{ questionnaire.description }}</p>
+                            
+                            <div class="mb-3">
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-question-circle me-1"></i>
+                                    {{ questionnaire.nbreQuestions ?? 0 }} questions
+                                </span>
+                                {% if isCompleted %}
+                                    <span class="badge bg-success ms-2">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Complété
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid">
+                                {% if isCompleted %}
+                                    <a href="{{ path('etudiant_mes_reponses') }}" 
+                                       class="btn btn-outline-success">
+                                        <i class="fas fa-eye me-2"></i> Voir mes réponses
+                                    </a>
+                                {% else %}
+                                    {# ✅ CORRECTION : Utiliser questionnaire.questionnaireId au lieu de questionnaire.id #}
+                                    <a href="{{ path('etudiant_questionnaire_passer', {'id': questionnaire.questionnaireId}) }}" 
+                                       class="btn btn-{{ 
+                                           questionnaire.type == 'STRESS' ? 'danger' :
+                                           questionnaire.type == 'ANXIETE' ? 'warning' :
+                                           questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success'
+                                       }}">
+                                        <i class="fas fa-play-circle me-2"></i> Commencer
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-clipboard-question fa-4x text-muted mb-3"></i>
+                        <h4>Aucun questionnaire disponible</h4>
+                        <p class="text-muted">
+                            {% if type_selectionne and type_selectionne != 'tous' %}
+                                Aucun questionnaire de type {{ type_selectionne|upper }}
+                            {% else %}
+                                Aucun questionnaire disponible
+                            {% endif %}
+                        </p>
+                        <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary">
+                            Voir tous
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

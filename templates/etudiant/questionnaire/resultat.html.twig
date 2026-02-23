@@ -1,0 +1,58 @@
+{# templates/etudiant/questionnaire/resultat.html.twig #}
+{% extends 'base_etudiant.html.twig' %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Résultat du questionnaire : {{ questionnaire.nom }}</h2>
+        </div>
+        
+        <div class="card-body">
+            <!-- MESSAGE CORRIGÉ -->
+            <div class="alert alert-info mb-4">
+                <h4 class="alert-heading">
+                    {% set pourcentageExact = (score / scoreMax * 100) %}
+                    Votre score {{ score }}/{{ scoreMax }} ({{ pourcentageExact|round }} %) 
+                    correspond à la catégorie
+                    {% if pourcentageExact <= 33 %}
+                        « Léger ».
+                    {% elseif pourcentageExact <= 66 %}
+                        « Modéré ».
+                    {% else %}
+                        « Sévère ».
+                    {% endif %}
+                </h4>
+            </div>
+            
+            <!-- Le reste du template... -->
+            <div class="alert 
+                {% if niveau == 'Faible' %}alert-success
+                {% elseif niveau == 'Modéré' %}alert-warning
+                {% elseif niveau == 'Élevé' %}alert-warning
+                {% else %}alert-danger
+                {% endif %}">
+                <h4 class="alert-heading">Niveau : {{ niveau }}</h4>
+                <p class="mb-0">{{ interpretation }}</p>
+            </div>
+            
+            <!-- Détails -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <p><strong>Score :</strong> {{ score }}/{{ scoreMax }}</p>
+                            <p><strong>Pourcentage :</strong> {{ pourcentage }}%</p>
+                            <p><strong>Date :</strong> {{ reponse.dateSoumission|date('d/m/Y H:i') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary mt-3">
+                Retour aux questionnaires
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

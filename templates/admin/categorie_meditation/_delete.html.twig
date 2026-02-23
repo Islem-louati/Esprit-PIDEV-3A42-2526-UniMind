@@ -1,0 +1,8 @@
+<form method="post" action="{{ path('admin_categorie_meditation_delete', {'id': categorie.categorieId}) }}" 
+      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');"
+      style="display: inline;">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.categorieId) }}">
+    <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
+        <i class="fas fa-trash"></i>
+    </button>
+</form>

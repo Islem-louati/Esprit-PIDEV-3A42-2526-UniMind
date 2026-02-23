@@ -1,0 +1,51 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Mes favoris | Espace étudiant | UniMind{% endblock %}
+{% block breadcrumb_page %}Favoris{% endblock %}
+{% block breadcrumb_title %}Mes favoris{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Mes favoris</h5>
+          <a href="{{ path('app_evenement_etudiant_index') }}" class="btn btn-outline-primary btn-sm">Voir tous les événements</a>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if evenements|length > 0 %}
+            <div class="row p-4">
+              {% for evenement in evenements %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                  <div class="card h-100 shadow-sm border-radius-lg">
+                    {% if evenement.image %}
+                      <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" class="card-img-top" alt="Affiche" style="height: 180px; object-fit: cover;">
+                    {% else %}
+                      <div class="d-flex align-items-center justify-content-center" style="height: 180px; background: rgba(0,0,0,0.03);">
+                        <span class="text-muted text-xs">Aucune affiche</span>
+                      </div>
+                    {% endif %}
+                    <div class="card-body p-3">
+                      <h6 class="text-dark font-weight-bold mb-2">{{ evenement.titre }}</h6>
+                      <p class="text-xs text-secondary mb-2">
+                        {{ evenement.getTypeFormate() }} – {{ evenement.getDateDebutFormatee() }}
+                      </p>
+                      <p class="text-sm text-body mb-3">{{ evenement.description|default('')|slice(0, 100) }}{% if evenement.description|default('')|length > 100 %}...{% endif %}</p>
+                      <a href="{{ path('app_evenement_etudiant_show', { id: evenement.id }) }}" class="btn btn-outline-primary btn-sm">Voir le détail</a>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="p-4">
+              <div class="alert alert-info text-white border-0" role="alert">
+                Aucun événement dans vos favoris.
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

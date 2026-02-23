@@ -1,0 +1,362 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ categorie.nom }} - Méditation{% endblock %}
+
+{% block breadcrumb_title %}{{ categorie.nom }}{% endblock %}
+
+{% block page_title %}{{ categorie.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+  
+  {# Statistiques de la catégorie #}
+  <div class="row mb-4">
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Séances</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ seances|length }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                <i class="fas fa-music text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Niveau moyen</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {% if seances|length > 0 %}
+                    {% set niveaux = {'débutant': 0, 'intermédiaire': 1, 'avancé': 2} %}
+                    {% set total_niveau = 0 %}
+                    {% for seance in seances %}
+                      {% set total_niveau = total_niveau + (niveaux[seance.niveau] ?? 0) %}
+                    {% endfor %}
+                    {% set moyenne = total_niveau / seances|length %}
+                    {% if moyenne < 0.5 %}Débutant
+                    {% elseif moyenne < 1.5 %}Intermédiaire
+                    {% else %}Avancé
+                    {% endif %}
+                  {% else %}
+                    -
+                  {% endif %}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                <i class="fas fa-chart-line text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Durée totale</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {% set total_minutes = 0 %}
+                  {% for seance in seances %}
+                    {% set total_minutes = total_minutes + seance.duree %}
+                  {% endfor %}
+                  {{ total_minutes }} min
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                <i class="fas fa-clock text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Type dominant</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {% if seances|length > 0 %}
+                    {% set types = {} %}
+                    {% for seance in seances %}
+                      {% set types = types|merge({(seance.typeFichier): (types[seance.typeFichier]|default(0) + 1)}) %}
+                    {% endfor %}
+                    {% set max_count = 0 %}
+                    {% set dominant_type = '' %}
+                    {% for type, count in types %}
+                      {% if count > max_count %}
+                        {% set max_count = count %}
+                        {% set dominant_type = type %}
+                      {% endif %}
+                    {% endfor %}
+                    {{ dominant_type|capitalize }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                <i class="fas fa-headphones text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Contenu principal #}
+  <div class="row mt-4">
+    <!-- Séances de méditation -->
+    <div class="col-lg-8 mb-lg-0 mb-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6>Séances de méditation</h6>
+              <p class="text-sm mb-0">
+                <i class="fas fa-spa me-1"></i>
+                Explorez les séances de {{ categorie.nom|lower }}
+              </p>
+            </div>
+            <div>
+              <span class="badge bg-gradient-info">{{ seances|length }} séances</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-3">
+          {% if seances is not empty %}
+          <div class="row">
+            {% for seance in seances %}
+            <div class="col-xl-4 col-md-6 mb-4">
+              <div class="card card-blog card-plain h-100">
+                <div class="card-body p-3">
+                  <!-- Icône pour le type de fichier -->
+                  <div class="text-center mb-3">
+                   
+                      <i class="fas fa-{{ seance.typeFichier == 'audio' ? 'volume-up' : 'video' }} text-white text-2xl"></i>
+                    
+                  </div>
+                  
+                  <p class="mb-1 text-sm text-gradient text-{{ 
+                    seance.niveau == 'débutant' ? 'success' : 
+                    (seance.niveau == 'intermédiaire' ? 'warning' : 'danger') 
+                  }}">
+                    <i class="fas fa-{{ 
+                      seance.niveau == 'débutant' ? 'seedling' : 
+                      (seance.niveau == 'intermédiaire' ? 'tree' : 'mountain') 
+                    }} me-1"></i>
+                    {{ seance.niveau|capitalize }}
+                  </p>
+                  
+                  <a href="{{ path('etudiant_meditation_seance', {'id': seance.seanceId}) }}">
+                    <h5 class="mb-2">{{ seance.titre }}</h5>
+                  </a>
+                  
+                  <p class="text-sm mb-3">
+                    {{ seance.description|slice(0, 80) }}{% if seance.description|length > 80 %}...{% endif %}
+                  </p>
+                  
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge badge-sm bg-gradient-{{ seance.typeFichier == 'audio' ? 'info' : 'warning' }}">
+                        <i class="fas fa-{{ seance.typeFichier == 'audio' ? 'volume-up' : 'video' }} me-1"></i>
+                        {{ seance.typeFichier|capitalize }}
+                      </span>
+                      <span class="text-xs text-muted">
+                        <i class="fas fa-clock me-1"></i> {{ seance.getDureeFormatee() }}
+                      </span>
+                    </div>
+                    
+                    <a href="{{ path('etudiant_meditation_seance', {'id': seance.seanceId}) }}" 
+                       class="btn btn-sm btn-outline-primary mb-0">
+                      <i class="fas fa-play me-1"></i> Démarrer
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <div class="icon icon-shape icon-xl bg-gradient-info shadow-info text-center rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="fas fa-music text-white text-2xl"></i>
+            </div>
+            <h6 class="text-gradient text-info mb-0">Aucune séance disponible</h6>
+            <p class="text-sm mb-4">
+              Les séances pour cette catégorie seront bientôt disponibles.
+            </p>
+            <a href="{{ path('etudiant_meditation_index') }}" class="btn btn-info">
+              <i class="fas fa-arrow-left me-1"></i> Retour à l'accueil
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sidebar avec informations et navigation -->
+    <div class="col-lg-4">
+      <!-- Informations catégorie -->
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>À propos de cette catégorie</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="text-center mb-3">
+            {% if categorie.iconUrl %}
+            <img src="{{ categorie.iconUrl }}" alt="{{ categorie.nom }}" 
+                 class="rounded-circle img-fluid shadow" style="width: 100px; height: 100px; object-fit: cover;">
+            {% else %}
+            <div class="icon icon-shape icon-xl bg-gradient-info shadow-info text-center rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+              <i class="fas fa-spa text-white text-2xl"></i>
+            </div>
+            {% endif %}
+          </div>
+          
+          <h5 class="text-center mb-3">{{ categorie.nom }}</h5>
+          <p class="text-sm mb-3">{{ categorie.description }}</p>
+          
+          <div class="timeline timeline-one-side">
+            <div class="timeline-block mb-3">
+              <span class="timeline-step">
+                <i class="fas fa-spa text-success text-gradient"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Bienfaits</h6>
+                <p class="text-secondary text-xs mt-1 mb-0">
+                  Réduction du stress et amélioration de la concentration
+                </p>
+              </div>
+            </div>
+            <div class="timeline-block mb-3">
+              <span class="timeline-step">
+                <i class="fas fa-brain text-info text-gradient"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Adapté à tous</h6>
+                <p class="text-secondary text-xs mt-1 mb-0">
+                  Séances pour débutants et expérimentés
+                </p>
+              </div>
+            </div>
+            <div class="timeline-block">
+              <span class="timeline-step">
+                <i class="fas fa-heart text-danger text-gradient"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Bien-être</h6>
+                <p class="text-secondary text-xs mt-1 mb-0">
+                  Amélioration du bien-être mental et émotionnel
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Navigation -->
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Navigation</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="d-grid gap-2">
+            <a href="{{ path('etudiant_meditation_index') }}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-arrow-left me-1"></i> Retour aux catégories
+            </a>
+            <a href="{{ path('etudiant_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-home me-1"></i> Tableau de bord
+            </a>
+          </div>
+          
+          <hr class="horizontal dark my-3">
+          
+          <div class="text-center">
+            <small class="text-muted">
+              <i class="fas fa-info-circle me-1"></i>
+              {{ seances|length }} séances disponibles
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+.card-blog {
+  transition: all 0.3s ease;
+  border-radius: 16px;
+}
+
+.card-blog:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.border-radius-xl {
+  border-radius: 16px;
+}
+
+.shadow-xl {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation pour les cartes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-blog {
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+/* Délai d'animation pour chaque carte */
+.card-blog:nth-child(1) { animation-delay: 0.1s; }
+.card-blog:nth-child(2) { animation-delay: 0.2s; }
+.card-blog:nth-child(3) { animation-delay: 0.3s; }
+.card-blog:nth-child(4) { animation-delay: 0.4s; }
+.card-blog:nth-child(5) { animation-delay: 0.5s; }
+.card-blog:nth-child(6) { animation-delay: 0.6s; }
+</style>
+
+
+{% endblock %}

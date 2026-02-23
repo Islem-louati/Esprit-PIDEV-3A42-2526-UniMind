@@ -1,0 +1,208 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Question #{{ question.id }}{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item text-sm">
+        <a class="opacity-5 text-white" href="{{ path('admin_question_index') }}">Questions</a>
+    </li>
+    <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+        <i class="fas fa-eye me-1"></i>Détails
+    </li>
+{% endblock %}
+
+{% block page_title %}Détails de la question{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <!-- En-tête -->
+        <div class="card mb-4">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="mb-0">🔍 Détails de la question</h5>
+                        {# ✅ CORRECTION : question.id au lieu de question.questionId #}
+                        <p class="text-sm mb-0">ID: #{{ question.id }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group">
+                            {# ✅ CORRECTION : questionnaire.id au lieu de questionnaire.questionnaireId #}
+                            <a href="{{ path('admin_question_index', {'questionnaire_id': question.questionnaire.id}) }}" 
+                               class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Retour
+                            </a>
+                            <a href="{{ path('admin_question_edit', {'id': question.id}) }}" 
+                               class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informations générales -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <h6>Texte de la question</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <p class="lead">{{ question.texte }}</p>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p class="text-sm mb-1">Type</p>
+                                <h6 class="mb-3">
+                                    {# ✅ CORRECTION : typeQuestion (camelCase) #}
+                                    <span class="badge bg-secondary">{{ question.typeQuestion }}</span>
+                                </h6>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-sm mb-1">Questionnaire</p>
+                                <h6 class="mb-3">
+                                    <a href="{{ path('admin_questionnaire_show', {'id': question.questionnaire.id}) }}" 
+                                       class="badge bg-info text-decoration-none">
+                                        {{ question.questionnaire.nom }}
+                                    </a>
+                                </h6>
+                                
+                                <p class="text-sm mb-1">Créée le</p>
+                                {# ✅ CORRECTION : createdAt (camelCase) #}
+                                <h6 class="mb-0">{{ question.createdAt|date('d/m/Y H:i') }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <h6>Statistiques</h6>
+                    </div>
+                    <div class="card-body p-3 text-center">
+                        <div class="mb-3">
+                            <h1 class="text-gradient text-primary">{{ question.optionsQuest|length }}</h1>
+                            <p class="text-sm mb-0">Options</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {# ✅ CORRECTION : max() est une fonction Twig, pas un filtre #}
+                            <h1 class="text-gradient text-success">
+                                {% if question.scoreOptions|length > 0 %}
+                                    {{ max(question.scoreOptions) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </h1>
+                            <p class="text-sm mb-0">Score maximum</p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <form method="post" 
+                                  action="{{ path('admin_question_delete', {'id': question.id}) }}" 
+                                  class="d-inline">
+                                <input type="hidden" name="_token" 
+                                       value="{{ csrf_token('delete' ~ question.id) }}">
+                                <button class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('Supprimer cette question ?')">
+                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Options et scores -->
+        <div class="card">
+            <div class="card-header pb-0">
+                <h6>🎯 Options et scores</h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="table-responsive">
+                    <table class="table align-items-center">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">#</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Option</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Score</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Niveau</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for option in question.optionsQuest %}
+                                {% set score = question.scoreOptions[loop.index0] ?? 0 %}
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-sm bg-secondary">{{ loop.index }}</span>
+                                    </td>
+                                    <td>
+                                        <h6 class="mb-0 text-sm">{{ option }}</h6>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-sm bg-{{ 
+                                            score <= 2 ? 'success' : 
+                                            score <= 5 ? 'warning' : 'danger' 
+                                        }}">
+                                            {{ score }} points
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {# ✅ CORRECTION : éviter division par zéro #}
+                                        {% set maxScore = question.scoreOptions|length > 0 ? max(question.scoreOptions) : 10 %}
+                                        {% set percent = maxScore > 0 ? ((score / maxScore) * 100)|round : 0 %}
+                                        <div class="progress-wrapper">
+                                            <div class="progress-info">
+                                                <div class="progress-percentage">
+                                                    <span class="text-xs font-weight-bold">{{ percent }}%</span>
+                                                </div>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-{{ 
+                                                    score <= 2 ? 'success' : 
+                                                    score <= 5 ? 'warning' : 'danger' 
+                                                }}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ percent }}%">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vue prévisualisation étudiant -->
+        <div class="card mt-4">
+            <div class="card-header pb-0">
+                <h6>👁️ Vue étudiant</h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="alert alert-light">
+                    <h6 class="mb-2">{{ question.texte }}</h6>
+                    <div class="mt-3">
+                        {% for option in question.optionsQuest %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" disabled>
+                                <label class="form-check-label">
+                                    {{ option }}
+                                    <small class="text-muted">({{ question.scoreOptions[loop.index0] ?? 0 }} points)</small>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,506 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ seance.titre }} - Méditation{% endblock %}
+
+{% block breadcrumb_title %}{{ seance.titre }}{% endblock %}
+
+{% block page_title %}{{ seance.titre }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+  
+  {# Statistiques de la séance #}
+  <div class="row mb-4">
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Type</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ seance.typeFichier|upper }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                <i class="fas fa-{{ seance.typeFichier == 'audio' ? 'volume-up' : 'video' }} text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Durée</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ seance.getDureeFormatee() }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                <i class="fas fa-clock text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Niveau</p>
+                <h5 class="font-weight-bolder mb-0 text-{{ 
+                  seance.niveau == 'débutant' ? 'success' : 
+                  (seance.niveau == 'intermédiaire' ? 'warning' : 'danger') 
+                }}">
+                  {{ seance.niveau|capitalize }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                <i class="fas fa-{{ 
+                  seance.niveau == 'débutant' ? 'seedling' : 
+                  (seance.niveau == 'intermédiaire' ? 'tree' : 'mountain') 
+                }} text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Catégorie</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ seance.categorie.nom }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                <i class="fas fa-spa text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Contenu principal #}
+  <div class="row mt-4">
+    <!-- Player et description -->
+    <div class="col-lg-8 mb-lg-0 mb-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6>Méditation guidée</h6>
+              <p class="text-sm mb-0">
+                <i class="fas fa-{{ seance.typeFichier == 'audio' ? 'headphones' : 'video' }} me-1"></i>
+                {{ seance.typeFichier == 'audio' ? 'Écoutez' : 'Visionnez' }} cette séance
+              </p>
+            </div>
+            <div>
+              <span class="badge bg-gradient-{{ seance.niveau == 'débutant' ? 'success' : (seance.niveau == 'intermédiaire' ? 'warning' : 'danger') }}">
+                {{ seance.niveau|capitalize }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-3">
+          <!-- Player -->
+          <div class="mb-4">
+            {% if seance.typeFichier == 'audio' %}
+            <div class="audio-player-card">
+              <div class="text-center mb-3">
+                <div class="icon icon-shape icon-xl bg-gradient-info shadow-info text-center rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                  <i class="fas fa-volume-up text-white text-2xl"></i>
+                </div>
+                <h5 class="text-gradient text-info">Méditation Audio</h5>
+              </div>
+              
+              <div class="card card-plain">
+                <div class="card-body p-3">
+                  <audio controls class="w-100" id="meditationAudio">
+                    <source src="{{ asset('uploadsmed/' ~ seance.fichier) }}" type="audio/mpeg">
+                    Votre navigateur ne supporte pas l'élément audio.
+                  </audio>
+                  
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="progress w-100 me-3" style="height: 6px;">
+                      <div class="progress-bar bg-gradient-info" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <span class="text-xs text-muted" id="currentTime">0:00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="video-player-card">
+              <div class="card card-plain">
+                <div class="card-header p-0 mx-3 mt-n4">
+                  <div class="bg-gradient-{{ seance.typeFichier == 'audio' ? 'info' : 'warning' }} shadow-{{ seance.typeFichier == 'audio' ? 'info' : 'warning' }} border-radius-lg">
+                    <video controls class="w-100 border-radius-lg" id="meditationVideo" style="max-height: 400px;">
+                      <source src="{{ asset('uploadsmed/' ~ seance.fichier) }}" type="video/mp4">
+                      Votre navigateur ne supporte pas l'élément vidéo.
+                    </video>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Description -->
+          <div class="card card-plain">
+            <div class="card-header pb-0">
+              <h6>Description de la séance</h6>
+            </div>
+            <div class="card-body p-3">
+              <div class="timeline timeline-one-side">
+                <div class="timeline-block mb-3">
+                  <span class="timeline-step">
+                    <i class="fas fa-info-circle text-info text-gradient"></i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">À propos</h6>
+                    <p class="text-secondary text-xs mt-1 mb-0">
+                      {{ seance.description }}
+                    </p>
+                  </div>
+                </div>
+                
+                {% if seance.typeFichier == 'audio' %}
+                <div class="timeline-block mb-3">
+                  <span class="timeline-step">
+                    <i class="fas fa-headphones text-success text-gradient"></i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">Conseil audio</h6>
+                    <p class="text-secondary text-xs mt-1 mb-0">
+                      Utilisez des écouteurs pour une immersion complète et une meilleure qualité sonore.
+                    </p>
+                  </div>
+                </div>
+                {% endif %}
+                
+                <div class="timeline-block">
+                  <span class="timeline-step">
+                    <i class="fas fa-lightbulb text-warning text-gradient"></i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">Préparation</h6>
+                    <p class="text-secondary text-xs mt-1 mb-0">
+                      Assurez-vous d'être dans un environnement calme et confortable avant de commencer.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sidebar avec informations et navigation -->
+    <div class="col-lg-4">
+      <!-- Informations détaillées -->
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Informations détaillées</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="list-group list-group-flush">
+            <div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
+              <div class="icon icon-shape icon-sm bg-gradient-info shadow-info text-center rounded-circle me-3">
+                <i class="fas fa-spa text-white text-xs"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <h6 class="text-sm mb-0">Catégorie</h6>
+                <p class="text-xs text-secondary mb-0">{{ seance.categorie.nom }}</p>
+              </div>
+              <div class="ms-auto">
+                <a href="{{ path('etudiant_meditation_categorie', {'id': seance.categorie.categorieId}) }}" 
+                   class="btn btn-sm btn-outline-info">
+                  <i class="fas fa-external-link-alt"></i>
+                </a>
+              </div>
+            </div>
+            
+            <div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
+              <div class="icon icon-shape icon-sm bg-gradient-success shadow-success text-center rounded-circle me-3">
+                <i class="fas fa-clock text-white text-xs"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <h6 class="text-sm mb-0">Durée</h6>
+                <p class="text-xs text-secondary mb-0">{{ seance.getDureeFormatee() }}</p>
+              </div>
+            </div>
+            
+            <div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
+              <div class="icon icon-shape icon-sm bg-gradient-warning shadow-warning text-center rounded-circle me-3">
+                <i class="fas fa-{{ 
+                  seance.niveau == 'débutant' ? 'seedling' : 
+                  (seance.niveau == 'intermédiaire' ? 'tree' : 'mountain') 
+                }} text-white text-xs"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <h6 class="text-sm mb-0">Niveau</h6>
+                <p class="text-xs text-secondary mb-0">{{ seance.niveau|capitalize }}</p>
+              </div>
+            </div>
+            
+            <div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
+              <div class="icon icon-shape icon-sm bg-gradient-danger shadow-danger text-center rounded-circle me-3">
+                <i class="fas fa-{{ seance.typeFichier == 'audio' ? 'volume-up' : 'video' }} text-white text-xs"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <h6 class="text-sm mb-0">Format</h6>
+                <p class="text-xs text-secondary mb-0">{{ seance.typeFichier|upper }}</p>
+              </div>
+            </div>
+            
+            <div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
+              <div class="icon icon-shape icon-sm bg-gradient-primary shadow-primary text-center rounded-circle me-3">
+                <i class="fas fa-calendar text-white text-xs"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <h6 class="text-sm mb-0">Ajoutée le</h6>
+                <p class="text-xs text-secondary mb-0">{{ seance.createdAt|date('d/m/Y') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Conseils pour la méditation -->
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Conseils pour une bonne séance</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="d-flex mb-3">
+            <div class="icon icon-shape icon-sm bg-gradient-success shadow-success text-center rounded-circle me-3">
+              <i class="fas fa-check text-white text-xs"></i>
+            </div>
+            <div>
+              <h6 class="text-sm mb-1">Environnement calme</h6>
+              <p class="text-xs text-secondary mb-0">Trouvez un endroit tranquille sans distractions.</p>
+            </div>
+          </div>
+          
+          <div class="d-flex mb-3">
+            <div class="icon icon-shape icon-sm bg-gradient-info shadow-info text-center rounded-circle me-3">
+              <i class="fas fa-check text-white text-xs"></i>
+            </div>
+            <div>
+              <h6 class="text-sm mb-1">Position confortable</h6>
+              <p class="text-xs text-secondary mb-0">Asseyez-vous ou allongez-vous confortablement.</p>
+            </div>
+          </div>
+          
+          <div class="d-flex mb-3">
+            <div class="icon icon-shape icon-sm bg-gradient-warning shadow-warning text-center rounded-circle me-3">
+              <i class="fas fa-check text-white text-xs"></i>
+            </div>
+            <div>
+              <h6 class="text-sm mb-1">Respiration consciente</h6>
+              <p class="text-xs text-secondary mb-0">Portez attention à votre respiration naturelle.</p>
+            </div>
+          </div>
+          
+          <div class="d-flex">
+            <div class="icon icon-shape icon-sm bg-gradient-danger shadow-danger text-center rounded-circle me-3">
+              <i class="fas fa-check text-white text-xs"></i>
+            </div>
+            <div>
+              <h6 class="text-sm mb-1">Acceptation</h6>
+              <p class="text-xs text-secondary mb-0">Accueillez vos pensées sans jugement.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Navigation -->
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Navigation</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="d-grid gap-2">
+            <a href="{{ path('etudiant_meditation_categorie', {'id': seance.categorie.categorieId}) }}" 
+               class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-arrow-left me-1"></i> Retour à la catégorie
+            </a>
+            <a href="{{ path('etudiant_meditation_index') }}" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-spa me-1"></i> Toutes les catégories
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<style>
+.audio-player-card .progress {
+  background-color: #e9ecef;
+  border-radius: 3px;
+}
+
+.audio-player-card .progress-bar {
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.border-radius-lg {
+  border-radius: 16px;
+}
+
+.timeline.timeline-one-side:before {
+  background-color: #e9ecef;
+}
+
+.list-group-item {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Animation pour le player */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(94, 114, 228, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(94, 114, 228, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(94, 114, 228, 0);
+  }
+}
+
+.audio-player-card .icon-shape {
+  animation: pulse 2s infinite;
+}
+
+/* Styles pour les contrôles audio/video */
+audio::-webkit-media-controls-panel,
+video::-webkit-media-controls-panel {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+audio::-webkit-media-controls-play-button,
+video::-webkit-media-controls-play-button {
+  background-color: #5e72e4;
+  border-radius: 50%;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  {% if seance.typeFichier == 'audio' %}
+  // Gestion du player audio
+  const audioPlayer = document.getElementById('meditationAudio');
+  const progressBar = document.querySelector('.progress-bar');
+  const currentTimeElement = document.getElementById('currentTime');
+  
+  if (audioPlayer) {
+    // Mise à jour de la barre de progression
+    audioPlayer.addEventListener('timeupdate', function() {
+      const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      progressBar.style.width = percent + '%';
+      
+      // Format du temps courant
+      const minutes = Math.floor(audioPlayer.currentTime / 60);
+      const seconds = Math.floor(audioPlayer.currentTime % 60);
+      currentTimeElement.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+    });
+    
+    // Clic sur la barre de progression
+    const progressContainer = document.querySelector('.progress');
+    progressContainer.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      audioPlayer.currentTime = percent * audioPlayer.duration;
+    });
+    
+    // Animation lors de la lecture
+    audioPlayer.addEventListener('play', function() {
+      document.querySelector('.audio-player-card .icon-shape').style.animation = 'pulse 1s infinite';
+    });
+    
+    audioPlayer.addEventListener('pause', function() {
+      document.querySelector('.audio-player-card .icon-shape').style.animation = 'none';
+    });
+    
+    // Suivi de la complétion (pour analytics)
+    let completionTracked = false;
+    audioPlayer.addEventListener('timeupdate', function() {
+      if (!completionTracked && audioPlayer.currentTime > audioPlayer.duration * 0.9) {
+        completionTracked = true;
+        console.log('Séance presque terminée');
+        // Ici, vous pouvez envoyer une requête AJAX pour enregistrer la complétion
+      }
+    });
+    
+    // Démarrer automatiquement (optionnel)
+    // audioPlayer.play().catch(e => console.log("Auto-play bloqué"));
+  }
+  {% else %}
+  // Gestion du player vidéo
+  const videoPlayer = document.getElementById('meditationVideo');
+  
+  if (videoPlayer) {
+    videoPlayer.addEventListener('play', function() {
+      console.log('Lecture vidéo démarrée');
+    });
+    
+    videoPlayer.addEventListener('ended', function() {
+      console.log('Vidéo terminée');
+      // Ici, vous pouvez envoyer une requête AJAX pour enregistrer la complétion
+    });
+  }
+  {% endif %}
+  
+  // Gestion du formulaire de nouveau post
+  const newPostForm = document.getElementById('new-post-form');
+  if (newPostForm) {
+    newPostForm.addEventListener('submit', function(e) {
+      const modal = bootstrap.Modal.getInstance(document.getElementById('modalNewPost'));
+      if (modal) {
+        modal.hide();
+      }
+    });
+  }
+  
+  // Initialiser les tooltips Bootstrap
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+});
+</script>
+{% endblock %}

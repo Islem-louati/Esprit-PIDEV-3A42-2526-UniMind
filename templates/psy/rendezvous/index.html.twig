@@ -1,0 +1,511 @@
+{# templates/psy/rendezvous/index.html.twig #}
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Mes Rendez-vous | UniMind - Psychologue{% endblock %}
+{% block page_title %}Gestion des Rendez-vous{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .card-stat {
+      transition: all 0.3s ease;
+      border: 1px solid #e9ecef;
+    }
+    
+    .card-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .statut-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+    }
+    
+    .btn-action-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      border-radius: 0.375rem;
+    }
+    
+    .btn-confirmer {
+      background: linear-gradient(310deg, #2dce89 0%, #2dcecc 100%);
+      color: white;
+      border: none;
+    }
+    
+    .btn-refuser {
+      background: linear-gradient(310deg, #f5365c 0%, #f56036 100%);
+      color: white;
+      border: none;
+    }
+    
+    .btn-commencer {
+      background: linear-gradient(310deg, #11cdef 0%, #1171ef 100%);
+      color: white;
+      border: none;
+    }
+    
+    .btn-terminer {
+      background: linear-gradient(310deg, #8898aa 0%, #525f7f 100%);
+      color: white;
+      border: none;
+    }
+    
+    .btn-absent {
+      background: linear-gradient(310deg, #fb6340 0%, #fbb140 100%);
+      color: white;
+      border: none;
+    }
+    
+    .badge-statut {
+      padding: 0.35em 0.65em;
+      font-weight: 600;
+    }
+    
+    .filter-badge {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .filter-badge:hover {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+    
+    .etudiant-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  {# Messages Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+        <span class="alert-text text-white">{{ message }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+  
+  {# Statistiques #}
+  <div class="row mb-4">
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card card-stat">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Demandes</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ demandes|length }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                <i class="fas fa-clock text-white text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+          <a href="{{ path('app_psychologue_rdv_demandes') }}" class="text-sm text-warning mb-0 mt-2 d-block">
+            <i class="fas fa-eye me-1"></i>
+            Voir les demandes
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card card-stat">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Confirmés</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ confirmes|length }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                <i class="fas fa-check-circle text-white text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm text-success mb-0 mt-2">
+            <i class="fas fa-calendar-check me-1"></i>
+            À venir
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card card-stat">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">En cours</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ en_cours|length }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                <i class="fas fa-play-circle text-white text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm text-info mb-0 mt-2">
+            <i class="fas fa-user-clock me-1"></i>
+            À traiter
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card card-stat">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Terminés</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ termines|length }}
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-secondary shadow-secondary text-center rounded-circle">
+                <i class="fas fa-check-double text-white text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm text-secondary mb-0 mt-2">
+            <i class="fas fa-history me-1"></i>
+            Ce mois
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Filtres par statut #}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Filtrer par statut</h6>
+        </div>
+        <div class="card-body p-3">
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-gradient-warning filter-badge badge-statut" data-filter="all">
+              Tous ({{ rendez_vous_list|length }})
+            </span>
+            <span class="badge bg-gradient-warning filter-badge badge-statut" data-filter="demande">
+              Demandes ({{ demandes|length }})
+            </span>
+            <span class="badge bg-gradient-success filter-badge badge-statut" data-filter="confirme">
+              Confirmés ({{ confirmes|length }})
+            </span>
+            <span class="badge bg-gradient-info filter-badge badge-statut" data-filter="en-cours">
+              En cours ({{ en_cours|length }})
+            </span>
+            <span class="badge bg-gradient-secondary filter-badge badge-statut" data-filter="terminé">
+              Terminés ({{ termines|length }})
+            </span>
+            <span class="badge bg-gradient-danger filter-badge badge-statut" data-filter="annulé">
+              Annulés ({{ annules|length }})
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Tableau des rendez-vous #}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6>Liste de mes rendez-vous</h6>
+            <span class="badge bg-gradient-info">
+              Total: {{ rendez_vous_list|length }} rendez-vous
+            </span>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if rendez_vous_list is empty %}
+            <div class="text-center py-4">
+              <i class="ni ni-calendar-grid-58 text-secondary" style="font-size: 3rem;"></i>
+              <p class="text-sm text-secondary mb-0 mt-3">Vous n'avez aucun rendez-vous pour le moment</p>
+            </div>
+          {% else %}
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0" id="rdvTable">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Étudiant</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date & Heure</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for rdv in rendez_vous_list %}
+                    <tr class="rdv-row" data-statut="{{ rdv.statut }}">
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <div class="icon icon-shape bg-gradient-dark shadow-dark text-center rounded-circle">
+                              <i class="ni ni-single-02 text-white text-sm opacity-10"></i>
+                            </div>
+                          </div>
+                          <div class="d-flex flex-column justify-content-center ms-3">
+                            <h6 class="mb-0 text-sm">{{ rdv.etudiant ? rdv.etudiant.prenom ~ ' ' ~ rdv.etudiant.nom : 'Étudiant inconnu' }}</h6>
+                            <p class="text-xs text-secondary mb-0">{{ rdv.etudiant ? rdv.etudiant.email : '' }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <h6 class="mb-0 text-sm">
+                            {{ rdv.getDateRendezVous() ? rdv.getDateRendezVous()|date('d/m/Y') : 'Date non définie' }}
+                          </h6>
+                          <p class="text-xs text-secondary mb-0">
+                            {{ rdv.getHeureDebut() ? rdv.getHeureDebut()|date('H:i') : '' }} - {{ rdv.getHeureFin() ? rdv.getHeureFin()|date('H:i') : '' }}
+                          </p>
+                          <small class="text-xs text-muted">
+                            {{ rdv.getDuree() ? rdv.getDuree() : '' }} de consultation
+                          </small>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        {% if rdv.getTypeConsultation() == 'présentiel' %}
+                          <span class="badge badge-sm bg-gradient-info">
+                            <i class="fas fa-building me-1"></i>Présentiel
+                          </span>
+                        {% else %}
+                          <span class="badge badge-sm bg-gradient-success">
+                            <i class="fas fa-video me-1"></i>En ligne
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle text-center">
+                        {% if rdv.isDemande() %}
+                          <span class="badge badge-sm bg-gradient-warning">
+                            <i class="fas fa-clock me-1"></i>Demande
+                          </span>
+                        {% elseif rdv.isConfirme() %}
+                          <span class="badge badge-sm bg-gradient-success">
+                            <i class="fas fa-check-circle me-1"></i>Confirmé
+                          </span>
+                        {% elseif rdv.isEnCours() %}
+                          <span class="badge badge-sm bg-gradient-info">
+                            <i class="fas fa-play-circle me-1"></i>En cours
+                          </span>
+                        {% elseif rdv.isTermine() %}
+                          <span class="badge badge-sm bg-gradient-secondary">
+                            <i class="fas fa-check-circle me-1"></i>Terminé
+                          </span>
+                        {% elseif rdv.isAnnule() %}
+                          <span class="badge badge-sm bg-gradient-danger">
+                            <i class="fas fa-times-circle me-1"></i>Annulé
+                          </span>
+                        {% else %}
+                          <span class="badge badge-sm bg-gradient-dark">
+                            <i class="fas fa-user-slash me-1"></i>Absent
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle text-center">
+                        <div class="d-flex justify-content-center gap-1">
+                          {# Bouton Détails #}
+                          <a href="{{ path('app_psychologue_rdv_detail', {id: rdv.rendezVousId}) }}" 
+                             class="btn btn-sm btn-info" 
+                             data-bs-toggle="tooltip" 
+                             title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          
+                          {# Actions selon le statut #}
+                          {% if rdv.isDemande() %}
+                            {# Confirmer #}
+                            <form method="post" 
+                                  action="{{ path('app_psychologue_rdv_confirmer', {id: rdv.rendezVousId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Confirmer ce rendez-vous ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('confirmer' ~ rdv.rendezVousId) }}">
+                              <button type="submit" 
+                                      class="btn btn-sm btn-confirmer" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Confirmer">
+                                <i class="fas fa-check"></i>
+                              </button>
+                            </form>
+                            
+                            {# Refuser #}
+                            <form method="post" 
+                                  action="{{ path('app_psychologue_rdv_refuser', {id: rdv.rendezVousId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Refuser ce rendez-vous ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('refuser' ~ rdv.rendezVousId) }}">
+                              <button type="submit" 
+                                      class="btn btn-sm btn-refuser" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Refuser">
+                                <i class="fas fa-times"></i>
+                              </button>
+                            </form>
+                          
+                          {% elseif rdv.isConfirme() %}
+                            {# Commencer #}
+                            <form method="post" 
+                                  action="{{ path('app_psychologue_rdv_commencer', {id: rdv.rendezVousId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Commencer ce rendez-vous ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('commencer' ~ rdv.rendezVousId) }}">
+                              <button type="submit" 
+                                      class="btn btn-sm btn-commencer" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Commencer">
+                                <i class="fas fa-play"></i>
+                              </button>
+                            </form>
+                            
+                            {# Marquer absent #}
+                            <form method="post" 
+                                  action="{{ path('app_psychologue_rdv_absent', {id: rdv.rendezVousId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Marquer cet étudiant comme absent ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('absent' ~ rdv.rendezVousId) }}">
+                              <button type="submit" 
+                                      class="btn btn-sm btn-absent" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Marquer absent">
+                                <i class="fas fa-user-slash"></i>
+                              </button>
+                            </form>
+                          
+                          {% elseif rdv.isEnCours() %}
+                            {# Terminer #}
+                            <form method="post" 
+                                  action="{{ path('app_psychologue_rdv_terminer', {id: rdv.rendezVousId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Terminer ce rendez-vous ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('terminer' ~ rdv.rendezVousId) }}">
+                              <button type="submit" 
+                                      class="btn btn-sm btn-terminer" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Terminer">
+                                <i class="fas fa-stop"></i>
+                              </button>
+                            </form>
+                          
+                          {% endif %}
+                          
+                          {# Annuler (pour les rendez-vous non terminés/absents) #}
+                          {% if not rdv.isTermine() and not rdv.isAbsent() %}
+                            <form method="post" 
+                                  action="{{ path('app_psychologue_rdv_annuler', {id: rdv.rendezVousId}) }}" 
+                                  style="display:inline"
+                                  onsubmit="return confirm('Annuler ce rendez-vous ?');">
+                              <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ rdv.rendezVousId) }}">
+                              <button type="submit" 
+                                      class="btn btn-sm btn-danger" 
+                                      data-bs-toggle="tooltip" 
+                                      title="Annuler">
+                                <i class="fas fa-ban"></i>
+                              </button>
+                            </form>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Activer les tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+      
+      // Filtrage par statut
+      const filterBadges = document.querySelectorAll('.filter-badge');
+      const rdvRows = document.querySelectorAll('.rdv-row');
+      
+      filterBadges.forEach(badge => {
+        badge.addEventListener('click', function() {
+          const filter = this.getAttribute('data-filter');
+          
+          // Retirer la classe active de tous les badges
+          filterBadges.forEach(b => b.classList.remove('active', 'shadow-lg'));
+          
+          // Ajouter la classe active au badge cliqué
+          this.classList.add('active', 'shadow-lg');
+          
+          // Filtrer les lignes
+          rdvRows.forEach(row => {
+            if (filter === 'all' || row.getAttribute('data-statut') === filter) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        });
+      });
+      
+      // Recherche dans le tableau
+      const searchInput = document.querySelector('input[placeholder="Rechercher un rendez-vous..."]');
+      if (searchInput) {
+        searchInput.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase();
+          
+          rdvRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        });
+      }
+      
+      // Confirmation avant certaines actions
+      const confirmButtons = document.querySelectorAll('form[onsubmit*="confirm"]');
+      confirmButtons.forEach(form => {
+        form.addEventListener('submit', function(e) {
+          const action = this.querySelector('button[type="submit"]').getAttribute('title') || 'cette action';
+          if (!confirm(`Êtes-vous sûr de vouloir effectuer ${action} ?`)) {
+            e.preventDefault();
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}

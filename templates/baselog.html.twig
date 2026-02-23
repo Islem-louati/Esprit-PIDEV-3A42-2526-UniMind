@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>{% block title %}UniMind{% endblock %}</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="{{ asset('acceuil/img/logo unimind.png') }}" rel="icon">
+  <link href="{{ asset('acceuil/img/logo unimind.png') }}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+  {% block stylesheets %}
+    <!-- Vendor CSS Files -->
+    <link href="{{ asset('acceuil/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('acceuil/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('acceuil/vendor/aos/aos.css') }}" rel="stylesheet">
+    <link href="{{ asset('acceuil/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('acceuil/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
+
+    <!-- Main CSS File -->
+    <link rel="stylesheet" href="{{ asset('acceuil/css/main2.css') }}">
+    <link rel="stylesheet" href="{{ asset('acceuil/css/logo.css') }}">
+  {% endblock %}
+</head>
+
+<body class="index-page">
+  {% block body %}{% endblock %}
+
+  {% block javascripts %}
+    <!-- Vendor JS Files -->
+    <script src="{{ asset('acceuil/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('acceuil/vendor/aos/aos.js') }}"></script>
+    <script src="{{ asset('acceuil/vendor/swiper/swiper-bundle.min.js') }}"></script>
+    <script src="{{ asset('acceuil/vendor/glightbox/js/glightbox.min.js') }}"></script>
+
+    <!-- Main JS File -->
+    <script src="{{ asset('acceuil/js/main.js') }}"></script>
+  {% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,330 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Gestion des Traitements{% endblock %}
+{% block page_title %}Gestion des Traitements{% endblock %}
+{% block breadcrumb_title %}Traitements{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-stethoscope me-2"></i>
+                                Gestion des Traitements
+                            </h6>
+                        </div>
+                        <div class="col-auto">
+                            {% if is_granted('ROLE_PSYCHOLOGUE') %}
+                            <a href="{{ path('app_traitement_new') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>
+                                Nouveau Traitement
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+        <!-- Message si pas de traitements -->
+        {% if traitements is empty %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Aucun traitement trouvé. 
+                {% if is_granted('ROLE_PSYCHOLOGUE') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RESPONSABLE_ETUDIANT') %}
+                    <a href="{{ path('app_traitement_new') }}" class="alert-link">Créez votre premier traitement</a> pour commencer.
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Statistiques Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Total Traitements</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-stethoscope text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">En Cours</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|filter(t => t.statut == 'en cours')|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-clock text-info" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Terminés</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|filter(t => t.statut == 'termine')|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-check-circle text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Priorité Haute</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|filter(t => t.priorite == 'HAUTE')|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-exclamation-triangle text-danger" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres et Recherche -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <form method="GET" action="{{ path('app_traitement_index') }}">
+                                    <div class="input-group">
+                                        <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+                                        <input type="text" name="search" class="form-control" placeholder="Rechercher un traitement..." value="{{ filters.search }}">
+                                        <input type="hidden" name="sort" value="{{ sort }}">
+                                        <input type="hidden" name="order" value="{{ order }}">
+                                        <button type="submit" class="btn btn-outline-primary">Rechercher</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-2">
+                                <form method="GET" action="{{ path('app_traitement_index') }}">
+                                    <select name="statut" class="form-select" onchange="this.form.submit()">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="en cours" {% if filters.statut == 'en cours' %}selected{% endif %}>En cours</option>
+                                        <option value="termine" {% if filters.statut == 'termine' %}selected{% endif %}>Terminé</option>
+                                        <option value="suspendu" {% if filters.statut == 'suspendu' %}selected{% endif %}>Suspendu</option>
+                                    </select>
+                                    <input type="hidden" name="sort" value="{{ sort }}">
+                                    <input type="hidden" name="order" value="{{ order }}">
+                                    <input type="hidden" name="search" value="{{ filters.search }}">
+                                    <input type="hidden" name="priorite" value="{{ filters.priorite }}">
+                                    <input type="hidden" name="categorie" value="{{ filters.categorie }}">
+                                </form>
+                            </div>
+                            <div class="col-md-2">
+                                <form method="GET" action="{{ path('app_traitement_index') }}">
+                                    <select name="priorite" class="form-select" onchange="this.form.submit()">
+                                        <option value="">Toutes les priorités</option>
+                                        <option value="haute" {% if filters.priorite == 'haute' %}selected{% endif %}>Haute</option>
+                                        <option value="moyenne" {% if filters.priorite == 'moyenne' %}selected{% endif %}>Moyenne</option>
+                                        <option value="basse" {% if filters.priorite == 'basse' %}selected{% endif %}>Basse</option>
+                                    </select>
+                                    <input type="hidden" name="sort" value="{{ sort }}">
+                                    <input type="hidden" name="order" value="{{ order }}">
+                                    <input type="hidden" name="search" value="{{ filters.search }}">
+                                    <input type="hidden" name="statut" value="{{ filters.statut }}">
+                                    <input type="hidden" name="categorie" value="{{ filters.categorie }}">
+                                </form>
+                            </div>
+                            <div class="col-md-2">
+                                <form method="GET" action="{{ path('app_traitement_index') }}">
+                                    <select name="categorie" class="form-select" onchange="this.form.submit()">
+                                        <option value="">Toutes les catégories</option>
+                                        <option value="relaxation" {% if filters.categorie == 'relaxation' %}selected{% endif %}>Relaxation</option>
+                                        <option value="cognitif" {% if filters.categorie == 'cognitif' %}selected{% endif %}>Cognitif</option>
+                                        <option value="emotionnel" {% if filters.categorie == 'emotionnel' %}selected{% endif %}>Émotionnel</option>
+                                        <option value="comportemental" {% if filters.categorie == 'comportemental' %}selected{% endif %}>Comportemental</option>
+                                    </select>
+                                    <input type="hidden" name="sort" value="{{ sort }}">
+                                    <input type="hidden" name="order" value="{{ order }}">
+                                    <input type="hidden" name="search" value="{{ filters.search }}">
+                                    <input type="hidden" name="statut" value="{{ filters.statut }}">
+                                    <input type="hidden" name="priorite" value="{{ filters.priorite }}">
+                                </form>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="{{ path('app_traitement_index') }}" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-redo me-1"></i>Réinitialiser
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des Traitements -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Liste des Traitements</h6>
+                        <div>
+                            <a href="{{ path('app_suivi_traitement_index') }}" class="btn btn-info btn-sm me-2">
+                                <i class="fas fa-calendar-check me-2"></i>SuiviTraitement
+                            </a>
+                            {% if is_granted('ROLE_PSYCHOLOGUE') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RESPONSABLE_ETUDIANT') %}
+                            <a href="{{ path('app_traitement_new') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-2"></i>Nouveau Traitement
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="{{ path('app_traitement_index', {sort: 'titre', order: sort == 'titre' and order == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-secondary">
+                                                Titre 
+                                                {% if sort == 'titre' %}
+                                                    {% if order == 'asc' %}↑{% else %}↓{% endif %}
+                                                {% else %}
+                                                    ↕
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="{{ path('app_traitement_index', {sort: 'patient', order: sort == 'patient' and order == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-secondary">
+                                                Patient 
+                                                {% if sort == 'patient' %}
+                                                    {% if order == 'asc' %}↑{% else %}↓{% endif %}
+                                                {% else %}
+                                                    ↕
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="{{ path('app_traitement_index', {sort: 'psychologue', order: sort == 'psychologue' and order == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-secondary">
+                                                Psychologue 
+                                                {% if sort == 'psychologue' %}
+                                                    {% if order == 'asc' %}↑{% else %}↓{% endif %}
+                                                {% else %}
+                                                    ↕
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="{{ path('app_traitement_index', {sort: 'statut', order: sort == 'statut' and order == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-secondary">
+                                                Statut 
+                                                {% if sort == 'statut' %}
+                                                    {% if order == 'asc' %}↑{% else %}↓{% endif %}
+                                                {% else %}
+                                                    ↕
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="{{ path('app_traitement_index', {sort: 'priorite', order: sort == 'priorite' and order == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-secondary">
+                                                Priorité 
+                                                {% if sort == 'priorite' %}
+                                                    {% if order == 'asc' %}↑{% else %}↓{% endif %}
+                                                {% else %}
+                                                    ↕
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="{{ path('app_traitement_index', {sort: 'progression', order: sort == 'progression' and order == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-secondary">
+                                                Progression 
+                                                {% if sort == 'progression' %}
+                                                    {% if order == 'asc' %}↑{% else %}↓{% endif %}
+                                                {% else %}
+                                                    ↕
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="traitementsTableBody">
+                                    {% for traitement in traitements %}
+                                    <tr class="traitement-row">
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ traitement.titre }}</h6>
+                                                    <p class="text-xs text-secondary mb-0">{{ traitement.categorieLabel }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ traitement.etudiant ? traitement.etudiant.fullName : 'Non défini' }}</p>
+                                            <p class="text-xs text-secondary mb-0">
+                                                <i class="fas fa-calendar-check me-1"></i>
+                                                {{ traitement.nb_suivis|default(0) }} suivis
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ traitement.psychologue ? traitement.psychologue.fullName : 'Non défini' }}</p>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm {% if traitement.statut == 'EN_COURS' %}bg-gradient-info{% elseif traitement.statut == 'TERMINE' %}bg-gradient-success{% else %}bg-gradient-warning{% endif %}">
+                                                {{ traitement.statutLabel }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm {% if traitement.priorite == 'HAUTE' %}bg-gradient-danger{% elseif traitement.priorite == 'MOYENNE' %}bg-gradient-warning{% else %}bg-gradient-secondary{% endif %}">
+                                                {{ traitement.prioriteLabel }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-gradient-info" role="progressbar" style="width: {{ traitement.pourcentageCompletion }}%;" aria-valuenow="{{ traitement.pourcentageCompletion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="text-xs">{{ traitement.pourcentageCompletion|number_format(1) }}%</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                <a href="{{ path('app_traitement_show', {'id': traitement.id}) }}" class="btn btn-sm btn-info" data-toggle="tooltip" data-original-title="Voir">
+                                                    <i class="fas fa-eye me-1"></i>Voir
+                                                </a>
+                                                {% if is_granted('ROLE_PSYCHOLOGUE') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RESPONSABLE_ETUDIANT') %}
+                                                    <a href="{{ path('app_traitement_edit', {'id': traitement.id}) }}" class="btn btn-sm btn-warning" data-toggle="tooltip" data-original-title="Modifier">
+                                                        <i class="fas fa-edit me-1"></i>Modifier
+                                                    </a>
+                                                    <form method="post" action="{{ path('app_traitement_delete', {'id': traitement.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce traitement ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ traitement.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" data-original-title="Supprimer">
+                                                            <i class="fas fa-trash me-1"></i>Supprimer
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

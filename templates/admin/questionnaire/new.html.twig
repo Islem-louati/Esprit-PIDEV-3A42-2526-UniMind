@@ -1,0 +1,434 @@
+{# templates/admin/questionnaire/new.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau questionnaire{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- En-tête minimaliste -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0 fw-semibold">
+                    <i class="fas fa-plus-circle me-2 text-primary"></i>Nouveau questionnaire
+                </h4>
+                <a href="{{ path('admin_questionnaire_index') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Retour
+                </a>
+            </div>
+
+            <!-- Message flash d'erreur (discret) -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-warning alert-dismissible fade show py-2 small mb-3" role="alert">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Message flash de succès -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show py-2 small mb-3" role="alert">
+                    <i class="fas fa-check-circle me-1"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Message d'information pour le code généré -->
+            <div class="alert alert-info py-2 small mb-3 d-flex align-items-center">
+                <i class="fas fa-info-circle me-2"></i>
+                <span>Le code unique sera généré automatiquement</span>
+                <span class="ms-auto badge bg-light text-dark" id="code-preview">QST-{{ 'now'|date('Ymd') }}-XXXXXX</span>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'questionnaire_form'}}) }}
+
+                    <!-- Informations générales -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold mb-3 pb-2 border-bottom">
+                            <i class="fas fa-info-circle me-2 text-primary small"></i>Informations générales
+                        </h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form_label(form.nom, 'Nom du questionnaire *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.nom, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm' ~ (form.nom.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'placeholder': 'Ex: Évaluation du stress'
+                                    }
+                                }) }}
+                                {% if form.nom.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.nom) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_label(form.type, 'Type *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.type, {
+                                    'attr': {
+                                        'class': 'form-select form-select-sm' ~ (form.type.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'id': 'questionnaire_type'
+                                    }
+                                }) }}
+                                {% if form.type.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.type) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            {{ form_label(form.description, 'Description *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                            {{ form_widget(form.description, {
+                                'attr': {
+                                    'class': 'form-control form-control-sm' ~ (form.description.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                    'rows': 2,
+                                    'placeholder': 'Description détaillée du questionnaire...'
+                                }
+                            }) }}
+                            {% if form.description.vars.errors|length > 0 %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form_errors(form.description) }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-3">
+                            {{ form_label(form.nbre_questions, 'Nombre de questions *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                            {{ form_widget(form.nbre_questions, {
+                                'attr': {
+                                    'class': 'form-control form-control-sm' ~ (form.nbre_questions.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                    'min': 1,
+                                    'max': 100,
+                                    'placeholder': 'Ex: 10'
+                                }
+                            }) }}
+                            {% if form.nbre_questions.vars.errors|length > 0 %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form_errors(form.nbre_questions) }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Seuils d'interprétation -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold mb-3 pb-2 border-bottom">
+                            <i class="fas fa-sliders-h me-2 text-primary small"></i>Seuils d'interprétation
+                        </h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                {{ form_label(form.seuil_leger, 'Seuil léger *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.seuil_leger, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm' ~ (form.seuil_leger.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'min': 0,
+                                        'placeholder': 'Ex: 5'
+                                    }
+                                }) }}
+                                {% if form.seuil_leger.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.seuil_leger) }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted small">Score ≤ ce seuil</small>
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_label(form.seuil_modere, 'Seuil modéré *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.seuil_modere, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm' ~ (form.seuil_modere.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'min': 1,
+                                        'placeholder': 'Ex: 10'
+                                    }
+                                }) }}
+                                {% if form.seuil_modere.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.seuil_modere) }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted small">Score ≤ ce seuil</small>
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_label(form.seuil_severe, 'Seuil sévère *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.seuil_severe, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm' ~ (form.seuil_severe.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'min': 2,
+                                        'placeholder': 'Ex: 15'
+                                    }
+                                }) }}
+                                {% if form.seuil_severe.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.seuil_severe) }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted small">Score > ce seuil</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Indicateur d'ordre des seuils -->
+                        <div class="mt-2 small text-muted d-flex align-items-center">
+                            <i class="fas fa-arrow-right me-1"></i>
+                            <span>Ordre recommandé : léger < modéré < sévère</span>
+                            <span class="ms-auto" id="threshold-warning" style="display: none;">
+                                <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                                <span class="text-warning small">Ordre incorrect</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Interprétations -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold mb-3 pb-2 border-bottom">
+                            <i class="fas fa-comment-dots me-2 text-primary small"></i>Messages d'interprétation
+                        </h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                {{ form_label(form.interpretat_legere, 'Niveau léger *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.interpretat_legere, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm' ~ (form.interpretat_legere.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'rows': 2,
+                                        'placeholder': 'Message pour le niveau léger...'
+                                    }
+                                }) }}
+                                {% if form.interpretat_legere.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.interpretat_legere) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_label(form.interpretat_modere, 'Niveau modéré *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.interpretat_modere, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm' ~ (form.interpretat_modere.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'rows': 2,
+                                        'placeholder': 'Message pour le niveau modéré...'
+                                    }
+                                }) }}
+                                {% if form.interpretat_modere.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.interpretat_modere) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_label(form.interpretat_severe, 'Niveau sévère *', {'label_attr': {'class': 'form-label small fw-medium'}}) }}
+                                {{ form_widget(form.interpretat_severe, {
+                                    'attr': {
+                                        'class': 'form-control form-control-sm' ~ (form.interpretat_severe.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                        'rows': 2,
+                                        'placeholder': 'Message pour le niveau sévère...'
+                                    }
+                                }) }}
+                                {% if form.interpretat_severe.vars.errors|length > 0 %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.interpretat_severe) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Message discret pour interprétations identiques -->
+                        <div class="mt-2 small" id="interpretation-warning" style="display: none;">
+                            <i class="fas fa-exclamation-circle text-warning me-1"></i>
+                            <span class="text-warning">Les messages doivent être différents</span>
+                        </div>
+                    </div>
+
+                    {# Champ code caché #}
+                    <div style="display: none;">
+                        {{ form_widget(form.code, {'attr': {'id': 'code_field'}}) }}
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
+                        <a href="{{ path('admin_questionnaire_index') }}" class="btn btn-sm btn-outline-secondary px-4">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-sm btn-primary px-4" id="submit-btn">
+                            <i class="fas fa-check me-1"></i>Créer
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script pour la génération automatique du code et validations en temps réel -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('questionnaire_form');
+    const typeSelect = document.getElementById('questionnaire_type');
+    const codePreview = document.getElementById('code-preview');
+    const codeField = document.getElementById('code_field');
+    
+    // Éléments pour les seuils
+    const seuilLeger = document.querySelector('input[id$="_seuil_leger"]');
+    const seuilModere = document.querySelector('input[id$="_seuil_modere"]');
+    const seuilSevere = document.querySelector('input[id$="_seuil_severe"]');
+    const thresholdWarning = document.getElementById('threshold-warning');
+    
+    // Éléments pour les interprétations
+    const interLeger = document.querySelector('textarea[id$="_interpretat_legere"]');
+    const interModere = document.querySelector('textarea[id$="_interpretat_modere"]');
+    const interSevere = document.querySelector('textarea[id$="_interpretat_severe"]');
+    const interWarning = document.getElementById('interpretation-warning');
+    
+    /**
+     * Génère un code unique basé sur le type sélectionné
+     */
+    function generateCode() {
+        if (!typeSelect || !typeSelect.value) {
+            return 'QST-' + getDateString() + '-' + getRandomString();
+        }
+        
+        const typeValue = typeSelect.value;
+        let typeCode = '';
+        
+        // Mapping des types vers des codes (3 lettres)
+        const typeMap = {
+            'stress': 'STR',
+            'anxiete': 'ANX',
+            'depression': 'DEP',
+            'bienetre': 'BIE',
+            'sommeil': 'SOM'
+        };
+        
+        typeCode = typeMap[typeValue] || 'QST';
+        
+        return `${typeCode}-${getDateString()}-${getRandomString()}`;
+    }
+    
+    function getDateString() {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}${month}${day}`;
+    }
+    
+    function getRandomString() {
+        return Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    
+    /**
+     * Met à jour le code dans le champ caché et l'aperçu
+     */
+    function updateCode() {
+        const newCode = generateCode();
+        if (codePreview) codePreview.textContent = newCode;
+        if (codeField) codeField.value = newCode;
+    }
+    
+    /**
+     * Vérifie l'ordre des seuils
+     */
+    function checkThresholds() {
+        if (!seuilLeger || !seuilModere || !seuilSevere || !thresholdWarning) return;
+        
+        const leger = parseInt(seuilLeger.value) || 0;
+        const modere = parseInt(seuilModere.value) || 0;
+        const severe = parseInt(seuilSevere.value) || 0;
+        
+        if (leger >= modere || modere >= severe) {
+            thresholdWarning.style.display = 'inline';
+        } else {
+            thresholdWarning.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Vérifie si les interprétations sont différentes
+     */
+    function checkInterpretations() {
+        if (!interLeger || !interModere || !interSevere || !interWarning) return;
+        
+        const leger = interLeger.value.trim();
+        const modere = interModere.value.trim();
+        const severe = interSevere.value.trim();
+        
+        if ((leger && modere && leger === modere) ||
+            (leger && severe && leger === severe) ||
+            (modere && severe && modere === severe)) {
+            interWarning.style.display = 'block';
+        } else {
+            interWarning.style.display = 'none';
+        }
+    }
+    
+    // Événements pour la génération du code
+    if (typeSelect) {
+        typeSelect.addEventListener('change', updateCode);
+    }
+    
+    // Générer le code au chargement
+    updateCode();
+    
+    // Avant la soumission, s'assurer que le code est bien défini
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (codeField && !codeField.value) {
+                updateCode();
+            }
+        });
+    }
+    
+    // Événements pour la validation des seuils
+    if (seuilLeger && seuilModere && seuilSevere) {
+        seuilLeger.addEventListener('input', checkThresholds);
+        seuilModere.addEventListener('input', checkThresholds);
+        seuilSevere.addEventListener('input', checkThresholds);
+    }
+    
+    // Événements pour la validation des interprétations
+    if (interLeger && interModere && interSevere) {
+        interLeger.addEventListener('input', checkInterpretations);
+        interModere.addEventListener('input', checkInterpretations);
+        interSevere.addEventListener('input', checkInterpretations);
+    }
+});
+</script>
+
+<style>
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+.is-invalid:focus {
+    box-shadow: 0 0 0 0.1rem rgba(220, 53, 69, 0.15) !important;
+}
+.invalid-feedback {
+    display: block !important;
+    color: #dc3545;
+    font-size: 0.75rem;
+    margin-top: 0.15rem;
+}
+.card {
+    border-radius: 0.75rem;
+}
+.border-bottom {
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+}
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+}
+.btn-sm {
+    padding: 0.4rem 1rem;
+}
+</style>
+{% endblock %}

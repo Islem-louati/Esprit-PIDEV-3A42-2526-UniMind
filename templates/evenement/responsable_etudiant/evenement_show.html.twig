@@ -1,0 +1,73 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ evenement.titre }} | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}Événements{% endblock %}
+{% block breadcrumb_title %}Détail de l’événement{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+            <h5 class="mb-0">{{ evenement.titre }}</h5>
+            <div class="d-flex gap-2">
+              {% if route_prefix != 'app_back_' or (app.user and evenement.organisateur and evenement.organisateur.id == app.user.id) %}
+                <a href="{{ path(route_prefix ~ 'evenement_edit', { id: evenement.id }) }}" class="btn btn-outline-primary btn-sm mb-0">Modifier</a>
+              {% endif %}
+              <a href="{{ path(route_prefix ~ 'evenement_index') }}" class="btn btn-outline-secondary btn-sm mb-0">Retour</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-lg-5 mb-4 mb-lg-0">
+              <div class="card card-body border card-plain border-radius-lg">
+                {% if evenement.image %}
+                  <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" alt="Affiche" class="img-fluid rounded" style="max-height: 340px; object-fit: cover; width: 100%;">
+                {% else %}
+                  <div class="d-flex align-items-center justify-content-center" style="height: 260px; background: rgba(0,0,0,0.03);">
+                    <span class="text-muted text-sm">Aucune affiche</span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-7">
+              <p class="text-sm text-secondary mb-3">{{ evenement.getTypeFormate() }} · {{ evenement.getStatutFormate() }}</p>
+
+              {% if evenement.description %}
+                <p class="text-sm text-body mb-4">{{ evenement.description }}</p>
+              {% else %}
+                <p class="text-sm text-muted mb-4">Aucune description.</p>
+              {% endif %}
+
+              <div class="row">
+                <div class="col-12 col-md-6 mb-3">
+                  <div class="card card-body border card-plain border-radius-lg">
+                    <p class="text-xs text-uppercase font-weight-bolder opacity-7 mb-2">Dates</p>
+                    <p class="text-sm mb-1"><strong>Début :</strong> {{ evenement.getDateDebutFormatee() }}</p>
+                    <p class="text-sm mb-0"><strong>Fin :</strong> {{ evenement.getDateFinFormatee() }}</p>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6 mb-3">
+                  <div class="card card-body border card-plain border-radius-lg">
+                    <p class="text-xs text-uppercase font-weight-bolder opacity-7 mb-2">Infos</p>
+                    <p class="text-sm mb-1"><strong>Lieu :</strong> {{ evenement.lieu }}</p>
+                    <p class="text-sm mb-0"><strong>Places :</strong> {{ evenement.nombreInscrits }} / {{ evenement.capaciteMax }}</p>
+                    {% if route_prefix is defined and route_prefix == 'app_admin_' and evenement.organisateur %}
+                      <p class="text-sm mb-0 mt-2">
+                        <strong>Organisateur :</strong>
+                        {{ evenement.organisateur.prenom }} {{ evenement.organisateur.nom }} ({{ evenement.organisateur.email }})
+                      </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

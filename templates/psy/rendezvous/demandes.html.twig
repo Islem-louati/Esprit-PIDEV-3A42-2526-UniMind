@@ -1,0 +1,213 @@
+{# templates/psychologue/rendezvous/demandes.html.twig #}
+{% extends 'psy/rendezvous/index.html.twig' %}
+
+{% block title %}Demandes de Rendez-vous | UniMind - Psychologue{% endblock %}
+
+{% block body %}
+  <div class="min-height-300 bg-dark position-absolute w-100"></div>
+  
+  {# Sidebar pour Psychologue #}
+  <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main">
+    <div class="sidenav-header">
+      <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
+      <a class="navbar-brand m-0" href="{{ path('app_dashboard_psy') }}">
+        <img src="{{ asset('assets/img/logo-ct-dark.png') }}" width="26px" height="26px" class="navbar-brand-img h-100" alt="main_logo">
+        <span class="ms-1 font-weight-bold">UniMind</span>
+      </a>
+    </div>
+    <hr class="horizontal dark mt-0">
+    <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ path('app_dashboard_psy') }}">
+            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="{{ path('app_psychologue_rdv') }}">
+            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Mes Rendez-vous</span>
+          </a>
+        </li>
+       
+      </ul>
+    </div>
+  </aside>
+  
+  <main class="main-content position-relative border-radius-lg">
+    {# Navbar #}
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur">
+      <div class="container-fluid py-1 px-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+            <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="{{ path('app_dashboard_psy') }}">Psychologue</a></li>
+            <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="{{ path('app_psychologue_rdv') }}">Rendez-vous</a></li>
+            <li class="breadcrumb-item text-sm text-white active" aria-current="page">Demandes</li>
+          </ol>
+          <h6 class="font-weight-bolder text-white mb-0">Demandes de Rendez-vous</h6>
+        </nav>
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+          <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+            <div class="input-group">
+              <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+              <input type="text" class="form-control" placeholder="Rechercher une demande...">
+            </div>
+          </div>
+          <ul class="navbar-nav justify-content-end">
+            <li class="nav-item d-flex align-items-center">
+              <a href="#" class="nav-link text-white font-weight-bold px-0">
+                <i class="fa fa-user me-sm-1"></i>
+                <span class="d-sm-inline d-none">Dr. {{ user.nom }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    
+    <div class="container-fluid py-4">
+      {# Messages Flash #}
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+            <span class="alert-text text-white">{{ message }}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endfor %}
+      
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header pb-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6>Demandes en attente ({{ rendez_vous_list|length }})</h6>
+                <a href="{{ path('app_psychologue_rdv') }}" class="btn btn-sm btn-outline-info">
+                  <i class="fas fa-arrow-left me-1"></i> Retour à tous les RDV
+                </a>
+              </div>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+              {% if rendez_vous_list is empty %}
+                <div class="text-center py-4">
+                  <i class="ni ni-check-bold text-success" style="font-size: 3rem;"></i>
+                  <p class="text-sm text-secondary mb-0 mt-3">Aucune demande en attente</p>
+                  <p class="text-xs text-muted">Toutes les demandes ont été traitées</p>
+                </div>
+              {% else %}
+                <div class="table-responsive p-0">
+                  <table class="table align-items-center mb-0">
+                    <thead>
+                      <tr>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Étudiant</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date demandée</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Motif</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for rdv in rendez_vous_list %}
+                        <tr>
+                          <td>
+                            <div class="d-flex px-2 py-1">
+                              <div>
+                                <div class="icon icon-shape bg-gradient-dark shadow-dark text-center rounded-circle">
+                                  <i class="ni ni-single-02 text-white text-sm opacity-10"></i>
+                                </div>
+                              </div>
+                              <div class="d-flex flex-column justify-content-center ms-3">
+                                <h6 class="mb-0 text-sm">{{ rdv.etudiant.prenom }} {{ rdv.etudiant.nom }}</h6>
+                                <p class="text-xs text-secondary mb-0">{{ rdv.etudiant.email }}</p>
+                                <p class="text-xs text-muted mb-0">
+                                  <i class="fas fa-phone me-1"></i>{{ rdv.etudiant.telephone ?? 'Non renseigné' }}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="d-flex flex-column">
+                              <h6 class="mb-0 text-sm">
+                                {{ rdv.getDateRendezVous()|date('d/m/Y') }}
+                              </h6>
+                              <p class="text-xs text-secondary mb-0">
+                                {{ rdv.getHeureDebut()|date('H:i') }} - {{ rdv.getHeureFin()|date('H:i') }}
+                              </p>
+                              <small class="text-xs text-muted">
+                                Demandé le {{ rdv.createdAt|date('d/m/Y à H:i') }}
+                              </small>
+                            </div>
+                          </td>
+                          <td class="align-middle text-center">
+                            {% if rdv.getTypeConsultation() == 'présentiel' %}
+                              <span class="badge badge-sm bg-gradient-info">
+                                <i class="fas fa-building me-1"></i>Présentiel
+                              </span>
+                            {% else %}
+                              <span class="badge badge-sm bg-gradient-success">
+                                <i class="fas fa-video me-1"></i>En ligne
+                              </span>
+                            {% endif %}
+                          </td>
+                          <td class="align-middle">
+                            <p class="text-xs text-dark mb-0">
+                              {{ rdv.motif|default('Aucun motif spécifié')|u.truncate(50, '...') }}
+                            </p>
+                          </td>
+                          <td class="align-middle text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                              {# Voir les détails #}
+                              <a href="{{ path('app_psychologue_rdv_detail', {id: rdv.rendezVousId}) }}" 
+                                 class="btn btn-sm btn-info" 
+                                 data-bs-toggle="tooltip" 
+                                 title="Voir les détails">
+                                <i class="fas fa-eye"></i>
+                              </a>
+                              
+                              {# Confirmer #}
+                              <form method="post" 
+                                    action="{{ path('app_psychologue_rdv_confirmer', {id: rdv.rendezVousId}) }}" 
+                                    style="display:inline"
+                                    onsubmit="return confirm('Confirmer ce rendez-vous ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('confirmer' ~ rdv.rendezVousId) }}">
+                                <button type="submit" 
+                                        class="btn btn-sm btn-success" 
+                                        data-bs-toggle="tooltip" 
+                                        title="Confirmer">
+                                  <i class="fas fa-check"></i>
+                                </button>
+                              </form>
+                              
+                              {# Refuser #}
+                              <form method="post" 
+                                    action="{{ path('app_psychologue_rdv_refuser', {id: rdv.rendezVousId}) }}" 
+                                    style="display:inline"
+                                    onsubmit="return confirm('Refuser ce rendez-vous ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('refuser' ~ rdv.rendezVousId) }}">
+                                <button type="submit" 
+                                        class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="tooltip" 
+                                        title="Refuser">
+                                  <i class="fas fa-times"></i>
+                                </button>
+                              </form>
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

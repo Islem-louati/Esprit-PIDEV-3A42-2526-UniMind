@@ -1,0 +1,245 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Événements | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}Événements{% endblock %}
+{% block breadcrumb_title %}Liste des événements{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5>Événements</h5>
+          <a href="{{ path(route_prefix ~ 'evenement_new') }}" class="btn btn-primary btn-sm">Nouvel événement</a>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <form method="get" action="{{ path(route_prefix ~ 'evenement_index') }}" class="p-4 pb-0 d-flex gap-2 flex-wrap align-items-end" id="evenement-search-form">
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            <div class="flex-grow-1" style="min-width: 200px;">
+              <label for="search_q" class="form-label small mb-0">Rechercher (titre, lieu)</label>
+              <input type="text" name="q" id="search_q" class="form-control form-control-sm" value="{{ q }}" placeholder="Mot-clé…">
+            </div>
+            <div style="min-width: 180px;">
+              <label for="filter_type" class="form-label small mb-0">Type</label>
+              <select name="type" id="filter_type" class="form-select form-select-sm">
+                <option value="">Tous</option>
+                <option value="atelier">Atelier</option>
+                <option value="formation">Formation</option>
+                <option value="groupe_parole">Groupe de parole</option>
+                <option value="conference">Conférence</option>
+                <option value="journee_thematique">Journée thématique</option>
+                <option value="activite_sportive">Activité sportive</option>
+              </select>
+            </div>
+            <div style="min-width: 180px;">
+              <label for="filter_statut" class="form-label small mb-0">Statut</label>
+              <select name="statut" id="filter_statut" class="form-select form-select-sm">
+                <option value="">Tous</option>
+                <option value="a_venir">À venir</option>
+                <option value="en_cours">En cours</option>
+                <option value="termine">Terminé</option>
+                <option value="annule">Annulé</option>
+              </select>
+            </div>
+            <div style="min-width: 160px;">
+              <label for="filter_date_from" class="form-label small mb-0">Du</label>
+              <input type="date" name="dateFrom" id="filter_date_from" class="form-control form-control-sm">
+            </div>
+            <div style="min-width: 160px;">
+              <label for="filter_date_to" class="form-label small mb-0">Au</label>
+              <input type="date" name="dateTo" id="filter_date_to" class="form-control form-control-sm">
+            </div>
+            <div class="d-flex gap-2" style="white-space: nowrap;">
+              <button type="submit" class="btn btn-outline-primary btn-sm">Rechercher</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="evenement-reset-btn">Réinitialiser</button>
+            </div>
+          </form>
+          {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show mx-4 mt-3" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+          {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+          {% if evenements|length > 0 %}
+            <div class="table-responsive p-4">
+              <table class="table align-items-center mb-0" id="evenement-table">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Image</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'evenement_index', { q: q, sort: 'titre', order: sort == 'titre' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Titre {{ sort == 'titre' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'evenement_index', { q: q, sort: 'type', order: sort == 'type' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Type {{ sort == 'type' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'evenement_index', { q: q, sort: 'dateDebut', order: sort == 'dateDebut' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Début {{ sort == 'dateDebut' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'evenement_index', { q: q, sort: 'lieu', order: sort == 'lieu' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Lieu {{ sort == 'lieu' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    {% if route_prefix == 'app_admin_' %}
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Organisateur</th>
+                    {% endif %}
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'evenement_index', { q: q, sort: 'statut', order: sort == 'statut' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Statut {{ sort == 'statut' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody id="evenement-table-body">
+                  {% for evenement in evenements %}
+                    <tr>
+                      <td>
+                        {% if evenement.image %}
+                          <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" alt="Affiche" class="img-thumbnail" style="max-height: 50px; max-width: 80px;">
+                        {% else %}
+                          <span class="text-muted text-xs">Aucune</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ evenement.titre }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ evenement.getTypeFormate() }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ evenement.getDateDebutFormatee() }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ evenement.lieu }}</p>
+                      </td>
+                      {% if route_prefix == 'app_admin_' %}
+                        <td>
+                          <p class="text-xs mb-0">
+                            {% if evenement.organisateur %}
+                              {{ evenement.organisateur.prenom }} {{ evenement.organisateur.nom }} ({{ evenement.organisateur.email }})
+                            {% else %}
+                              <span class="text-muted">—</span>
+                            {% endif %}
+                          </p>
+                        </td>
+                      {% endif %}
+                      <td>
+                        <span class="badge badge-sm bg-gradient-secondary">{{ evenement.getStatutFormate() }}</span>
+                      </td>
+                      <td class="align-middle">
+                        <a href="{{ path(route_prefix ~ 'evenement_show', { id: evenement.id }) }}" class="btn btn-link text-info px-2 mb-0">Voir</a>
+                        {% if route_prefix == 'app_back_' and app.user and evenement.organisateur and evenement.organisateur.id == app.user.id %}
+                          <a href="{{ path(route_prefix ~ 'evenement_edit', { id: evenement.id }) }}" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+                          <form method="post" action="{{ path(route_prefix ~ 'evenement_delete', { id: evenement.id }) }}" class="d-inline" onsubmit="return confirm('Supprimer cet événement ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_evenement_' ~ evenement.id) }}">
+                            <button type="submit" class="btn btn-link text-danger px-2 mb-0">Supprimer</button>
+                          </form>
+                        {% elseif route_prefix != 'app_back_' %}
+                          <a href="{{ path(route_prefix ~ 'evenement_edit', { id: evenement.id }) }}" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+                          <form method="post" action="{{ path(route_prefix ~ 'evenement_delete', { id: evenement.id }) }}" class="d-inline" onsubmit="return confirm('Supprimer cet événement ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_evenement_' ~ evenement.id) }}">
+                            <button type="submit" class="btn btn-link text-danger px-2 mb-0">Supprimer</button>
+                          </form>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted p-4">Aucun événement. <a href="{{ path(route_prefix ~ 'evenement_new') }}">Créer un événement</a>.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById('evenement-search-form');
+      const tbody = document.getElementById('evenement-table-body');
+
+      if (!form || !tbody) return;
+
+      const routePrefix = {{ route_prefix|json_encode|raw }};
+      const searchUrl = routePrefix === 'app_back_' ? {{ path('app_back_evenement_search')|json_encode|raw }} : null;
+      const resetBtn = document.getElementById('evenement-reset-btn');
+
+      const debounce = (fn, wait) => {
+        let t;
+        return (...args) => {
+          clearTimeout(t);
+          t = setTimeout(() => fn(...args), wait);
+        };
+      };
+
+      const buildRow = (e) => {
+        const imgCell = e.image
+          ? `<img src="/uploadsEvent/evenements/${e.image}" alt="Affiche" class="img-thumbnail" style="max-height: 50px; max-width: 80px;">`
+          : `<span class="text-muted text-xs">Aucune</span>`;
+
+        return `
+          <tr>
+            <td>${imgCell}</td>
+            <td><p class="text-xs font-weight-bold mb-0">${e.titre ?? ''}</p></td>
+            <td><p class="text-xs mb-0">${e.type_label ?? ''}</p></td>
+            <td><p class="text-xs mb-0">${e.date_debut ?? ''}</p></td>
+            <td><p class="text-xs mb-0">${e.lieu ?? ''}</p></td>
+            <td><span class="badge badge-sm bg-gradient-secondary">${e.statut_label ?? ''}</span></td>
+            <td class="align-middle">
+              <a href="/responsable-etudiant/evenements/${e.id}" class="btn btn-link text-info px-2 mb-0">Voir</a>
+              <a href="/responsable-etudiant/evenements/${e.id}/edit" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+            </td>
+          </tr>
+        `;
+      };
+
+      const doSearch = async () => {
+        if (!searchUrl) return;
+        const params = new URLSearchParams(new FormData(form));
+        const url = `${searchUrl}?${params.toString()}`;
+
+        const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (!res.ok) return;
+        const payload = await res.json();
+
+        const rows = (payload.evenements || []).map(buildRow).join('');
+        tbody.innerHTML = rows || `<tr><td colspan="7" class="p-4 text-muted">Aucun résultat.</td></tr>`;
+      };
+
+      const debounced = debounce(doSearch, 300);
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          if (form) form.reset();
+
+          const url = {{ path(route_prefix ~ 'evenement_index')|json_encode|raw }};
+          if (searchUrl) {
+            doSearch();
+          } else {
+            window.location.href = url;
+          }
+        });
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        doSearch();
+      });
+
+      ['input', 'change'].forEach(evt => {
+        form.addEventListener(evt, (e) => {
+          const name = e.target && e.target.name;
+          if (!name) return;
+          if (name === 'q') debounced();
+          else doSearch();
+        });
+      });
+    })();
+  </script>
+{% endblock %}

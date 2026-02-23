@@ -1,0 +1,180 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}{{ traitement.titre }}{% endblock %}
+{% block page_title %}{{ traitement.titre }}{% endblock %}
+{% block breadcrumb_title %}Détails Traitement{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-stethoscope me-2"></i>
+                        Détails du Traitement
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Informations principales -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>Informations générales
+                                    </h6>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="text-muted fw-bold">Titre:</td>
+                                            <td>{{ traitement.titre }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Catégorie:</td>
+                                            <td><span class="badge bg-info">{{ traitement.categorie }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Type:</td>
+                                            <td><span class="badge bg-secondary">{{ traitement.type }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Statut:</td>
+                                            <td>
+                                                {% if traitement.statut == 'en_cours' %}
+                                                    <span class="badge bg-success">En cours</span>
+                                                {% elseif traitement.statut == 'termine' %}
+                                                    <span class="badge bg-primary">Terminé</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">{{ traitement.statut }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Priorité:</td>
+                                            <td>
+                                                {% if traitement.priorite == 'haute' %}
+                                                    <span class="badge bg-danger">Haute</span>
+                                                {% elseif traitement.priorite == 'moyenne' %}
+                                                    <span class="badge bg-warning">Moyenne</span>
+                                                {% else %}
+                                                    <span class="badge bg-info">Basse</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-warning mb-3">
+                                        <i class="fas fa-calendar-alt me-2"></i>Planification
+                                    </h6>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="text-muted fw-bold">Date début:</td>
+                                            <td>{{ traitement.dateDebut ? traitement.dateDebut|date('d/m/Y') : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Date fin:</td>
+                                            <td>{{ traitement.dateFin ? traitement.dateFin|date('d/m/Y') : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Durée:</td>
+                                            <td>{{ traitement.dureeJours ? traitement.dureeJours ~ ' jours' : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Dosage:</td>
+                                            <td>{{ traitement.dosage ?: 'Non applicable' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold">Créé le:</td>
+                                            <td>{{ traitement.createdAt|date('d/m/Y H:i') }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-file-text me-2"></i>Description
+                                    </h6>
+                                    <p class="mb-0">{{ traitement.description ?: 'Aucune description' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Objectif thérapeutique -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-success mb-3">
+                                        <i class="fas fa-bullseye me-2"></i>Objectif thérapeutique
+                                    </h6>
+                                    <p class="mb-0">{{ traitement.objectifTherapeutique ?: 'Aucun objectif défini' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Étudiant associé -->
+                    {% if traitement.etudiant %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-user-graduate me-2"></i>Étudiant concerné
+                                    </h6>
+                                    <div class="d-flex align-items-center">
+                                        {% if traitement.etudiant.profil and traitement.etudiant.profil.photo %}
+                                            <img src="{{ asset('uploads/photos/' ~ traitement.etudiant.profil.photo) }}" 
+                                                 alt="{{ traitement.etudiant.prenom }} {{ traitement.etudiant.nom }}" 
+                                                 class="rounded-circle me-3"
+                                                 style="width: 48px; height: 48px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 48px; height: 48px; font-size: 1.1rem;">
+                                                {{ traitement.etudiant.prenom|first|upper }}{{ traitement.etudiant.nom|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ traitement.etudiant.prenom }} {{ traitement.etudiant.nom }}</h6>
+                                            <small class="text-muted">{{ traitement.etudiant.email }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="text-center mt-4">
+                        <a href="{{ path('app_traitement_index') }}" class="btn btn-outline-secondary btn-lg me-3">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                        </a>
+                        {% if is_granted('ROLE_PSYCHOLOGUE') %}
+                            <a href="{{ path('app_suivi_traitement_select_traitement', {'traitement_id': traitement.id}) }}" class="btn btn-info btn-lg me-3">
+                                <i class="fas fa-calendar-plus me-2"></i>Ajouter un suivi
+                            </a>
+                            <a href="{{ path('app_traitement_edit', {'id': traitement.id}) }}" class="btn btn-warning btn-lg">
+                                <i class="fas fa-edit me-2"></i>Modifier
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

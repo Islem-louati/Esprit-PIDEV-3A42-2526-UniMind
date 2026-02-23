@@ -1,0 +1,93 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ is_edit ? 'Modifier' : 'Nouvel événement' }} | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}{{ is_edit ? 'Modifier l\'événement' : 'Nouvel événement' }}{% endblock %}
+{% block breadcrumb_title %}{{ is_edit ? 'Modifier' : 'Créer' }} un événement{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>{{ is_edit ? 'Modifier l\'événement' : 'Nouvel événement' }}</h5>
+        </div>
+        <div class="card-body">
+          {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+          {{ form_errors(form) }}
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              {{ form_label(form.titre) }}
+              {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.titre) }}</div>
+            </div>
+            <div class="col-md-12 mb-3">
+              {{ form_label(form.description) }}
+              {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.description) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.type) }}
+              {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.type) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.statut) }}
+              {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.statut) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.dateDebut) }}
+              {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.dateDebut) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.dateFin) }}
+              {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.dateFin) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.lieu) }}
+              {{ form_widget(form.lieu, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.lieu) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.capaciteMax) }}
+              {{ form_widget(form.capaciteMax, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.capaciteMax) }}</div>
+            </div>
+            {% if form.organisateur is defined %}
+              <div class="col-md-6 mb-3">
+                {{ form_label(form.organisateur) }}
+                {{ form_widget(form.organisateur, {'attr': {'class': 'form-select'}}) }}
+                <div class="text-danger mt-1 small">{{ form_errors(form.organisateur) }}</div>
+              </div>
+            {% endif %}
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.dateLimiteInscription) }}
+              {{ form_widget(form.dateLimiteInscription, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.dateLimiteInscription) }}</div>
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              {{ form_label(form.imageFile) }}
+              {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.imageFile) }}</div>
+              {% if evenement.image %}
+                <div class="mt-2">
+                  <label class="form-label">Image actuelle</label>
+                  <div>
+                    <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" alt="Affiche" class="img-thumbnail" style="max-height: 150px;">
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ path(route_prefix ~ 'evenement_index') }}" class="btn btn-secondary me-2">Annuler</a>
+            <button type="submit" class="btn btn-primary">{{ is_edit ? 'Enregistrer' : 'Créer' }}</button>
+          </div>
+          {{ form_end(form) }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,261 @@
+{% extends 'etudiant/base.html.twig' %}
+
+{% block title %}Dashboard Étudiant{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 text-dark">Tableau de bord</h1>
+            <p class="text-muted">Bienvenue étudiant !</p> {# Ligne modifiée #}
+        </div>
+    </div>
+    
+    <!-- Cartes statistiques -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Questionnaires disponibles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_questionnaires ?? 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Mes réponses
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_mes_reponses ?? 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Score moyen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ score_moyen ?? 0 }}%</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                À compléter
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if questionnaires_disponibles is defined and questionnaires_disponibles|length > 0 %}
+                                    {{ questionnaires_disponibles|length }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-play-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Deux colonnes -->
+    <div class="row">
+        <!-- Questionnaires disponibles -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-play-circle me-2"></i>Questionnaires disponibles
+                    </h6>
+                    <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-sm btn-primary">
+                        Voir tous
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if questionnaires_disponibles is defined and questionnaires_disponibles|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Type</th>
+                                        <th>Questions</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for questionnaire in questionnaires_disponibles %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ questionnaire.nom }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ questionnaire.description|slice(0, 40) }}...</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 
+                                                    questionnaire.type == 'STRESS' ? 'danger' :
+                                                    questionnaire.type == 'ANXIETE' ? 'warning' :
+                                                    questionnaire.type == 'DEPRESSION' ? 'secondary' :
+                                                    'success'
+                                                }}">
+                                                    {{ questionnaire.type }}
+                                                </span>
+                                            </td>
+                                            <td>{{ questionnaire.nbreQuestions }}</td> {# Modifié pour utiliser nbreQuestions #}
+                                            <td>
+                                                <a href="{{ path('etudiant_questionnaire_passer', {'id': questionnaire.id}) }}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-play"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5>Tous complétés !</h5>
+                            <p class="text-muted">Vous avez répondu à tous les questionnaires.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dernières réponses -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-history me-2"></i>Dernières réponses
+                    </h6>
+                    <a href="{{ path('etudiant_mes_reponses') }}" class="btn btn-sm btn-success">
+                        Voir toutes
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if dernieres_reponses is defined and dernieres_reponses|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Questionnaire</th>
+                                        <th>Date</th>
+                                        <th>Score</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reponse in dernieres_reponses %}
+                                        {% set questionnaire = reponse.questionnaire %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ questionnaire.nom }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ questionnaire.type }}</small>
+                                            </td>
+                                            <td>{{ reponse.dateSoumission|date('d/m/Y') }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ 
+                                                    reponse.score > 70 ? 'success' :
+                                                    reponse.score > 40 ? 'warning' : 'danger'
+                                                }}">
+                                                    {{ reponse.score }}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ path('etudiant_mes_reponses_show', {'id': reponse.id}) }}" 
+                                                   class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clipboard-question fa-3x text-muted mb-3"></i>
+                            <h5>Aucune réponse</h5>
+                            <p class="text-muted">Commencez par passer un questionnaire.</p>
+                            <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary">
+                                Passer un questionnaire
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions rapides -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bolt me-2"></i>Actions rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-clipboard-list me-2"></i>Voir tous les questionnaires
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ path('etudiant_mes_reponses') }}" class="btn btn-success w-100">
+                                <i class="fas fa-chart-line me-2"></i>Mes résultats
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ path('etudiant_questionnaire_liste', {'type': 'stress'}) }}" class="btn btn-danger w-100">
+                                <i class="fas fa-fire me-2"></i>Tests de stress
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

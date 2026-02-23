@@ -1,0 +1,105 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Mes événements | Espace étudiant | UniMind{% endblock %}
+{% block breadcrumb_page %}Mes événements{% endblock %}
+{% block breadcrumb_title %}Mes événements{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>Événements à venir</h5>
+        </div>
+        <div class="card-body">
+          {% if participations_a_venir|length > 0 %}
+            <div class="table-responsive">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Événement</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lieu</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in participations_a_venir %}
+                    <tr>
+                      <td>
+                        <a href="{{ path('app_evenement_etudiant_show', { id: p.evenement.id }) }}">{{ p.evenement.titre }}</a>
+                      </td>
+                      <td>{{ p.evenement.getDateDebutFormatee() }}</td>
+                      <td>{{ p.evenement.lieu }}</td>
+                      <td>{{ p.getStatut().getLabel() }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info text-white border-0" role="alert">Aucun événement à venir.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>Événements terminés</h5>
+        </div>
+        <div class="card-body">
+          {% if participations_terminees|length > 0 %}
+            <div class="table-responsive">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Événement</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lieu</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Feedback</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in participations_terminees %}
+                    <tr>
+                      <td>
+                        <a href="{{ path('app_evenement_etudiant_show', { id: p.evenement.id }) }}">{{ p.evenement.titre }}</a>
+                      </td>
+                      <td>{{ p.evenement.getDateDebutFormatee() }}</td>
+                      <td>{{ p.evenement.lieu }}</td>
+                      <td>
+                        {% if p.canGiveFeedback() %}
+                          <a class="btn btn-sm btn-primary" href="{{ path('app_etudiant_participation_feedback', { id: p.id }) }}">Donner un feedback</a>
+                        {% elseif p.hasFeedback() %}
+                          <div class="d-flex flex-column gap-1">
+                            <span class="badge bg-success align-self-start">Feedback donné</span>
+                            <small class="text-xs mb-0">
+                              <strong>Votre note :</strong>
+                              {{ p.noteSatisfaction is not null ? p.noteSatisfaction ~ '/5' : '—' }}
+                            </small>
+                            {% if p.feedbackCommentaire %}
+                              <small class="text-xs mb-0">
+                                <strong>Votre commentaire :</strong>
+                                <span style="display:inline-block; max-width: 360px; white-space: normal; word-break: break-word;">
+                                  {{ p.feedbackCommentaire }}
+                                </span>
+                              </small>
+                            {% endif %}
+                          </div>
+                        {% else %}
+                          <span class="badge bg-secondary">Non disponible</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info text-white border-0" role="alert">Aucun événement terminé.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,327 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Question{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item text-sm text-white">
+        <a class="opacity-5 text-white" href="{{ path('admin_question_index') }}">Questions</a>
+    </li>
+    <li class="breadcrumb-item text-sm text-white active" aria-current="page">Nouvelle</li>
+{% endblock %}
+
+{% block page_title %}Nouvelle Question{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Ajouter une question au questionnaire : {{ questionnaire.nom }}</h6>
+                        <a href="{{ path('admin_question_index', {'questionnaire_id': questionnaire.questionnaireId}) }}" 
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'id': 'question-form', 'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    
+                    {# Alerte erreurs de validation (champs vides, etc.) #}
+                    {% if not form.vars.valid and form.vars.submitted %}
+                        <div class="alert alert-danger mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Erreurs à corriger :</strong>
+                            <ul class="mb-0 mt-2">
+                                {% for error in form.vars.errors %}
+                                    <li>{{ error.message }}</li>
+                                {% endfor %}
+                                {% for child in form %}
+                                    {% for error in child.vars.errors %}
+                                        <li>{{ error.message }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form_label(form.texte) }}
+                            {{ form_widget(form.texte, {'attr': {'class': 'form-control' ~ (form.texte.vars.errors|length > 0 ? ' is-invalid' : '')}}) }}
+                            {% if form.texte.vars.errors|length > 0 %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.texte.vars.errors %}
+                                        <span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>{{ error.message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="invalid-feedback">Veuillez saisir le texte de la question.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.type_question) }}
+                            {{ form_widget(form.type_question) }}
+                        </div>
+                    </div>
+
+                    <!-- Options de réponse -->
+                    <div id="options-section" class="mb-4">
+                        <h6 class="mb-3">
+                            <i class="fas fa-list-ul me-1"></i> Options de réponse
+                            <small class="text-muted">(avec scores)</small>
+                        </h6>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm" id="options-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="60%">Option</th>
+                                        <th width="30%">Score</th>
+                                        <th width="10%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="options-container">
+                                    {% for option in form.options_quest %}
+                                    <tr class="option-row">
+                                        <td>
+                                            {{ form_widget(option, {'attr': {'class': 'form-control form-control-sm option-input'}}) }}
+                                        </td>
+                                        <td>
+                                            {% set scoreField = form.score_options[loop.index0] %}
+                                            {{ form_widget(scoreField, {'attr': {'class': 'form-control form-control-sm score-input'}}) }}
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-danger btn-sm remove-option" style="padding: 0.25rem 0.5rem;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" id="add-option" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus me-1"></i> Ajouter une option
+                            </button>
+                            <button type="button" id="reset-options" class="btn btn-warning btn-sm ms-2">
+                                <i class="fas fa-redo me-1"></i> Options par défaut
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info py-2">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>
+                                <strong>Note :</strong> Les scores doivent correspondre à chaque option.
+                                Pour une échelle Likert standard, utilisez : 0, 1, 2, 3, 4
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Enregistrer la question
+                        </button>
+                        <button type="button" id="add-another" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-plus-circle me-1"></i> Enregistrer et ajouter une autre
+                        </button>
+                        <a href="{{ path('admin_question_index', {'questionnaire_id': questionnaire.questionnaireId}) }}" 
+                           class="btn btn-secondary ms-2">
+                            <i class="fas fa-times me-1"></i> Annuler
+                        </a>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const optionsContainer = document.getElementById('options-container');
+    const addOptionButton = document.getElementById('add-option');
+    const resetOptionsButton = document.getElementById('reset-options');
+    const typeQuestionSelect = document.getElementById('question_type_question');
+    const optionsSection = document.getElementById('options-section');
+    const questionForm = document.getElementById('question-form');
+    const addAnotherButton = document.getElementById('add-another');
+
+    // Compteur pour les nouvelles options
+    let optionIndex = {{ form.options_quest|length }};
+
+    // Fonction pour ajouter une option
+    function addOption(optionText = '', score = 0) {
+        const newRow = document.createElement('tr');
+        newRow.className = 'option-row';
+        
+        newRow.innerHTML = `
+            <td>
+                <input type="text" 
+                       name="question[options_quest][${optionIndex}]" 
+                       class="form-control form-control-sm option-input" 
+                       placeholder="Entrez une option..."
+                       value="${optionText}">
+            </td>
+            <td>
+                <input type="number" 
+                       name="question[score_options][${optionIndex}]" 
+                       class="form-control form-control-sm score-input" 
+                       placeholder="Score..."
+                       value="${score}">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-danger btn-sm remove-option" style="padding: 0.25rem 0.5rem;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        optionsContainer.appendChild(newRow);
+        
+        // Ajouter l'événement de suppression
+        newRow.querySelector('.remove-option').addEventListener('click', function() {
+            newRow.remove();
+        });
+        
+        optionIndex++;
+    }
+
+    // Ajouter une option vide
+    addOptionButton.addEventListener('click', function() {
+        addOption();
+    });
+
+    // Supprimer une option (pour les options existantes)
+    document.querySelectorAll('.remove-option').forEach(button => {
+        button.addEventListener('click', function() {
+            this.closest('.option-row').remove();
+        });
+    });
+
+    // Réinitialiser aux options par défaut
+    resetOptionsButton.addEventListener('click', function() {
+        // Vider le conteneur
+        optionsContainer.innerHTML = '';
+        optionIndex = 0;
+        
+        // Ajouter les options par défaut selon le type
+        const type = typeQuestionSelect.value;
+        
+        switch(type) {
+            case 'likert':
+                const likertOptions = ['Jamais', 'Rarement', 'Parfois', 'Souvent', 'Toujours'];
+                const likertScores = [0, 1, 2, 3, 4];
+                likertOptions.forEach((option, idx) => {
+                    addOption(option, likertScores[idx]);
+                });
+                break;
+                
+            case 'yesno':
+                addOption('Oui', 1);
+                addOption('Non', 0);
+                break;
+                
+            case 'numeric':
+                for(let i = 0; i <= 10; i++) {
+                    addOption(i.toString(), i);
+                }
+                break;
+                
+            case 'multiple':
+                addOption('Option 1', 0);
+                addOption('Option 2', 0);
+                addOption('Option 3', 0);
+                break;
+        }
+    });
+
+    // Gérer le changement de type de question
+    typeQuestionSelect.addEventListener('change', function() {
+        const type = this.value;
+        
+        if (type === 'text') {
+            optionsSection.style.display = 'none';
+        } else {
+            optionsSection.style.display = 'block';
+            // Appliquer les options par défaut pour le nouveau type
+            resetOptionsButton.click();
+        }
+    });
+
+    // Initialiser l'affichage selon le type sélectionné
+    if (typeQuestionSelect.value === 'text') {
+        optionsSection.style.display = 'none';
+    }
+
+    // Enregistrer et ajouter une autre
+    if (addAnotherButton) {
+        addAnotherButton.addEventListener('click', function() {
+            // Ajouter un champ caché pour indiquer l'action
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'add_another';
+            hiddenInput.value = '1';
+            questionForm.appendChild(hiddenInput);
+            
+            // Soumettre le formulaire
+            questionForm.submit();
+        });
+    }
+
+    // Validation du formulaire
+    if (questionForm) {
+        questionForm.addEventListener('submit', function(event) {
+            if (!questionForm.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Vérifier qu'il y a au moins 2 options pour les types qui en nécessitent
+            const type = typeQuestionSelect.value;
+            if (type !== 'text') {
+                const optionRows = document.querySelectorAll('.option-row');
+                if (optionRows.length < 2) {
+                    alert('Veuillez ajouter au moins 2 options de réponse.');
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return false;
+                }
+            }
+            
+            questionForm.classList.add('was-validated');
+        });
+    }
+});
+</script>
+
+<style>
+.option-row td {
+    vertical-align: middle;
+    padding: 0.5rem;
+}
+
+#options-table th {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem;
+}
+
+.remove-option {
+    transition: all 0.2s;
+}
+
+.remove-option:hover {
+    transform: scale(1.1);
+}
+</style>
+{% endblock %}

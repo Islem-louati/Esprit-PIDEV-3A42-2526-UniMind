@@ -1,0 +1,476 @@
+{# templates/dashboard/etudiant.html.twig #}
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Dashboard Étudiant | UniMind{% endblock %}
+
+{% block breadcrumb_title %}Dashboard Étudiant{% endblock %}
+{% block page_title %}Tableau de bord Étudiant{% endblock %}
+
+{% block body %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Tableau de bord - Étudiant</h1>
+    <a href="{{ path('app_etudiant_rdv') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-calendar-plus fa-sm text-white-50"></i> Prendre rendez-vous
+    </a>
+</div>
+
+<!-- Welcome Message -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card border-left-primary shadow">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="h5 font-weight-bold text-primary mb-1">
+                            Bienvenue, {{ user.prenom }} {{ user.nom }} !
+                        </div>
+                        <div class="text-gray-800">
+                            {% if user.profil and (user.profil.niveau or user.profil.filiere) %}
+                                {{ user.profil.niveau ?: '' }} {{ user.profil.filiere ?: '' }}
+                            {% endif %}
+                            {% if user.etablissement %}
+                                {% if user.profil and (user.profil.niveau or user.profil.filiere) %} - {% endif %}
+                                {{ user.etablissement }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Raccourcis Traitements (issu de la deuxième version) -->
+<div class="row mb-4">
+    <div class="col-xl-6 mb-4">
+        <div class="card border-left-primary shadow">
+            <div class="card-body">
+                <h6 class="text-primary font-weight-bold">
+                    <i class="fas fa-heart-pulse me-2"></i>
+                    Suivi Thérapeutique
+                </h6>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a href="{{ path('app_traitement_index') }}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-stethoscope me-1"></i>
+                            Mes Traitements
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ path('app_suivi_traitement_index') }}" class="btn btn-outline-info btn-sm w-100">
+                            <i class="fas fa-calendar-heart me-1"></i>
+                            Mon Suivi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques Row (fusion des deux) -->
+<div class="row">
+    <!-- Prochains RDV (première version) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Prochains RDV
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.prochains_rdv ?? 0 }}</div>
+                        <div class="text-xs text-gray-600">Cette semaine</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consultations (première version) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Consultations
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_consultations ?? 0 }}</div>
+                        <div class="text-xs text-gray-600">Total</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-file-medical fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Traitements (première version) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Traitements
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.traitements_actifs ?? 0 }}</div>
+                        <div class="text-xs text-gray-600">Actifs</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-pills fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages non lus (première version) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Messages non lus
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.unread_messages ?? 0 }}</div>
+                        <div class="text-xs text-gray-600">Nouveaux</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-envelope fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenu principal : Prochains rendez-vous détaillés (première version) -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Mes Prochains Rendez-vous</h6>
+                <a href="{{ path('app_etudiant_rdv') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-calendar-plus"></i> Prendre RDV
+                </a>
+            </div>
+            <div class="card-body">
+                {% if prochains_rdv is defined and prochains_rdv is not empty %}
+                    <div class="list-group">
+                        {% for rdv in prochains_rdv|slice(0, 5) %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <div class="bg-primary text-white rounded-circle p-3">
+                                            <i class="fas fa-calendar-day"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">
+                                                Consultation avec {{ rdv.psy ? 'Dr. ' ~ rdv.psy.nom : 'Psychologue' }}
+                                            </h6>
+                                            <small class="text-muted">{{ rdv.getDateRendezVous()|date('d/m/Y') }}</small>
+                                        </div>
+                                        <p class="mb-1 text-sm">
+                                            <i class="fas fa-clock text-primary mr-1"></i> {{ rdv.getHeureDebut()|date('H:i') }}
+                                            <span class="badge bg-{{ rdv.getTypeConsultation() == 'Présentiel' ? 'success' : 'info' }} ms-2">
+                                                {{ rdv.getTypeConsultation() ?? 'Présentiel' }}
+                                            </span>
+                                        </p>
+                                        {% if rdv.getLieu() %}
+                                            <small class="text-muted">
+                                                <i class="fas fa-map-marker-alt"></i> {{ rdv.getLieu() }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Aucun rendez-vous programmé</p>
+                        <a href="{{ path('app_etudiant_rdv') }}" class="btn btn-outline-primary btn-sm mt-3">
+                            Prendre rendez-vous
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rendez-vous passés (première version) -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Rendez-vous passés</h6>
+                <a href="{{ path('app_etudiant_rdv') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-history"></i> Voir tout
+                </a>
+            </div>
+            <div class="card-body">
+                {% if rdv_passés is defined and rdv_passés is not empty %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Psychologue</th>
+                                    <th>Date</th>
+                                    <th>Heure</th>
+                                    <th>Type</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rdv in rdv_passés|slice(0, 5) %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ rdv.psy ? 'Dr. ' ~ rdv.psy.prenom ~ ' ' ~ rdv.psy.nom : 'Psychologue' }}</strong>
+                                        </td>
+                                        <td>{{ rdv.getDateRendezVous()|date('d/m/Y') }}</td>
+                                        <td>{{ rdv.getHeureDebut()|date('H:i') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ rdv.getTypeConsultation() == 'Présentiel' ? 'success' : 'info' }}">
+                                                {{ rdv.getTypeConsultation() ?? 'Présentiel' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if rdv.isTermine() is defined and rdv.isTermine() %}
+                                                <span class="badge bg-secondary">Terminé</span>
+                                            {% elseif rdv.isAnnule() is defined and rdv.isAnnule() %}
+                                                <span class="badge bg-danger">Annulé</span>
+                                            {% elseif rdv.isAbsent() is defined and rdv.isAbsent() %}
+                                                <span class="badge bg-dark">Absent</span>
+                                            {% else %}
+                                                <span class="badge bg-info">{{ rdv.statut }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('app_etudiant_rdv_detail', {'id': rdv.rendezVousId}) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> Détails
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Aucun rendez-vous passé</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des Traitements Actifs -->
+{% if traitements_actifs is defined %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-stethoscope me-2"></i>
+                    Mes Traitements Actifs
+                </h6>
+                <a href="{{ path('app_traitement_index') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-list me-1"></i>
+                    Voir tout
+                </a>
+            </div>
+            <div class="card-body">
+                {% if traitements_actifs is not empty %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Type</th>
+                                    <th>Catégorie</th>
+                                    <th>Date de début</th>
+                                    <th>Durée</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for traitement in traitements_actifs %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ traitement.titre }}</strong>
+                                            {% if traitement.objectifTherapeutique %}
+                                                <br><small class="text-muted">{{ traitement.objectifTherapeutique|slice(0, 100) }}...</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ traitement.type }}</span>
+                                        </td>
+                                        <td>{{ traitement.categorie }}</td>
+                                        <td>{{ traitement.dateDebut|date('d/m/Y') }}</td>
+                                        <td>{{ traitement.dureeJours }} jours</td>
+                                        <td>
+                                            <span class="badge bg-success">{{ traitement.statut }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('app_traitement_show', {'id': traitement.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-stethoscope fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">Aucun traitement actif</p>
+                        <a href="{{ path('app_traitement_index') }}" class="btn btn-outline-primary btn-sm mt-3">
+                            <i class="fas fa-plus me-1"></i>
+                            Voir tous les traitements
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Liste des Traitements Terminés -->
+{% if traitements_termines is defined %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-secondary">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Mes Traitements Terminés
+                </h6>
+                <a href="{{ path('app_traitement_index') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-list me-1"></i>
+                    Voir tout
+                </a>
+            </div>
+            <div class="card-body">
+                {% if traitements_termines is not empty %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Type</th>
+                                    <th>Date de début</th>
+                                    <th>Date de fin</th>
+                                    <th>Durée</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for traitement in traitements_termines %}
+                                    <tr class="table-secondary">
+                                        <td>
+                                            <strong>{{ traitement.titre }}</strong>
+                                            {% if traitement.objectifTherapeutique %}
+                                                <br><small class="text-muted">{{ traitement.objectifTherapeutique|slice(0, 100) }}...</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ traitement.type }}</span>
+                                        </td>
+                                        <td>{{ traitement.dateDebut|date('d/m/Y') }}</td>
+                                        <td>{{ traitement.dateFin ? traitement.dateFin|date('d/m/Y') : '-' }}</td>
+                                        <td>{{ traitement.dureeJours }} jours</td>
+                                        <td>
+                                            <a href="{{ path('app_traitement_show', {'id': traitement.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">Aucun traitement terminé</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Fonctionnalités disponibles -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Fonctionnalités disponibles</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Information</h6>
+                    <p class="mb-0">Cette plateforme est en cours de développement. Actuellement, seules les fonctionnalités suivantes sont actives :</p>
+                    <ul class="mt-2 mb-0">
+                        <li>Profil utilisateur (consultation et modification)</li>
+                        <li>Prise de rendez-vous</li>
+                        <li>Consultation des rendez-vous</li>
+                        <li>Modification du mot de passe</li>
+                        <li>Suivi thérapeutique (traitements et suivis)</li>
+                        <li>Déconnexion</li>
+                    </ul>
+                </div>
+                
+                <h6 class="mt-4 mb-3 font-weight-bold text-gray-800">Fonctionnalités à venir :</h6>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-left-primary">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-calendar-alt mr-2"></i>Agenda avancé</h6>
+                                <p class="card-text text-muted small">Vue mensuelle de vos rendez-vous</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-left-success">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-comments mr-2"></i>Messagerie</h6>
+                                <p class="card-text text-muted small">Échanger avec votre psychologue</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-left-warning">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-file-medical mr-2"></i>Questionnaires</h6>
+                                <p class="card-text text-muted small">Compléter des questionnaires de suivi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

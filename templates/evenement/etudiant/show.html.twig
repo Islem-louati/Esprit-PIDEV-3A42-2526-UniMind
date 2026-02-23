@@ -1,0 +1,127 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}{{ evenement.titre }} | Espace étudiant | UniMind{% endblock %}
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="{{ path('app_evenement_etudiant_index') }}">Événements</a></li>
+  <li class="breadcrumb-item text-sm text-white active" aria-current="page">{{ evenement.titre }}</li>
+{% endblock %}
+{% block breadcrumb_title %}{{ evenement.titre }}{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>{{ evenement.titre }}</h5>
+          <p class="text-sm text-secondary mb-0">{{ evenement.getTypeFormate() }} · {{ evenement.getStatutFormate() }}</p>
+        </div>
+        <div class="card-body pt-3">
+          {% if evenement.image %}
+            <div class="text-center mb-4">
+              <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" alt="Affiche de l'événement" class="img-fluid rounded" style="max-height: 300px;">
+            </div>
+          {% endif %}
+          {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+          {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+          {% for message in app.flashes('info') %}
+            <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+
+          {% if evenement.description %}
+            <p class="text-body mb-4">{{ evenement.description }}</p>
+          {% endif %}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item px-0 d-flex justify-content-between">
+              <span class="text-sm text-secondary">Début</span>
+              <span class="text-sm font-weight-bold">{{ evenement.getDateDebutFormatee() }}</span>
+            </li>
+            <li class="list-group-item px-0 d-flex justify-content-between">
+              <span class="text-sm text-secondary">Fin</span>
+              <span class="text-sm font-weight-bold">{{ evenement.getDateFinFormatee() }}</span>
+            </li>
+            <li class="list-group-item px-0 d-flex justify-content-between">
+              <span class="text-sm text-secondary">Lieu</span>
+              <span class="text-sm font-weight-bold">{{ evenement.lieu }}</span>
+            </li>
+            <li class="list-group-item px-0 d-flex justify-content-between">
+              <span class="text-sm text-secondary">Places</span>
+              <span class="text-sm font-weight-bold">{{ evenement.nombreInscrits }} / {{ evenement.capaciteMax }}</span>
+            </li>
+          </ul>
+
+          {% set sponsor_links = evenement.evenementSponsors|default([]) %}
+          {% if sponsor_links|length > 0 %}
+            <div class="card mt-4">
+              <div class="card-header pb-0">
+                <h6>Sponsors</h6>
+              </div>
+              <div class="card-body p-4">
+                <div class="row">
+                  {% for link in sponsor_links %}
+                    {% set sp = link.getSponsor() %}
+                    {% if sp is not null %}
+                      <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 shadow-sm border-radius-lg hover-lift">
+                          <div class="card-body p-3 text-center">
+                            {% set logo = sp.getLogo() %}
+                            {% if logo %}
+                              <img src="{{ asset('uploadsEvent/sponsors/' ~ logo) }}" alt="Logo" class="img-fluid mb-3" style="max-height: 80px; max-width: 120px; object-fit: contain;">
+                            {% else %}
+                              <div class="d-flex align-items-center justify-content-center mb-3" style="height: 80px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                                <span class="text-muted text-xs">Logo</span>
+                              </div>
+                            {% endif %}
+                            <h6 class="text-dark font-weight-bold mb-2">{{ sp.getNomSponsor() }}</h6>
+                            <p class="text-xs text-secondary mb-2">{{ sp.getTypeSponsorFormate() }}</p>
+                            {% set siteWeb = sp.getSiteWeb() %}
+                            {% if siteWeb %}
+                              <a href="{{ siteWeb }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">Visiter le site</a>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+          <div class="mt-4">
+            {% if is_inscrit %}
+              <span class="badge bg-success">Inscrit</span>
+            {% elseif evenement.isInscriptionOuverte() %}
+              <form method="post" action="{{ path('app_evenement_etudiant_participer', { id: evenement.id }) }}" class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('participer_evenement_' ~ evenement.id) }}">
+                <button type="submit" class="btn btn-primary btn-sm">Participer</button>
+              </form>
+            {% else %}
+              <span class="badge bg-secondary">Inscriptions fermées</span>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_favori_etudiant_toggle', { id: evenement.id }) }}" class="d-inline">
+              <input type="hidden" name="_token" value="{{ csrf_token('toggle_favori_evenement_' ~ evenement.id) }}">
+              <button type="submit" class="btn {{ is_favori ? 'btn-danger' : 'btn-outline-danger' }} btn-sm">
+                {{ is_favori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+              </button>
+            </form>
+
+            <a href="{{ path('app_evenement_etudiant_index') }}" class="btn btn-outline-primary btn-sm">Retour à la liste</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

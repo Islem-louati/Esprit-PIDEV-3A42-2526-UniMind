@@ -1,0 +1,171 @@
+{# templates/dashboard/etudiant/consultations/show.html.twig #}
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Détails Consultation | UniMind{% endblock %}
+
+{% block page_title %}Détails de la consultation{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item text-sm">
+    <a class="text-white" href="{{ path('app_etudiant_consultations') }}">
+      <i class="fas fa-file-medical me-1"></i>Consultations
+    </a>
+  </li>
+  <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+    <i class="fas fa-eye me-1"></i>Détails
+  </li>
+{% endblock %}
+
+{% block breadcrumb_icon %}fa-file-medical{% endblock %}
+{% block page_title_icon %}fa-file-medical{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div class="d-flex align-items-center">
+            <div>
+              <h6 class="mb-0">Consultation du {{ consultation.dateRedaction|date('d/m/Y à H:i') }}</h6>
+              <p class="text-sm text-secondary mb-0">
+                Rédigée il y a {{ consultation.age }}
+                {% if consultation.hasBeenModified %}
+                  <span class="badge badge-sm badge-info ms-2">Modifiée le {{ consultation.dateModification|date('d/m/Y') }}</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          {# Informations du rendez-vous #}
+          <h6 class="text-uppercase text-xs font-weight-bolder mb-3">Informations du rendez-vous</h6>
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-calendar-alt text-primary me-3" style="font-size: 1.5rem;"></i>
+                <div>
+                  <p class="text-xs text-secondary mb-0">Date du rendez-vous</p>
+                  <p class="text-sm font-weight-bold mb-0">{{ consultation.dateRendezVous|date('d/m/Y à H:i') }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-stethoscope text-info me-3" style="font-size: 1.5rem;"></i>
+                <div>
+                  <p class="text-xs text-secondary mb-0">Type de consultation</p>
+                  <p class="text-sm font-weight-bold mb-0">{{ consultation.rendezVous.type ?? 'Présentiel' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if consultation.motifRendezVous %}
+            <div class="mb-4">
+              <h6 class="text-uppercase text-xs font-weight-bolder mb-2">Motif de la consultation</h6>
+              <p class="text-sm">{{ consultation.motifRendezVous }}</p>
+            </div>
+          {% endif %}
+
+          {# Avis du psychologue #}
+          <hr class="horizontal dark">
+          <h6 class="text-uppercase text-xs font-weight-bolder mb-3">Avis du psychologue</h6>
+          {% if consultation.avisPsy %}
+            <div class="bg-gray-100 border-radius-lg p-3">
+              <p class="text-sm mb-0" style="white-space: pre-line;">{{ consultation.avisPsy }}</p>
+            </div>
+          {% else %}
+            <div class="alert alert-secondary text-white text-sm" role="alert">
+              <i class="fas fa-comment-slash me-2"></i>
+              Le psychologue n'a pas encore rédigé d'avis pour cette consultation.
+            </div>
+          {% endif %}
+
+          {# Note de satisfaction #}
+          <hr class="horizontal dark">
+          <h6 class="text-uppercase text-xs font-weight-bolder mb-3">Évaluation</h6>
+          {% if consultation.noteSatisfaction %}
+            <div class="d-flex align-items-center">
+              <span class="text-warning me-3" style="font-size: 2rem;">
+                {% for i in 1..5 %}
+                  {% if i <= consultation.noteSatisfaction %}
+                    ★
+                  {% else %}
+                    ☆
+                  {% endif %}
+                {% endfor %}
+              </span>
+              <div>
+                <p class="text-sm font-weight-bold mb-0">{{ consultation.noteSatisfaction }}/5</p>
+                <p class="text-xs text-secondary mb-0">Note de satisfaction</p>
+              </div>
+            </div>
+          {% else %}
+            <div class="alert alert-secondary text-white text-sm" role="alert">
+              <i class="fas fa-star me-2"></i>
+              Vous n'avez pas encore évalué cette consultation.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      {# Carte du psychologue #}
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Votre psychologue</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="avatar avatar-xl me-3">
+              <div class="avatar avatar-xl bg-gradient-primary text-white d-flex align-items-center justify-content-center">
+                <span class="text-lg font-weight-bold">{{ consultation.psy.prenom|slice(0, 1) }}{{ consultation.psy.nom|slice(0, 1) }}</span>
+              </div>
+            </div>
+            <div>
+              <h6 class="mb-0">Dr. {{ consultation.psy.nom }} {{ consultation.psy.prenom }}</h6>
+              <p class="text-xs text-secondary mb-0">{{ consultation.psy.specialite ?? 'Psychologue' }}</p>
+            </div>
+          </div>
+          
+          <hr class="horizontal dark">
+          
+          <ul class="list-group">
+            {% if consultation.psy.email %}
+              <li class="list-group-item border-0 ps-0 pt-0 text-sm">
+                <strong class="text-dark">Email:</strong> 
+                <a href="mailto:{{ consultation.psy.email }}" class="text-primary">{{ consultation.psy.email }}</a>
+              </li>
+            {% endif %}
+            {% if consultation.psy.telephone %}
+              <li class="list-group-item border-0 ps-0 text-sm">
+                <strong class="text-dark">Téléphone:</strong> {{ consultation.psy.telephone }}
+              </li>
+            {% endif %}
+            {% if consultation.psy.nomEtablissement %}
+              <li class="list-group-item border-0 ps-0 text-sm">
+                <strong class="text-dark">Établissement:</strong> {{ consultation.psy.nomEtablissement }}
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+
+      {# Actions #}
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Actions</h6>
+        </div>
+        <div class="card-body">
+          <a href="{{ path('app_etudiant_rdv') }}" class="btn btn-primary btn-sm w-100 mb-2">
+            <i class="fas fa-calendar-plus me-2"></i>Prendre un nouveau RDV
+          </a>
+          <a href="{{ path('app_etudiant_consultations') }}" class="btn btn-outline-secondary btn-sm w-100">
+            <i class="fas fa-list me-2"></i>Toutes mes consultations
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

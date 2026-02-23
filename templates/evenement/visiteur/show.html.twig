@@ -1,0 +1,50 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}{{ evenement.titre }} | UniMind{% endblock %}
+{% block breadcrumb_page %}Événements{% endblock %}
+{% block breadcrumb_title %}Détail de l’événement{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+            <h6 class="mb-0">{{ evenement.titre }}</h6>
+            <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-primary btn-sm mb-0">Retour à la liste</a>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if evenement.image %}
+            <div class="text-center mb-4">
+              <img src="{{ asset('uploadsEvent/evenements/' ~ evenement.image) }}" alt="Affiche de l'événement" class="img-fluid rounded" style="max-height: 320px; object-fit: cover;">
+            </div>
+          {% endif %}
+
+          <p class="text-sm text-secondary mb-3">{{ evenement.getTypeFormate() }} · {{ evenement.getStatutFormate() }}</p>
+
+          {% if evenement.description %}
+            <p class="text-sm text-body mb-4">{{ evenement.description }}</p>
+          {% endif %}
+
+          <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+              <div class="card card-body border card-plain border-radius-lg">
+                <p class="text-xs text-uppercase font-weight-bolder opacity-7 mb-2">Dates</p>
+                <p class="text-sm mb-1"><strong>Début :</strong> {{ evenement.getDateDebutFormatee() }}</p>
+                <p class="text-sm mb-0"><strong>Fin :</strong> {{ evenement.getDateFinFormatee() }}</p>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <div class="card card-body border card-plain border-radius-lg">
+                <p class="text-xs text-uppercase font-weight-bolder opacity-7 mb-2">Infos</p>
+                <p class="text-sm mb-1"><strong>Lieu :</strong> {{ evenement.lieu }}</p>
+                <p class="text-sm mb-0"><strong>Places :</strong> {{ evenement.nombreInscrits }} / {{ evenement.capaciteMax }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ is_edit ? 'Modifier' : 'Nouvelle participation' }} | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}{{ is_edit ? 'Modifier la participation' : 'Nouvelle participation' }}{% endblock %}
+{% block breadcrumb_title %}{{ is_edit ? 'Modifier' : 'Créer' }} une participation{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>{{ is_edit ? 'Modifier la participation' : 'Nouvelle participation' }}</h5>
+        </div>
+        <div class="card-body">
+          {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.evenement) }}
+              {{ form_widget(form.evenement, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.evenement) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.etudiant) }}
+              {{ form_widget(form.etudiant, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.etudiant) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.dateInscription) }}
+              {{ form_widget(form.dateInscription, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.dateInscription) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.statut) }}
+              {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.statut) }}</div>
+            </div>
+          </div>
+          <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ path(route_prefix ~ 'participation_index') }}" class="btn btn-secondary me-2">Annuler</a>
+            <button type="submit" class="btn btn-primary">{{ is_edit ? 'Enregistrer' : 'Créer' }}</button>
+          </div>
+          {{ form_end(form) }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

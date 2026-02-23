@@ -1,0 +1,77 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ is_edit ? 'Modifier' : 'Nouveau sponsor' }} | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}{{ is_edit ? 'Modifier le sponsor' : 'Nouveau sponsor' }}{% endblock %}
+{% block breadcrumb_title %}{{ is_edit ? 'Modifier' : 'Créer' }} un sponsor{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h5>{{ is_edit ? 'Modifier le sponsor' : 'Nouveau sponsor' }}</h5>
+        </div>
+        <div class="card-body">
+          {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.nomSponsor) }}
+              {{ form_widget(form.nomSponsor, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.nomSponsor) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.typeSponsor) }}
+              {{ form_widget(form.typeSponsor, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.typeSponsor) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.emailContact) }}
+              {{ form_widget(form.emailContact, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.emailContact) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.telephone) }}
+              {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.telephone) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.siteWeb) }}
+              {{ form_widget(form.siteWeb, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.siteWeb) }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.domaineActivite) }}
+              {{ form_widget(form.domaineActivite, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.domaineActivite) }}</div>
+            </div>
+            <div class="col-md-12 mb-3">
+              {{ form_label(form.adresse) }}
+              {{ form_widget(form.adresse, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.adresse) }}</div>
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              {{ form_label(form.logoFile) }}
+              {{ form_widget(form.logoFile, {'attr': {'class': 'form-control'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.logoFile) }}</div>
+              {% if sponsor.logo %}
+                <div class="mt-2">
+                  <img src="{{ asset('uploadsEvent/sponsors/' ~ sponsor.logo) }}" alt="Logo" class="img-thumbnail" style="max-height: 60px;">
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form_label(form.statut) }}
+              {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+              <div class="text-danger mt-1 small">{{ form_errors(form.statut) }}</div>
+            </div>
+          </div>
+          <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ path(route_prefix ~ 'sponsor_index') }}" class="btn btn-secondary me-2">Annuler</a>
+            <button type="submit" class="btn btn-primary">{{ is_edit ? 'Enregistrer' : 'Créer' }}</button>
+          </div>
+          {{ form_end(form) }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

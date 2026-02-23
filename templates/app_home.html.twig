@@ -1,0 +1,303 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Étudiant - UniMind{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+        <i class="fas fa-home me-1"></i>Dashboard
+    </li>
+{% endblock %}
+
+{% block page_title %}Dashboard Étudiant{% endblock %}
+
+{% block body %}
+<div class="row">
+    <!-- Stats Cards -->
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Questionnaires Réalisés</p>
+                            <h5 class="font-weight-bolder">
+                                {{ stats.questionnaires_completed ?? 0 }}
+                            </h5>
+                            <p class="mb-0">
+                                <span class="text-success text-sm font-weight-bolder">
+                                    +{{ stats.percent_completed ?? 0 }}%
+                                </span>
+                                ce mois-ci
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                            <i class="ni ni-single-copy-04 text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Score Moyen</p>
+                            <h5 class="font-weight-bolder">
+                                {{ stats.average_score ?? 0 }}%
+                            </h5>
+                            <p class="mb-0">
+                                <span class="text-success text-sm font-weight-bolder">
+                                    +{{ stats.improvement ?? 0 }}%
+                                </span>
+                                progression
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                            <i class="ni ni-chart-bar-32 text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Niveau Stress</p>
+                            <h5 class="font-weight-bolder">
+                                {{ stats.stress_level ?? 'Normal' }}
+                            </h5>
+                            <p class="mb-0">
+                                <span class="text-danger text-sm font-weight-bolder">
+                                    -{{ stats.stress_change ?? 0 }}%
+                                </span>
+                                depuis 1 mois
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle">
+                            <i class="ni ni-sound-wave text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Bien-être</p>
+                            <h5 class="font-weight-bolder">
+                                {{ stats.wellbeing ?? 'Élevé' }}
+                            </h5>
+                            <p class="mb-0">
+                                <span class="text-success text-sm font-weight-bolder">
+                                    +{{ stats.wellbeing_change ?? 0 }}%
+                                </span>
+                                progression
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                            <i class="ni ni-like-2 text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Graphique d'évolution -->
+    <div class="col-lg-8 mb-lg-0 mb-4">
+        <div class="card z-index-2 h-100">
+            <div class="card-header pb-0 pt-3 bg-transparent">
+                <h6 class="text-capitalize">Évolution de votre bien-être</h6>
+                <p class="text-sm mb-0">
+                    <i class="fa fa-arrow-up text-success"></i>
+                    <span class="font-weight-bold">4% d'amélioration</span> ce mois-ci
+                </p>
+            </div>
+            <div class="card-body p-3">
+                <div class="chart">
+                    <canvas id="line-chart" class="chart-canvas" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Questionnaire recommandé -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header pb-0 p-3">
+                <h6 class="mb-0">Questionnaire Recommandé</h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="alert alert-primary">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-sm rounded-circle me-3">
+                            <i class="ni ni-bulb-61 text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Évaluation du stress</h6>
+                            <p class="text-sm mb-0">Basé sur votre activité récente</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary w-100">
+                    <i class="fas fa-play-circle me-1"></i> Démarrer maintenant
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Dernières réponses -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header pb-0 p-3">
+                <div class="d-flex justify-content-between">
+                    <h6 class="mb-2">Dernières réponses</h6>
+                    <a href="{{ path('etudiant_mes_reponses') }}" class="btn btn-sm btn-outline-primary">
+                        Voir tout
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-items-center">
+                    <thead>
+                        <tr>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Questionnaire</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Score</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Niveau</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reponse in recent_reponses %}
+                        <tr>
+                            <td>
+                                <div class="d-flex px-2 py-1 align-items-center">
+                                    <div>
+                                        <i class="fas {{ reponse.questionnaireIcone }} text-primary"></i>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="text-xs font-weight-bold mb-0">{{ reponse.questionnaireTitre }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <p class="text-xs font-weight-bold mb-0">{{ reponse.dateSoumission|date('d/m/Y') }}</p>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 text-xs">{{ reponse.pourcentage }}%</span>
+                                    <div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ reponse.niveauCouleur }}" 
+                                                 style="width: {{ reponse.pourcentage }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-sm bg-{{ reponse.niveauCouleur }}">
+                                    {{ reponse.niveau }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ path('etudiant_mes_reponses_detail', {'id': reponse.id}) }}" 
+                                   class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-clipboard-question fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">Aucune réponse récente</p>
+                                <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-sm btn-primary">
+                                    Commencer un questionnaire
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
+<script>
+// Line chart
+var ctx1 = document.getElementById("line-chart").getContext("2d");
+
+var gradientStroke1 = ctx1.createLinearGradient(0, 230, 0, 50);
+gradientStroke1.addColorStop(1, 'rgba(94, 114, 228, 0.2)');
+gradientStroke1.addColorStop(0.2, 'rgba(94, 114, 228, 0.0)');
+gradientStroke1.addColorStop(0, 'rgba(94, 114, 228, 0)');
+
+new Chart(ctx1, {
+    type: "line",
+    data: {
+        labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+            label: "Score de bien-être",
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 2,
+            borderColor: "#5e72e4",
+            backgroundColor: gradientStroke1,
+            fill: true,
+            data: [65, 70, 68, 72, 75, 78, 80, 82, 85, 83, 88, 90]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                min: 0,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

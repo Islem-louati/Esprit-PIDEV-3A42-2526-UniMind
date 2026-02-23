@@ -1,0 +1,104 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Participations | Back Office | UniMind{% endblock %}
+{% block breadcrumb_page %}Participations{% endblock %}
+{% block breadcrumb_title %}Liste des participations{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5>Participations</h5>
+          <a href="{{ path(route_prefix ~ 'participation_new') }}" class="btn btn-primary btn-sm">Nouvelle participation</a>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <form method="get" action="{{ path(route_prefix ~ 'participation_index') }}" class="p-4 pb-0 d-flex gap-2 flex-wrap align-items-end">
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            <div class="flex-grow-1" style="min-width: 200px;">
+              <label for="search_q" class="form-label small mb-0">Rechercher (événement, étudiant)</label>
+              <input type="text" name="q" id="search_q" class="form-control form-control-sm" value="{{ q }}" placeholder="Mot-clé…">
+            </div>
+            <button type="submit" class="btn btn-outline-primary btn-sm">Rechercher</button>
+            <a href="{{ path(route_prefix ~ 'participation_index') }}" class="btn btn-outline-secondary btn-sm">Réinitialiser</a>
+          </form>
+          {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show mx-4 mt-3" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+          {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+          {% if participations|length > 0 %}
+            <div class="table-responsive p-4">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'participation_index', { q: q, sort: 'evenement_titre', order: sort == 'evenement_titre' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Événement {{ sort == 'evenement_titre' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Étudiant</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'participation_index', { q: q, sort: 'date_inscription', order: sort == 'date_inscription' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Date inscription {{ sort == 'date_inscription' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    {% if route_prefix == 'app_admin_' %}
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Organisateur</th>
+                    {% endif %}
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <a href="{{ path(route_prefix ~ 'participation_index', { q: q, sort: 'statut', order: sort == 'statut' and order == 'ASC' ? 'DESC' : 'ASC' }) }}" class="text-secondary text-decoration-none">Statut {{ sort == 'statut' ? (order == 'ASC' ? '↑' : '↓') : '' }}</a>
+                    </th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for participation in participations %}
+                    <tr>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ participation.evenement ? participation.evenement.titre : '–' }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ participation.etudiant ? participation.etudiant.fullName : '–' }}</p>
+                      </td>
+                      <td>
+                        <p class="text-xs mb-0">{{ participation.dateInscription ? participation.dateInscription|date('d/m/Y H:i') : '–' }}</p>
+                      </td>
+                      {% if route_prefix == 'app_admin_' %}
+                        <td>
+                          <p class="text-xs mb-0">
+                            {% if participation.evenement and participation.evenement.organisateur %}
+                              {{ participation.evenement.organisateur.prenom }} {{ participation.evenement.organisateur.nom }} ({{ participation.evenement.organisateur.email }})
+                            {% else %}
+                              <span class="text-muted">—</span>
+                            {% endif %}
+                          </p>
+                        </td>
+                      {% endif %}
+                      <td>
+                        <span class="badge badge-sm bg-gradient-secondary">{{ participation.getStatut().label }}</span>
+                      </td>
+                      <td class="align-middle">
+                        <a href="{{ path(route_prefix ~ 'participation_edit', { id: participation.id }) }}" class="btn btn-link text-dark px-2 mb-0">Modifier</a>
+                        <form method="post" action="{{ path(route_prefix ~ 'participation_delete', { id: participation.id }) }}" class="d-inline" onsubmit="return confirm('Supprimer cette participation ?');">
+                          <input type="hidden" name="_token" value="{{ csrf_token('delete_participation_' ~ participation.id) }}">
+                          <button type="submit" class="btn btn-link text-danger px-2 mb-0">Supprimer</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted p-4">Aucune participation. <a href="{{ path(route_prefix ~ 'participation_new') }}">Créer une participation</a>.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

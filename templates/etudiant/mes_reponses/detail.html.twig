@@ -1,0 +1,214 @@
+{% extends 'base_etudiant.html.twig' %}
+
+{% block title %}Mes Réponses - UniMind{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+        <i class="fas fa-chart-line me-1"></i>Mes Réponses
+    </li>
+{% endblock %}
+
+{% block page_title %}Mes Réponses aux Questionnaires{% endblock %}
+
+{% block body %}
+<!-- Stats -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Total</p>
+                            <h5 class="font-weight-bolder">
+                                {{ stats.total ?? 0 }}
+                            </h5>
+                            <p class="mb-0 text-sm">Questionnaires</p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                            <i class="ni ni-collection text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Moyenne</p>
+                            <h5 class="font-weight-bolder">
+                                {{ stats.moyenne ?? 0 }}%
+                            </h5>
+                            <p class="mb-0 text-sm">Score moyen</p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                            <i class="ni ni-chart-bar-32 text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Meilleur</p>
+                            <h5 class="font-weight-bolder">
+                                {{ stats.meilleur ?? 0 }}%
+                            </h5>
+                            <p class="mb-0 text-sm">Score maximum</p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                            <i class="ni ni-trophy text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-sm-6">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="numbers">
+                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Dernier</p>
+                            <h5 class="font-weight-bolder">
+                                {% if stats.dernier %}
+                                    {{ stats.dernier|date('d/m') }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </h5>
+                            <p class="mb-0 text-sm">Dernière réponse</p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                            <i class="ni ni-watch-time text-lg opacity-10"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des résultats -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6>Mes résultats détaillés</h6>
+                        <p class="text-sm mb-0">
+                            <i class="fas fa-user me-1"></i>
+                            {{ app.user.prenom }} {{ app.user.nom }}
+                        </p>
+                    </div>
+                    <a href="{{ path('etudiant_mes_reponses_export') }}" class="btn btn-sm btn-outline-dark">
+                        <i class="fas fa-download me-1"></i> Exporter CSV
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body px-0 pt-0 pb-2">
+                {% if reponses is empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-question fa-4x text-muted mb-3"></i>
+                        <h4>Aucune réponse enregistrée</h4>
+                        <p class="text-muted mb-4">Vous n'avez pas encore répondu à des questionnaires.</p>
+                        <a href="{{ path('etudiant_questionnaire_liste') }}" class="btn btn-primary">
+                            <i class="fas fa-play-circle me-1"></i> Passer un questionnaire
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Questionnaire</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Score</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Niveau</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Progression</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reponse in reponses %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-3 py-1">
+                                                <div>
+                                                    <i class="fas {{ reponse.questionnaireIcone }} text-{{ reponse.niveauCouleur }}"></i>
+                                                </div>
+                                                <div class="ms-3">
+                                                    <h6 class="text-sm mb-0">{{ reponse.questionnaireTitre }}</h6>
+                                                    <p class="text-xs text-secondary mb-0">{{ reponse.questionnaireType|capitalize }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ reponse.dateSoumission|date('d/m/Y') }}</p>
+                                            <p class="text-xs text-secondary mb-0">{{ reponse.dateSoumission|date('H:i') }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ reponse.score }}/{{ reponse.scoreMax }}</p>
+                                            <p class="text-xs text-secondary mb-0">{{ reponse.pourcentage }}%</p>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm bg-{{ reponse.niveauCouleur }}">
+                                                {{ reponse.niveau }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress-wrapper w-75 mx-auto">
+                                                    <div class="progress-info">
+                                                        <div class="progress-percentage">
+                                                            <span class="text-xs font-weight-bold">{{ reponse.pourcentage }}%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="progress">
+                                                        <div class="progress-bar bg-{{ reponse.niveauCouleur }}" 
+                                                             role="progressbar" 
+                                                             style="width: {{ reponse.pourcentage }}%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">
+                                            <a href="{{ path('etudiant_mes_reponses_detail', {'id': reponse.id}) }}" 
+                                               class="btn btn-sm btn-outline-info mb-0">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

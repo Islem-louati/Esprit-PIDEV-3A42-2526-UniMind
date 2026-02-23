@@ -1,0 +1,174 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des questionnaires{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+        <i class="fas fa-collection me-1"></i>Questionnaires
+    </li>
+{% endblock %}
+
+{% block page_title %}Gestion des questionnaires{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <!-- En-tête avec bouton -->
+        <div class="card mb-4">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="mb-0">📋 Liste des questionnaires</h5>
+                        <p class="text-sm mb-0">Créez et gérez vos questionnaires d'évaluation</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{{ path('admin_questionnaire_new') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Nouveau questionnaire
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Messages Flash -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        
+        <!-- Tableau des questionnaires -->
+        <div class="card">
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Code</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Questions</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Créé le</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for questionnaire in questionnaires %}
+                            <tr>
+                                <td>
+                                    <div class="px-3">
+                                        <span class="text-xs font-weight-bold">#{{ questionnaire.questionnaireId }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="px-3">
+                                        <span class="text-xs font-weight-bold">{{ questionnaire.code }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex px-3 py-1">
+                                        <div>
+                                            <i class="ni ni-collection text-primary me-2"></i>
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ questionnaire.nom }}</h6>
+                                            <p class="text-xs text-secondary mb-0">{{ questionnaire.description|slice(0, 50) }}...</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-sm bg-{{ 
+                                        questionnaire.type == 'stress' ? 'danger' : 
+                                        questionnaire.type == 'anxiete' ? 'warning' : 
+                                        questionnaire.type == 'sommeil' ? 'info' : 'primary' 
+                                    }}">
+                                        {{ questionnaire.type|upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress-wrapper w-75">
+                                        <div class="progress-info">
+                                            <div class="progress-percentage">
+                                                <span class="text-xs font-weight-bold">
+                                                    {{ questionnaire.questions|length }}/{{ questionnaire.nbreQuestions }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ 
+                                                questionnaire.questions|length == questionnaire.nbreQuestions ? 'success' : 'warning' 
+                                            }}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ 
+                                                     questionnaire.nbreQuestions > 0 ? 
+                                                     (questionnaire.questions|length / questionnaire.nbreQuestions * 100) : 0 
+                                                 }}%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if questionnaire.questions|length == questionnaire.nbreQuestions %}
+                                        <span class="badge badge-sm bg-gradient-success">Complet</span>
+                                    {% else %}
+                                        <span class="badge badge-sm bg-gradient-warning">
+                                            {{ questionnaire.nbreQuestions - questionnaire.questions|length }} manquantes
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">
+                                        {{ questionnaire.createdAt|date('d/m/Y') }}
+                                    </p>
+                                    <p class="text-xs text-secondary mb-0">
+                                        {{ questionnaire.createdAt|date('H:i') }}
+                                    </p>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="btn-group">
+                                        <a href="{{ path('admin_questionnaire_show', {'id': questionnaire.questionnaireId}) }}" 
+                                           class="btn btn-sm btn-outline-info me-1" data-bs-toggle="tooltip" title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_questionnaire_edit', {'id': questionnaire.questionnaireId}) }}" 
+                                           class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="tooltip" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" 
+                                              action="{{ path('admin_questionnaire_delete', {'id': questionnaire.questionnaireId}) }}" 
+                                              class="d-inline">
+                                            <input type="hidden" name="_token" 
+                                                   value="{{ csrf_token('delete' ~ questionnaire.questionnaireId) }}">
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="return confirm('Supprimer ce questionnaire ?')"
+                                                    data-bs-toggle="tooltip" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-clipboard-question fa-2x text-muted mb-3"></i>
+                                    <h6 class="text-muted">Aucun questionnaire</h6>
+                                    <p class="text-muted mb-0">Commencez par créer un questionnaire</p>
+                                    <a href="{{ path('admin_questionnaire_new') }}" class="btn btn-sm btn-primary mt-2">
+                                        <i class="fas fa-plus me-1"></i>Créer un questionnaire
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

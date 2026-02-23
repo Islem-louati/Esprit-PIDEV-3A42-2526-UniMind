@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block sidebar %}
+<div class="col-md-2 sidebar">
+    <div class="brand">
+        <div class="d-flex align-items-center justify-content-center">
+            <div class="logo">
+                <i class="fas fa-cogs text-primary"></i>
+            </div>
+            <h3>UniMind Admin</h3>
+        </div>
+    </div>
+    
+    <nav class="nav flex-column mt-4">
+        <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'active' : '' }}" 
+           href="{{ path('admin_dashboard') }}">
+            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+        </a>
+
+        <a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_evenement_' ? 'active' : '' }}" 
+           href="{{ path('app_admin_evenement_index') }}">
+            <i class="fas fa-calendar-check me-2"></i> Événements
+        </a>
+
+        <a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_sponsor_' ? 'active' : '' }}" 
+           href="{{ path('app_admin_sponsor_index') }}">
+            <i class="fas fa-hand-holding-heart me-2"></i> Sponsors
+        </a>
+
+        <a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_participation_' ? 'active' : '' }}" 
+           href="{{ path('app_admin_participation_index') }}">
+            <i class="fas fa-users me-2"></i> Participations
+        </a>
+
+        <a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_feedback_' ? 'active' : '' }}" 
+           href="{{ path('app_admin_feedback_index') }}">
+            <i class="fas fa-comment-dots me-2"></i> Feedbacks
+        </a>
+        
+        <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_questionnaire' ? 'active' : '' }}" 
+           href="{{ path('admin_questionnaire_index') }}">
+            <i class="fas fa-clipboard-list me-2"></i> Questionnaires
+        </a>
+        
+        <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_question' ? 'active' : '' }}" 
+           href="{{ path('admin_question_index') }}">
+            <i class="fas fa-question-circle me-2"></i> Questions
+        </a>
+        
+        <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_stats' ? 'active' : '' }}" 
+           href="{{ path('admin_stats') }}">
+            <i class="fas fa-chart-bar me-2"></i> Statistiques
+        </a>
+        
+        <div class="mt-5">
+            <a href="{{ path('etudiant_dashboard') }}" class="nav-link text-warning">
+                <i class="fas fa-exchange-alt me-2"></i> Vue Étudiant
+            </a>
+            
+            <a href="/" class="nav-link">
+                <i class="fas fa-home me-2"></i> Accueil
+            </a>
+        </div>
+    </nav>
+</div>
+{% endblock %}
