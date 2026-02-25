@@ -28,13 +28,37 @@
                 <div class="card-body">
                     {{ form_start(form, {'attr': {'id': 'question-form', 'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
                     
+                    {# Alerte erreurs de validation (champs vides, etc.) #}
+                    {% if not form.vars.valid and form.vars.submitted %}
+                        <div class="alert alert-danger mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Erreurs à corriger :</strong>
+                            <ul class="mb-0 mt-2">
+                                {% for error in form.vars.errors %}
+                                    <li>{{ error.message }}</li>
+                                {% endfor %}
+                                {% for child in form %}
+                                    {% for error in child.vars.errors %}
+                                        <li>{{ error.message }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             {{ form_label(form.texte) }}
-                            {{ form_widget(form.texte) }}
-                            <div class="invalid-feedback">
-                                Veuillez saisir le texte de la question.
-                            </div>
+                            {{ form_widget(form.texte, {'attr': {'class': 'form-control' ~ (form.texte.vars.errors|length > 0 ? ' is-invalid' : '')}}) }}
+                            {% if form.texte.vars.errors|length > 0 %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.texte.vars.errors %}
+                                        <span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>{{ error.message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="invalid-feedback">Veuillez saisir le texte de la question.</div>
+                            {% endif %}
                         </div>
                     </div>
 

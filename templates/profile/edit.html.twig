@@ -1,0 +1,285 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon profil - Plateforme Psy{% endblock %}
+
+{% block breadcrumb_title %}Modifier mon profil{% endblock %}
+{% block page_title %}Modifier mon profil{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6>Modifier mon profil</h6>
+                        <a href="{{ path('app_profile') }}" class="btn btn-secondary btn-sm ms-auto">
+                            <i class="bi bi-arrow-left me-1"></i> Retour au profil
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% for flash_success in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span class="alert-icon"><i class="bi bi-check-circle"></i></span>
+                            <span class="alert-text">{{ flash_success }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
+                    {% for flash_error in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span class="alert-icon"><i class="bi bi-exclamation-triangle"></i></span>
+                            <span class="alert-text">{{ flash_error }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form) }}
+                    
+                    <h6 class="text-uppercase text-sm mb-4">Informations générales</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.pseudo) }}
+                                {{ form_widget(form.pseudo, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.pseudo.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': 'Votre pseudo'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.pseudo) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.tel) }}
+                                {{ form_widget(form.tel, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.tel.vars.errors|length ? ' is-invalid' : ''),
+                                        'placeholder': '0601020304'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.tel) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.dateNaissance) }}
+                                {{ form_widget(form.dateNaissance, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.dateNaissance.vars.errors|length ? ' is-invalid' : '')
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.dateNaissance) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.photo) }}
+                                {{ form_widget(form.photo, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.photo.vars.errors|length ? ' is-invalid' : '')
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.photo) }}
+                                </div>
+                                <small class="form-text text-muted">
+                                    Formats acceptés: JPG, PNG, GIF (max 2MB)
+                                </small>
+                                {% if profil and profil.photo %}
+                                    <div class="mt-2">
+                                        <strong>Photo actuelle:</strong><br>
+                                        <img src="{{ asset('uploads/photos/' ~ profil.photo) }}" 
+                                             alt="Photo actuelle" 
+                                             class="img-thumbnail mt-2"
+                                             style="max-width: 150px;">
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form_label(form.bio) }}
+                                {{ form_widget(form.bio, {
+                                    'attr': {
+                                        'class': 'form-control' ~ (form.bio.vars.errors|length ? ' is-invalid' : ''),
+                                        'rows': 4,
+                                        'placeholder': 'Décrivez-vous en quelques mots...'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.bio) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark my-4">
+                    
+                    <!-- Informations spécifiques au rôle -->
+                    {% if user.role.value == 'Etudiant' %}
+                        <h6 class="text-uppercase text-sm mb-4">Informations étudiant</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.niveau) }}
+                                    {{ form_widget(form.niveau, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.niveau.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Ex: Licence 2, Master 1...'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.niveau) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.filiere) }}
+                                    {{ form_widget(form.filiere, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.filiere.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Ex: Informatique, Médecine...'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.filiere) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    {% elseif user.role.value == 'Psychologue' %}
+                        <h6 class="text-uppercase text-sm mb-4">Informations professionnelles</h6>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form_label(form.specialite) }}
+                                    {{ form_widget(form.specialite, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.specialite.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Ex: Psychologie clinique, Cognitive...'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.specialite) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form_label(form.experience) }}
+                                    {{ form_widget(form.experience, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.experience.vars.errors|length ? ' is-invalid' : ''),
+                                            'rows': 5,
+                                            'placeholder': 'Décrivez votre expérience professionnelle...'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.experience) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form_label(form.qualification) }}
+                                    {{ form_widget(form.qualification, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.qualification.vars.errors|length ? ' is-invalid' : ''),
+                                            'rows': 5,
+                                            'placeholder': 'Listez vos diplômes et certifications...'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.qualification) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    {% elseif user.role.value == 'Responsable Etudiant' %}
+                        <h6 class="text-uppercase text-sm mb-4">Informations professionnelles</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.departement) }}
+                                    {{ form_widget(form.departement, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.departement.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Ex: Département des Sciences...'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.departement) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.etablissement) }}
+                                    {{ form_widget(form.etablissement, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.etablissement.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Nom de l\'établissement'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.etablissement) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.fonction) }}
+                                    {{ form_widget(form.fonction, {
+                                        'attr': {
+                                            'class': 'form-control' ~ (form.fonction.vars.errors|length ? ' is-invalid' : ''),
+                                            'placeholder': 'Ex: Directeur, Coordinateur...'
+                                        }
+                                    }) }}
+                                    <div class="invalid-feedback">
+                                        {{ form_errors(form.fonction) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-save me-2"></i>Enregistrer les modifications
+                        </button>
+                        <a href="{{ path('app_profile') }}" class="btn btn-secondary btn-lg px-5">
+                            <i class="bi bi-x-circle me-2"></i>Annuler
+                        </a>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

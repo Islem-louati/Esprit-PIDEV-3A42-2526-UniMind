@@ -137,7 +137,11 @@
                                     <tr>
                                         <td>{{ questionnaire.nom }}</td>
                                         <td>
-                                            <span class="badge bg-secondary">{{ questionnaire.type }}</span>
+                                            {% if questionnaire.type %}
+                                                <span class="badge bg-secondary">{{ questionnaire.type }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Non défini</span>
+                                            {% endif %}
                                         </td>
                                         <td>{{ questionnaire.nbreQuestions }}</td>
                                         <td>{{ questionnaire.questions|length }}</td>
@@ -253,13 +257,17 @@
                                             <strong>{{ questionnaire.nom }}</strong>
                                         </td>
                                         <td>
-                                            <span class="badge bg-{{ 
-                                                questionnaire.type == 'STRESS' ? 'danger' : 
-                                                questionnaire.type == 'ANXIETE' ? 'warning' : 
-                                                questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success' 
-                                            }}">
-                                                {{ questionnaire.type }}
-                                            </span>
+                                            {% if questionnaire.type %}
+                                                <span class="badge bg-{{ 
+                                                    questionnaire.type == 'STRESS' ? 'danger' : 
+                                                    questionnaire.type == 'ANXIETE' ? 'warning' : 
+                                                    questionnaire.type == 'DEPRESSION' ? 'secondary' : 'success' 
+                                                }}">
+                                                    {{ questionnaire.type }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Non défini</span>
+                                            {% endif %}
                                         </td>
                                         <td>
                                             <code>{{ questionnaire.code|default('N/A') }}</code>

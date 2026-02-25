@@ -36,35 +36,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 50)]
     private string $statut;
 
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: 'datetime', name: 'created_at')]
     private \DateTimeInterface $created_at;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $is_active;
+    #[ORM\Column(type: 'boolean', name: 'is_active')]
+    private bool $isActive;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $is_verified;
+    #[ORM\Column(type: 'boolean', name: 'is_verified')]
+    private bool $isVerified;
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $cin = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $verification_token = null;
+    #[ORM\Column(type: 'string', nullable: true, name: 'verification_token')]
+    private ?string $verificationToken = null;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $token_expires_at = null;
+    #[ORM\Column(type: 'datetime', nullable: true, name: 'token_expires_at')]
+    private ?\DateTimeInterface $tokenExpiresAt = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $reset_token = null;
+    #[ORM\Column(type: 'string', nullable: true, name: 'reset_token')]
+    private ?string $resetToken = null;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $reset_token_expires_at = null;
+    #[ORM\Column(type: 'datetime', nullable: true, name: 'reset_token_expires_at')]
+    private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $identifiant = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $nom_etablissement = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true, name: 'nom_etablissement')]
+    private ?string $nomEtablissement = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $specialite = null;
@@ -126,8 +126,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->created_at = new \DateTime();
-        $this->is_active = true;
-        $this->is_verified = false;
+        $this->isActive = true;
+        $this->isVerified = false;
         $this->statut = 'actif';
         $this->role = RoleType::ETUDIANT;
         $this->disponibilites = new ArrayCollection();
@@ -424,7 +424,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         });
     }
 
-
     // Getters et setters
     public function getUserId(): ?int
     {
@@ -550,23 +549,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isIsActive(): bool
     {
-        return $this->is_active;
+        return $this->isActive;
     }
 
-    public function setIsActive(bool $is_active): self
+    public function setIsActive(bool $isActive): self
     {
-        $this->is_active = $is_active;
+        $this->isActive = $isActive;
         return $this;
     }
 
     public function isIsVerified(): bool
     {
-        return $this->is_verified;
+        return $this->isVerified;
     }
 
-    public function setIsVerified(bool $is_verified): self
+    public function setIsVerified(bool $isVerified): self
     {
-        $this->is_verified = $is_verified;
+        $this->isVerified = $isVerified;
         return $this;
     }
 
@@ -583,45 +582,45 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getVerificationToken(): ?string
     {
-        return $this->verification_token;
+        return $this->verificationToken;
     }
 
-    public function setVerificationToken(?string $verification_token): self
+    public function setVerificationToken(?string $verificationToken): self
     {
-        $this->verification_token = $verification_token;
+        $this->verificationToken = $verificationToken;
         return $this;
     }
 
     public function getTokenExpiresAt(): ?\DateTimeInterface
     {
-        return $this->token_expires_at;
+        return $this->tokenExpiresAt;
     }
 
-    public function setTokenExpiresAt(?\DateTimeInterface $token_expires_at): self
+    public function setTokenExpiresAt(?\DateTimeInterface $tokenExpiresAt): self
     {
-        $this->token_expires_at = $token_expires_at;
+        $this->tokenExpiresAt = $tokenExpiresAt;
         return $this;
     }
 
     public function getResetToken(): ?string
     {
-        return $this->reset_token;
+        return $this->resetToken;
     }
 
-    public function setResetToken(?string $reset_token): self
+    public function setResetToken(?string $resetToken): self
     {
-        $this->reset_token = $reset_token;
+        $this->resetToken = $resetToken;
         return $this;
     }
 
     public function getResetTokenExpiresAt(): ?\DateTimeInterface
     {
-        return $this->reset_token_expires_at;
+        return $this->resetTokenExpiresAt;
     }
 
-    public function setResetTokenExpiresAt(?\DateTimeInterface $reset_token_expires_at): self
+    public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): self
     {
-        $this->reset_token_expires_at = $reset_token_expires_at;
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
     }
 
@@ -638,12 +637,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getNomEtablissement(): ?string
     {
-        return $this->nom_etablissement;
+        return $this->nomEtablissement;
     }
 
-    public function setNomEtablissement(?string $nom_etablissement): self
+    public function setNomEtablissement(?string $nomEtablissement): self
     {
-        $this->nom_etablissement = $nom_etablissement;
+        $this->nomEtablissement = $nomEtablissement;
         return $this;
     }
 
@@ -782,12 +781,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isActive(): bool
     {
-        return $this->is_active;
+        return $this->isActive;
     }
 
     public function isVerified(): bool
     {
-        return $this->is_verified;
+        return $this->isVerified;
     }
 
     public function __toString(): string
@@ -798,62 +797,62 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // Méthodes pour vérifier les tokens
     public function isVerificationTokenValid(): bool
     {
-        if (!$this->verification_token || !$this->token_expires_at) {
+        if (!$this->verificationToken || !$this->tokenExpiresAt) {
             return false;
         }
 
-        return $this->token_expires_at > new \DateTime();
+        return $this->tokenExpiresAt > new \DateTime();
     }
 
     public function isResetTokenValid(): bool
     {
-        if (!$this->reset_token || !$this->reset_token_expires_at) {
+        if (!$this->resetToken || !$this->resetTokenExpiresAt) {
             return false;
         }
 
-        return $this->reset_token_expires_at > new \DateTime();
+        return $this->resetTokenExpiresAt > new \DateTime();
     }
 
     // Méthodes pour générer des tokens
     public function generateVerificationToken(): void
     {
-        $this->verification_token = bin2hex(random_bytes(32));
-        $this->token_expires_at = (new \DateTime())->modify('+24 hours');
+        $this->verificationToken = bin2hex(random_bytes(32));
+        $this->tokenExpiresAt = (new \DateTime())->modify('+24 hours');
     }
 
     public function generateResetToken(): void
     {
-        $this->reset_token = bin2hex(random_bytes(32));
-        $this->reset_token_expires_at = (new \DateTime())->modify('+1 hour');
+        $this->resetToken = bin2hex(random_bytes(32));
+        $this->resetTokenExpiresAt = (new \DateTime())->modify('+1 hour');
     }
 
     // Méthodes pour nettoyer les tokens
     public function clearVerificationToken(): void
     {
-        $this->verification_token = null;
-        $this->token_expires_at = null;
+        $this->verificationToken = null;
+        $this->tokenExpiresAt = null;
     }
 
     public function clearResetToken(): void
     {
-        $this->reset_token = null;
-        $this->reset_token_expires_at = null;
+        $this->resetToken = null;
+        $this->resetTokenExpiresAt = null;
     }
 
     // Méthodes pour les rôles spécifiques
     public function isEtudiant(): bool
     {
-        return $this->hasRole(RoleType::ETUDIANT->value);
+        return $this->hasRole('ROLE_ETUDIANT');
     }
 
     public function isPsychologue(): bool
     {
-        return $this->hasRole(RoleType::PSYCHOLOGUE->value);
+        return $this->hasRole('ROLE_PSYCHOLOGUE');
     }
 
     public function isResponsableEtudiant(): bool
     {
-        return $this->hasRole(RoleType::RESPONSABLE_ETUDIANT->value);
+        return $this->hasRole('ROLE_RESPONSABLE_ETUDIANT');
     }
 
     public function isAdmin(): bool
@@ -1156,5 +1155,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return false;
+    }
+    public function getId(): ?int
+    {
+    return $this->user_id;
     }
 }

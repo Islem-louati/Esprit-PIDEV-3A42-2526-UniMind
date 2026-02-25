@@ -1,0 +1,212 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - Responsable{% endblock %}
+
+{% block breadcrumb_title %}Dashboard Responsable{% endblock %}
+{% block page_title %}Tableau de bord Responsable{% endblock %}
+
+{% block body %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Tableau de bord - Responsable</h1>
+    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-download fa-sm text-white-50"></i> Générer rapport
+    </a>
+</div>
+
+<!-- Welcome Message -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card border-left-success shadow">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="h5 font-weight-bold text-success mb-1">
+                            Bienvenue, {{ app.user.prenom }} {{ app.user.nom }} !
+                        </div>
+                        <div class="text-gray-800">
+                            {% if app.user.profil and app.user.profil.poste %}
+                                {{ app.user.profil.poste }} - {{ app.user.profil.etablissement }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Raccourcis Suivi Étudiants -->
+<div class="row mb-4">
+    <div class="col-xl-6 mb-4">
+        <div class="card border-left-success shadow">
+            <div class="card-body">
+                <h6 class="text-success font-weight-bold">
+                    <i class="fas fa-hospital me-2"></i>
+                    Suivi Étudiants
+                </h6>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a href="{{ path('app_traitement_index') }}" class="btn btn-outline-success btn-sm w-100">
+                            <i class="fas fa-stethoscope me-1"></i>
+                            Traitements
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ path('app_suivi_traitement_index') }}" class="btn btn-outline-info btn-sm w-100">
+                            <i class="fas fa-clipboard-data me-1"></i>
+                            Suivi Thérapeutique
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques Row -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Étudiants inscrits
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_students }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Psychologues actifs
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.active_psychologists }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-md fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            RDV ce mois
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.monthly_appointments }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Taux de satisfaction
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ stats.satisfaction_rate }}%</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ stats.satisfaction_rate }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-smile fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Fonctionnalités disponibles</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Information</h6>
+                    <p class="mb-0">Cette plateforme est en cours de développement. Actuellement, seules les fonctionnalités suivantes sont actives :</p>
+                    <ul class="mt-2 mb-0">
+                        <li>Profil utilisateur (consultation et modification)</li>
+                        <li>Modification du mot de passe</li>
+                        <li>Déconnexion</li>
+                    </ul>
+                </div>
+                
+                <h6 class="mt-4 mb-3 font-weight-bold text-gray-800">Fonctionnalités à venir :</h6>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-primary">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-chart-bar mr-2"></i>Statistiques</h6>
+                                <p class="card-text text-muted small">Analyses détaillées</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-success">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-user-graduate mr-2"></i>Étudiants</h6>
+                                <p class="card-text text-muted small">Gestion des étudiants</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-warning">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-user-md mr-2"></i>Psychologues</h6>
+                                <p class="card-text text-muted small">Gestion des psychologues</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-info">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-file-alt mr-2"></i>Rapports</h6>
+                                <p class="card-text text-muted small">Génération de rapports</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

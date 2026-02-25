@@ -1,0 +1,248 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil - Plateforme Psy{% endblock %}
+
+{% block breadcrumb_title %}Mon Profil{% endblock %}
+{% block page_title %}Mon Profil{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow-lg mb-4">
+                <div class="card-body text-center">
+                    {% if profil and profil.photo %}
+                        <img src="{{ asset('uploads/photos/' ~ profil.photo) }}" 
+                             alt="Photo de profil" 
+                             class="rounded-circle img-fluid border border-4 border-primary"
+                             style="width: 200px; height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border border-4 border-primary"
+                             style="width: 200px; height: 200px;">
+                            <i class="fas fa-user fa-6x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <h3 class="mt-4">{{ user.prenom }} {{ user.nom }}</h3>
+                    <p class="text-muted">
+                        <i class="fas fa-user-tag me-2"></i>
+                        {% if user.role.value == 'Etudiant' %}
+                            Étudiant
+                        {% elseif user.role.value == 'Psychologue' %}
+                            Psychologue
+                        {% elseif user.role.value == 'Responsable Etudiant' %}
+                            Responsable Étudiant
+                        {% else %}
+                            {{ user.role.value }}
+                        {% endif %}
+                    </p>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('app_profile_edit') }}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Modifier mon profil
+                        </a>
+                        <a href="{{ path('app_change_password') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-key me-2"></i>Changer le mot de passe
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informations de contact</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <strong>Email:</strong><br>
+                            {{ user.email }}
+                        </li>
+                        
+                        {% if profil and profil.tel %}
+                            <li class="mb-3">
+                                <i class="fas fa-phone text-primary me-2"></i>
+                                <strong>Téléphone:</strong><br>
+                                {{ profil.tel }}
+                            </li>
+                        {% endif %}
+                        
+                        {% if user.cin %}
+                            <li class="mb-3">
+                                <i class="fas fa-id-card text-primary me-2"></i>
+                                <strong>CIN:</strong><br>
+                                {{ user.cin }}
+                            </li>
+                        {% endif %}
+                        
+                        {% if profil and profil.dateNaissance %}
+                            <li class="mb-3">
+                                <i class="fas fa-birthday-cake text-primary me-2"></i>
+                                <strong>Date de naissance:</strong><br>
+                                {{ profil.dateNaissance|date('d/m/Y') }}
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">À propos</h5>
+                </div>
+                <div class="card-body">
+                    {% if profil and profil.bio %}
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Biographie</h6>
+                            <p class="lead">{{ profil.bio }}</p>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucune biographie renseignée</p>
+                    {% endif %}
+                    
+                    {% if user.role.value == 'Etudiant' %}
+                        <div class="row">
+                            {% if user.identifiant %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Identifiant étudiant</h6>
+                                    <p class="h5">{{ user.identifiant }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if user.nomEtablissement %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Établissement</h6>
+                                    <p class="h5">{{ user.nomEtablissement }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if profil and profil.niveau %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Niveau</h6>
+                                    <p class="h5">{{ profil.niveau }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if profil and profil.filiere %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Filière</h6>
+                                    <p class="h5">{{ profil.filiere }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                    {% elseif user.role.value == 'Psychologue' %}
+                        <div class="row">
+                            {% if user.specialite %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Spécialité</h6>
+                                    <p class="h5">{{ user.specialite }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if user.telephone %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Téléphone</h6>
+                                    <p class="h5">{{ user.telephone }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if user.adresse %}
+                                <div class="col-12 mb-3">
+                                    <h6 class="text-muted">Adresse</h6>
+                                    <p class="h5">{{ user.adresse }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if profil and profil.experience %}
+                                <div class="col-12 mb-3">
+                                    <h6 class="text-muted">Expérience professionnelle</h6>
+                                    <p>{{ profil.experience }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if profil and profil.qualification %}
+                                <div class="col-12 mb-3">
+                                    <h6 class="text-muted">Qualifications</h6>
+                                    <p>{{ profil.qualification }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                    {% elseif user.role.value == 'Responsable Etudiant' %}
+                        <div class="row">
+                            {% if user.poste %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Poste</h6>
+                                    <p class="h5">{{ user.poste }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if user.etablissement %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Établissement</h6>
+                                    <p class="h5">{{ user.etablissement }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if profil and profil.departement %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Département</h6>
+                                    <p class="h5">{{ profil.departement }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if profil and profil.fonction %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Fonction</h6>
+                                    <p class="h5">{{ profil.fonction }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Statut du compte</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Statut</h6>
+                            <span class="badge bg-{{ user.statut == 'actif' ? 'success' : (user.statut == 'inactif' ? 'danger' : 'warning') }} fs-6">
+                                {{ user.statut|capitalize }}
+                            </span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Email vérifié</h6>
+                            <span class="badge bg-{{ user.isVerified ? 'success' : 'danger' }} fs-6">
+                                {{ user.isVerified ? 'Oui' : 'Non' }}
+                            </span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Compte activé</h6>
+                            <span class="badge bg-{{ user.isActive ? 'success' : 'danger' }} fs-6">
+                                {{ user.isActive ? 'Oui' : 'Non' }}
+                            </span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Date d'inscription</h6>
+                            <p class="h5">{{ user.createdAt|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

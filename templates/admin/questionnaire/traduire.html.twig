@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Traduction - {{ questionnaire.nom }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3>🌍 Traduction en arabe - {{ questionnaire.nom }}</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Question (Français)</th>
+                        <th>Question (عربي)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i, item in traductions %}
+                    <tr>
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ item.original }}</td>
+                        <td dir="rtl" style="text-align: right;">{{ item.traduit }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <a href="{{ path('admin_questionnaire_show', {id: questionnaire.id}) }}" class="btn btn-secondary">
+                ← Retour
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

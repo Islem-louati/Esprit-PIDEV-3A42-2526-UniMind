@@ -44,8 +44,9 @@ class DisponibilitePsy
     private ?User $user = null;
 
     // Ajoutez cette propriété
-#[ORM\OneToOne(mappedBy: 'disponibilite', targetEntity: RendezVous::class, cascade: ['persist', 'remove'])]
-private ?RendezVous $rendezVous = null;
+  #[ORM\OneToOne(mappedBy: 'disponibilite', targetEntity: RendezVous::class)]
+  private ?RendezVous $rendezVous = null;
+
 
 // Ajoutez ces méthodes
 public function getRendezVous(): ?RendezVous

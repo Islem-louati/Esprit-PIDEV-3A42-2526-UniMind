@@ -1,0 +1,406 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs - Administration{% endblock %}
+
+{% block breadcrumb_title %}Gestion des utilisateurs{% endblock %}
+{% block page_title %}Gestion des utilisateurs{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Page Heading -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Gestion des utilisateurs</h1>
+                <div>
+                    <a href="{{ path('admin_pending_users') }}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-clock me-1"></i>En attente
+                        {% if app.session.get('pending_count', 0) > 0 %}
+                            <span class="badge bg-danger">{{ app.session.get('pending_count', 0) }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ path('admin_user_new') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i>Nouvel utilisateur
+                    </a>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span class="alert-icon"><i class="bi bi-check-circle"></i></span>
+                    <span class="alert-text">{{ message }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span class="alert-icon"><i class="bi bi-exclamation-triangle"></i></span>
+                    <span class="alert-text">{{ message }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Filtres de recherche</h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(filterForm, {'attr': {'class': 'row g-3'}}) }}
+                        <div class="col-md-3">
+                            {{ form_label(filterForm.role) }}
+                            {{ form_widget(filterForm.role, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_label(filterForm.statut) }}
+                            {{ form_widget(filterForm.statut, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_label(filterForm.search) }}
+                            {{ form_widget(filterForm.search, {'attr': {'class': 'form-control', 'placeholder': 'Nom, prénom, email...'}}) }}
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-search me-1"></i>Rechercher
+                            </button>
+                            <a href="{{ path('admin_users') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </a>
+                        </div>
+                    {{ form_end(filterForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Liste des utilisateurs ({{ total }})</h6>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" 
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-download me-1"></i>Exporter
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ path('admin_users_export_excel') }}" target="_blank">
+                                        <i class="bi bi-file-earmark-excel me-2 text-success"></i>Excel
+                                        <small class="text-muted ms-2">(.xls)</small>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ path('admin_users_export_pdf') }}" target="_blank">
+                                        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>PDF
+                                        <small class="text-muted ms-2">(.pdf)</small>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ path('admin_users_export_csv') }}" target="_blank">
+                                        <i class="bi bi-file-earmark-text me-2 text-info"></i>CSV
+                                        <small class="text-muted ms-2">(.csv)</small>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Nom & Prénom</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">CIN</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Rôle</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Inscription</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-3 py-1 align-items-center">
+                                                <div>
+                                                    {% if user.profil and user.profil.photo %}
+                                                        <img src="{{ asset('uploads/photos/' ~ user.profil.photo) }}" 
+                                                             class="avatar avatar-sm me-3 rounded-circle" 
+                                                             alt="{{ user.prenom }} {{ user.nom }}">
+                                                    {% else %}
+                                                        <div class="avatar avatar-sm bg-gradient-primary me-3 rounded-circle d-flex align-items-center justify-content-center">
+                                                            <span class="text-white fw-bold">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="d-flex flex-column">
+                                                    <h6 class="mb-0 text-sm">{{ user.prenom }} {{ user.nom }}</h6>
+                                                    <p class="text-xs text-secondary mb-0">{{ user.userId }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ user.email }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ user.cin ?? '-' }}</p>
+                                        </td>
+                                        <td>
+                                            {% if user.role.value == 'Etudiant' %}
+                                                <span class="badge badge-sm bg-gradient-info">Étudiant</span>
+                                            {% elseif user.role.value == 'Psychologue' %}
+                                                <span class="badge badge-sm bg-gradient-warning">Psychologue</span>
+                                            {% elseif user.role.value == 'Responsable Etudiant' %}
+                                                <span class="badge badge-sm bg-gradient-success">Responsable</span>
+                                            {% else %}
+                                                <span class="badge badge-sm bg-gradient-primary">{{ user.role.value }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.statut == 'actif' %}
+                                                <span class="badge badge-sm bg-gradient-success">Actif</span>
+                                            {% elseif user.statut == 'en_attente' %}
+                                                <span class="badge badge-sm bg-gradient-warning">En attente</span>
+                                            {% elseif user.statut == 'inactif' %}
+                                                <span class="badge badge-sm bg-gradient-danger">Inactif</span>
+                                            {% elseif user.statut == 'rejeté' %}
+                                                <span class="badge badge-sm bg-gradient-secondary">Rejeté</span>
+                                            {% endif %}
+                                            
+                                            {% if not user.isActive %}
+                                                <span class="badge badge-sm bg-dark">Désactivé</span>
+                                            {% endif %}
+                                            {% if not user.isVerified %}
+                                                <span class="badge badge-sm bg-danger">Non vérifié</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ user.createdAt|date('d/m/Y') }}</p>
+                                            <p class="text-xs text-secondary mb-0">{{ user.createdAt|date('H:i') }}</p>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <!-- Voir profil -->
+                                                <a href="{{ path('admin_view_profile', {'id': user.userId}) }}" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="Voir profil" 
+                                                   data-bs-toggle="tooltip">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                
+                                                <!-- Modifier -->
+                                                <a href="{{ path('admin_edit_user', {'id': user.userId}) }}" 
+                                                   class="btn btn-sm btn-warning" 
+                                                   title="Modifier" 
+                                                   data-bs-toggle="tooltip">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                
+                                                <!-- Activer/Désactiver -->
+                                                {% if user.isActive %}
+                                                    <form action="{{ path('admin_deactivate_user', {'id': user.userId}) }}" 
+                                                          method="POST" 
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Désactiver {{ user.prenom }} {{ user.nom }} ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('deactivate' ~ user.userId) }}">
+                                                        <button type="submit" 
+                                                                class="btn btn-sm btn-danger" 
+                                                                title="Désactiver" 
+                                                                data-bs-toggle="tooltip">
+                                                            <i class="bi bi-person-slash"></i>
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <form action="{{ path('admin_activate_user', {'id': user.userId}) }}" 
+                                                          method="POST" 
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Activer {{ user.prenom }} {{ user.nom }} ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('activate' ~ user.userId) }}">
+                                                        <button type="submit" 
+                                                                class="btn btn-sm btn-success" 
+                                                                title="Activer" 
+                                                                data-bs-toggle="tooltip">
+                                                            <i class="bi bi-person-check"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                                
+                                                <!-- Supprimer -->
+                                                <form action="{{ path('admin_delete_user', {'id': user.userId}) }}" 
+                                                      method="POST" 
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nÊtes-vous sûr de vouloir supprimer définitivement {{ user.prenom }} {{ user.nom }} ?\n\n✅ Profil associé supprimé\n✅ Toutes les données effacées\n❌ Action irréversible')">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.userId) }}">
+                                                    <button type="submit" 
+                                                            class="btn btn-sm btn-dark" 
+                                                            title="Supprimer définitivement" 
+                                                            data-bs-toggle="tooltip">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="py-4">
+                                                <i class="bi bi-people display-1 text-muted mb-3"></i>
+                                                <p class="h5 text-muted mb-2">Aucun utilisateur trouvé</p>
+                                                <p class="text-muted">Modifiez vos critères de recherche ou créez un nouvel utilisateur.</p>
+                                                <a href="{{ path('admin_user_new') }}" class="btn btn-primary mt-2">
+                                                    <i class="bi bi-plus-circle me-1"></i>Créer un utilisateur
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                {% if total > 0 %}
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 text-sm">
+                                    Affichage de <strong>{{ (page - 1) * limit + 1 }}</strong>
+                                    à <strong>{{ min(page * limit, total) }}</strong>
+                                    sur <strong>{{ total }}</strong> utilisateurs
+                                </p>
+                            </div>
+                            <div>
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination mb-0">
+                                        {% if page > 1 %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('admin_users', {'page': page - 1}) }}" aria-label="Précédent">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for i in 1..pages %}
+                                            {% if i >= page - 2 and i <= page + 2 %}
+                                                <li class="page-item {{ i == page ? 'active' : '' }}">
+                                                    <a class="page-link" href="{{ path('admin_users', {'page': i}) }}">{{ i }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if page < pages %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('admin_users', {'page': page + 1}) }}" aria-label="Suivant">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styles personnalisés */
+    .avatar {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+        font-size: 0.875rem;
+    }
+    
+    .badge-sm {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .btn-group .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .btn-group .btn-sm i {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+        transition: transform 0.2s;
+    }
+    
+    /* Espacement entre les boutons */
+    .d-flex.gap-2 > * {
+        margin: 0 2px;
+    }
+    
+    /* Couleurs des badges */
+    .bg-gradient-info {
+        background: linear-gradient(87deg, #11cdef 0, #1171ef 100%) !important;
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(87deg, #fb6340 0, #fbb140 100%) !important;
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(87deg, #2dce89 0, #2dcecc 100%) !important;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%) !important;
+    }
+    
+    .bg-gradient-danger {
+        background: linear-gradient(87deg, #f5365c 0, #f56036 100%) !important;
+    }
+    
+    .bg-gradient-secondary {
+        background: linear-gradient(87deg, #8898aa 0, #aa898a 100%) !important;
+    }
+</style>
+
+<script>
+    // Activer les tooltips Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Masquer automatiquement les alertes après 5 secondes
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+</script>
+{% endblock %}

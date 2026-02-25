@@ -1,0 +1,56 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Sélectionner un traitement{% endblock %}
+{% block page_title %}Sélectionner un traitement{% endblock %}
+{% block breadcrumb_title %}Sélectionner un traitement{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Sélectionner un traitement pour ajouter un suivi
+                    </h5>
+                </div>
+                <div class="card-body">
+                        {% if traitements|length > 0 %}
+                            <div class="list-group">
+                                {% for traitement in traitements %}
+                                    <a href="{{ path('app_suivi_traitement_new', {'traitement_id': traitement.id}) }}" 
+                                       class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">{{ traitement.titre }}</h6>
+                                            <small class="text-muted">{{ traitement.categorieLabel }}</small>
+                                        </div>
+                                        <p class="mb-1">{{ traitement.description|slice(0, 100) }}...</p>
+                                        <small class="text-muted">
+                                            Patient: {{ traitement.etudiant ? traitement.etudiant.fullName : 'Non défini' }} | 
+                                            Statut: {{ traitement.statutLabel }}
+                                        </small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Vous n'avez aucun traitement. 
+                                <a href="{{ path('app_traitement_new') }}" class="alert-link">Créez un traitement d'abord</a>.
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <a href="{{ path('app_suivi_traitement_index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Retour à la liste
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

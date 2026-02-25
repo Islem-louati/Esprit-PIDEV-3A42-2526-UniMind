@@ -1,0 +1,211 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Mes Suivis | UniMind{% endblock %}
+{% block page_title %}Mes Suivis{% endblock %}
+{% block breadcrumb_title %}Mes Suivis{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-calendar-heart me-2"></i>
+                        Mes Suivis Thérapeutiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Statistiques -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-gradient-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="col-10">
+                                            <h3 class="mb-0">{{ suivis|length }}</h3>
+                                            <p class="text-sm mb-0">Total suivis</p>
+                                        </div>
+                                        <div class="col-2 text-center">
+                                            <i class="fas fa-calendar-check text-white" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-gradient-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="col-10">
+                                            <h3 class="mb-0">{{ suivis|filter(suivi => suivi.statut == 'valide')|length }}</h3>
+                                            <p class="text-sm mb-0">Validés</p>
+                                        </div>
+                                        <div class="col-2 text-center">
+                                            <i class="fas fa-check-circle text-white" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-gradient-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="col-10">
+                                            <h3 class="mb-0">{{ suivis|filter(suivi => suivi.statut == 'en_attente')|length }}</h3>
+                                            <p class="text-sm mb-0">En attente</p>
+                                        </div>
+                                        <div class="col-2 text-center">
+                                            <i class="fas fa-clock text-white" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-gradient-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="col-10">
+                                            <h3 class="mb-0">{{ suivis|filter(suivi => suivi.dateSuivi >= date('-7 days'))|length }}</h3>
+                                            <p class="text-sm mb-0">7 derniers jours</p>
+                                        </div>
+                                        <div class="col-2 text-center">
+                                            <i class="fas fa-calendar-week text-white" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtres -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <select class="form-control" id="statutFilter">
+                                <option value="">Tous les statuts</option>
+                                <option value="valide">Validés</option>
+                                <option value="en_attente">En attente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" onclick="resetFilters()">
+                                <i class="fas fa-redo me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tableau des suivis -->
+                    {% if suivis is defined and suivis|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="suivisTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date</th>
+                                        <th>Traitement</th>
+                                        <th>Psychologue</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for suivi in suivis %}
+                                        <tr data-statut="{{ suivi.statut }}">
+                                            <td>
+                                                <span class="badge bg-secondary">#{{ suivi.id }}</span>
+                                            </td>
+                                            <td>{{ suivi.dateSuivi ? suivi.dateSuivi|date('d/m/Y') : '-' }}</td>
+                                            <td>
+                                                {% if suivi.traitement %}
+                                                    <a href="{{ path('app_traitement_show', {'id': suivi.traitement.id}) }}" 
+                                                       class="text-decoration-none">
+                                                        {{ suivi.traitement.titre }}
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">Non associé</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if suivi.psychologue %}
+                                                    {{ suivi.psychologue.prenom }} {{ suivi.psychologue.nom }}
+                                                {% else %}
+                                                    <span class="text-muted">Non assigné</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if suivi.statut == 'valide' %}
+                                                    <span class="badge bg-success">Validé</span>
+                                                {% elseif suivi.statut == 'en_attente' %}
+                                                    <span class="badge bg-warning">En attente</span>
+                                                {% else %}
+                                                    <span class="badge bg-info">{{ suivi.statut }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('app_suivi_traitement_show', {'id': suivi.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {% if is_granted('ROLE_PSYCHOLOGUE') %}
+                                                        <a href="{{ path('app_suivi_traitement_edit', {'id': suivi.id}) }}" 
+                                                           class="btn btn-sm btn-warning" title="Modifier">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-heart fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun suivi trouvé</h5>
+                            <p class="text-muted">Commencez par créer un nouveau suivi thérapeutique</p>
+                            <a href="{{ path('app_suivi_traitement_select_traitement') }}" 
+                               class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Nouveau Suivi
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const statutFilter = document.getElementById('statutFilter').value.toLowerCase();
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#suivisTable tbody tr');
+    
+    rows.forEach(row => {
+        const statut = row.dataset.statut.toLowerCase();
+        const text = row.textContent.toLowerCase();
+        
+        const matchesStatut = !statutFilter || statut.includes(statutFilter);
+        const matchesSearch = !searchInput || text.includes(searchInput);
+        
+        row.style.display = matchesStatut && matchesSearch ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('statutFilter').value = '';
+    document.getElementById('searchInput').value = '';
+    filterTable();
+}
+
+document.getElementById('statutFilter').addEventListener('change', filterTable);
+document.getElementById('searchInput').addEventListener('input', filterTable);
+</script>
+{% endblock %}

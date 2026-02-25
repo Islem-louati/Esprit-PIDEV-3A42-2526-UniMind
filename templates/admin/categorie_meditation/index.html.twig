@@ -1,0 +1,1082 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Catégories de Méditation{% endblock %}
+
+{% block breadcrumb_title %}Catégories{% endblock %}
+
+{% block page_title %}Gestion des Catégories de Méditation{% endblock %}
+
+{% block body %}
+  {# Statistiques centrées #}
+  <div class="row justify-content-center">
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Total Catégories</p>
+                <h5 class="font-weight-bolder mb-0">
+                  <span id="total-categories">{{ categorie_meditations|length }}</span>
+                </h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-info shadow-info text-center rounded-circle">
+                <i class="fas fa-layer-group text-lg opacity-10" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Séances totales</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {{ total_seances|default(0) }}
+                </h5>
+                {% if categories_avec_stats is defined %}
+                  <p class="text-xs text-success mb-0">
+                    <i class="fas fa-chart-line me-1"></i>
+                    Réparties sur {{ categorie_meditations|length }} catégories
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                <i class="fas fa-music text-lg opacity-10" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">Dernière création</p>
+                <h5 class="font-weight-bolder mb-0">
+                  {% if categorie_meditations|length > 0 %}
+                    {{ categorie_meditations|last.dateCreation|date('d/m/Y') }}
+                  {% else %}
+                    --
+                  {% endif %}
+                </h5>
+                <p class="text-xs mb-0 text-primary">
+                  <i class="fas fa-clock me-1"></i>
+                  {{ categorie_meditations|length > 0 ? categorie_meditations|last.dateCreation|date('H:i') : '--:--' }}
+                </p>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                <i class="fas fa-clock text-lg opacity-10" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Table des catégories #}
+  <div class="row mt-2">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <div>
+            <h6>Liste des Catégories de Méditation</h6>
+            <p class="text-sm mb-0">
+              <i class="fas fa-spa me-1"></i>
+              Gérez vos catégories de méditation
+            </p>
+          </div>
+          <button type="button" class="btn btn-dark btn-sm mb-0" data-bs-toggle="modal" data-bs-target="#modalNouvelleCategorie">
+            <i class="fas fa-plus me-1"></i> Nouvelle Catégorie
+          </button>
+        </div>
+        
+        {# Barre de recherche #}
+        <div class="card-header border-bottom">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="input-group input-group-outline">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input type="text" 
+                       class="form-control" 
+                       id="search-input" 
+                       placeholder="Rechercher par nom, description..."
+                       aria-label="Rechercher">
+              </div>
+            </div>
+            <div class="col-md-6 text-end">
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-reset-search">
+                  <i class="fas fa-times"></i> Réinitialiser
+                </button>
+                <button type="button" class="btn btn-outline-info btn-sm" id="btn-help-search">
+                  <i class="fas fa-question-circle"></i> Aide
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-12">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Recherche en temps réel. Tapez dans la barre pour filtrer les catégories.
+              </small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if categorie_meditations is not empty %}
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0" id="categories-table">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                    <a href="#" class="sortable" data-sort="nom">
+                      Catégorie <i class="fas fa-sort"></i>
+                    </a>
+                  </th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                    <a href="#" class="sortable" data-sort="description">
+                      Description <i class="fas fa-sort"></i>
+                    </a>
+                  </th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                    <a href="#" class="sortable" data-sort="date">
+                      Date création <i class="fas fa-sort"></i>
+                    </a>
+                  </th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="categories-body">
+                {% for categorie in categorie_meditations %}
+                <tr class="category-row" 
+                    data-nom="{{ categorie.nom|lower }}" 
+                    data-description="{{ categorie.description|default('')|lower }}"
+                    data-date="{{ categorie.dateCreation|date('Y-m-d') }}">
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div>
+                        {% if categorie.iconUrl %}
+                          <img src="{{ categorie.iconUrl }}" class="avatar avatar-sm me-3" alt="{{ categorie.nom }}" style="object-fit: cover;">
+                        {% else %}
+                          <div class="avatar avatar-sm bg-gradient-dark me-3 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-spa text-white text-xs"></i>
+                          </div>
+                        {% endif %}
+                      </div>
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm category-name">{{ categorie.nom }}</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-sm font-weight-bold mb-0 category-description">
+                      {{ categorie.description|slice(0, 80) }}{% if categorie.description|length > 80 %}...{% endif %}
+                    </p>
+                  </td>
+                  <td class="align-middle text-center">
+                    <span class="text-secondary text-xs font-weight-bold category-date">
+                      <i class="fas fa-calendar me-1"></i>
+                      {{ categorie.dateCreation|date('d/m/Y') }}
+                    </span>
+                    <p class="text-xs text-secondary mb-0">
+                      {{ categorie.dateCreation|date('H:i') }}
+                    </p>
+                  </td>
+                  <td class="align-middle text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                      {# BOUTON VOIR - Consultation des séances #}
+                      <a href="{{ path('admin_seance_meditation_by_categorie', {'id': categorie.categorieId}) }}" 
+                         class="btn btn-sm mb-0 btn-action-view" 
+                         data-bs-toggle="tooltip" 
+                         data-bs-placement="top" 
+                         title="Consulter les séances">
+                        <i class="fas fa-eye text-info"></i>
+                      </a>
+                      
+                      {# BOUTON MODIFIER - Édition #}
+                      <button type="button" 
+                              class="btn btn-sm mb-0 btn-action-edit btn-edit-categorie" 
+                              data-bs-toggle="modal" 
+                              data-bs-target="#modalEditCategorie"
+                              data-id="{{ categorie.categorieId }}"
+                              data-nom="{{ categorie.nom }}"
+                              data-description="{{ categorie.description }}"
+                              data-iconurl="{{ categorie.iconUrl }}"
+                              data-action="{{ path('admin_categorie_meditation_edit', {'id': categorie.categorieId}) }}"
+                              data-bs-toggle="tooltip" 
+                              data-bs-placement="top" 
+                              title="Modifier">
+                        <i class="fas fa-edit text-warning"></i>
+                      </button>
+                      
+                      {# BOUTON SUPPRIMER - Suppression #}
+                      <form method="post" 
+                            action="{{ path('admin_categorie_meditation_delete', {'id': categorie.categorieId}) }}" 
+                            class="d-inline" 
+                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.categorieId) }}">
+                        <button class="btn btn-sm mb-0 btn-action-delete" 
+                                type="submit"
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="Supprimer">
+                          <i class="fas fa-trash-alt text-danger"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          
+          {# Message quand aucun résultat #}
+          <div id="no-results" class="text-center py-5" style="display: none;">
+            <div class="avatar avatar-xl bg-gradient-warning rounded-circle mx-auto mb-3">
+              <i class="fas fa-search text-white text-2xl"></i>
+            </div>
+            <h6 class="text-gradient text-warning mb-0">Aucun résultat trouvé</h6>
+            <p class="text-sm mb-4">
+              Aucune catégorie ne correspond à votre recherche
+            </p>
+            <button type="button" class="btn btn-warning btn-sm" id="btn-clear-search">
+              <i class="fas fa-times me-1"></i> Effacer la recherche
+            </button>
+          </div>
+          
+          {% else %}
+          <div class="text-center py-5">
+            <div class="avatar avatar-xl bg-gradient-info rounded-circle mx-auto mb-3">
+              <i class="fas fa-spa text-white text-2xl"></i>
+            </div>
+            <h6 class="text-gradient text-info mb-0">Aucune catégorie trouvée</h6>
+            <p class="text-sm mb-4">
+              Commencez par créer votre première catégorie de méditation
+            </p>
+            <a href="{{ path('admin_categorie_meditation_new') }}" class="btn btn-info btn-sm">
+              <i class="fas fa-plus me-1"></i> Créer une catégorie
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        
+        {# Pagination et compteur #}
+        {% if categorie_meditations is not empty %}
+        <div class="card-footer d-flex justify-content-between align-items-center">
+          <p class="text-sm text-secondary mb-0">
+            <i class="fas fa-list-check me-1"></i>
+            <span id="filtered-count">{{ categorie_meditations|length }}</span> catégorie(s) trouvée(s)
+            <span id="search-info" class="text-warning ms-2" style="display: none;"></span>
+          </p>
+          <div class="text-end">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="export-btn">
+              <i class="fas fa-download me-1"></i> Exporter
+            </button>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+{# Modal pour créer une nouvelle catégorie #}
+<div class="modal fade" id="modalNouvelleCategorie" tabindex="-1" aria-labelledby="modalNouvelleCategorieLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalNouvelleCategorieLabel">
+          <i class="fas fa-plus-circle me-2"></i>Nouvelle Catégorie de Méditation
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {{ include('admin/categorie_meditation/_form.html.twig', {
+          'form': form,
+          'form_action': path('admin_categorie_meditation_new'),
+          'button_label': 'Créer'
+        }) }}
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal pour modifier une catégorie #}
+<div class="modal fade" id="modalEditCategorie" tabindex="-1" aria-labelledby="modalEditCategorieLabel" aria-hidden="true" style="z-index: 9999;">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditCategorieLabel">
+          <i class="fas fa-edit me-2"></i>Modifier la Catégorie
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalEditCategorieBody">
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="mt-2">Chargement du formulaire...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal d'aide pour la recherche #}
+<div class="modal fade" id="modalHelpSearch" tabindex="-1" aria-labelledby="modalHelpSearchLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalHelpSearchLabel">
+          <i class="fas fa-question-circle me-2"></i>Aide Recherche
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>Comment rechercher :</h6>
+        <ul class="list-unstyled">
+          <li><i class="fas fa-check text-success me-2"></i>Recherche dans le nom et la description</li>
+          <li><i class="fas fa-check text-success me-2"></i>Recherche insensible à la casse</li>
+          <li><i class="fas fa-check text-success me-2"></i>Mots-clés séparés par espace</li>
+          <li><i class="fas fa-check text-success me-2"></i>Recherche en temps réel</li>
+        </ul>
+        <h6 class="mt-3">Exemples :</h6>
+        <div class="alert alert-info">
+          <small>
+            <strong>"guidée"</strong> : Trouve toutes les catégories contenant "guidée"<br>
+            <strong>"méditation relaxation"</strong> : Trouve les catégories contenant "méditation" OU "relaxation"<br>
+            <strong>"audio"</strong> : Trouve les catégories dont le nom ou description contient "audio"
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* Styles pour la barre de recherche */
+.input-group.input-group-outline {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.input-group.input-group-outline:focus-within {
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.3);
+  background: white;
+}
+
+.input-group.input-group-outline .input-group-text {
+  background: transparent;
+  border: none;
+  color: #6c757d;
+}
+
+.input-group.input-group-outline .form-control {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.input-group.input-group-outline .form-control:focus {
+  box-shadow: none;
+}
+
+/* Styles pour les boutons de tri */
+.sortable {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.sortable:hover {
+  color: #4CAF50;
+}
+
+.sortable.active {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.sortable.active .fa-sort {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+/* Animation pour les lignes de recherche */
+.category-row {
+  transition: all 0.3s ease;
+}
+
+.category-row.highlight {
+  background-color: rgba(255, 243, 205, 0.5) !important;
+  animation: highlightRow 1s ease;
+}
+
+@keyframes highlightRow {
+  0% { background-color: rgba(255, 243, 205, 0); }
+  50% { background-color: rgba(255, 243, 205, 0.8); }
+  100% { background-color: rgba(255, 243, 205, 0.5); }
+}
+
+/* Styles pour les boutons d'action (gardez vos styles existants) */
+.btn-action-view,
+.btn-action-edit,
+.btn-action-delete {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action-view {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-color: #90caf9;
+}
+
+.btn-action-view:hover {
+    background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-action-view i {
+    color: #1976d2;
+    font-size: 16px;
+}
+
+.btn-action-edit {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+    border-color: #ffd54f;
+}
+
+.btn-action-edit:hover {
+    background: linear-gradient(135deg, #ffecb3 0%, #ffd54f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+.btn-action-edit i {
+    color: #ff8f00;
+    font-size: 16px;
+}
+
+.btn-action-delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-color: #ef9a9a;
+}
+
+.btn-action-delete:hover {
+    background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.btn-action-delete i {
+    color: #d32f2f;
+    font-size: 16px;
+}
+
+.btn-action-view:before,
+.btn-action-edit:before,
+.btn-action-delete:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn-action-view:hover:before,
+.btn-action-edit:hover:before,
+.btn-action-delete:hover:before {
+    width: 100%;
+    height: 100%;
+}
+
+.btn-action-view:focus,
+.btn-action-edit:focus,
+.btn-action-delete:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+@media (max-width: 768px) {
+    .btn-action-view,
+    .btn-action-edit,
+    .btn-action-delete {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .btn-action-view i,
+    .btn-action-edit i,
+    .btn-action-delete i {
+        font-size: 14px;
+    }
+}
+
+@keyframes buttonClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.btn-action-view:active,
+.btn-action-edit:active,
+.btn-action-delete:active {
+    animation: buttonClick 0.2s ease;
+}
+
+/* Style pour les résultats surlignés */
+.highlight-text {
+    background-color: #FFEB3B;
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+/* Style pour le compteur */
+#filtered-count {
+    font-weight: bold;
+    color: #4CAF50;
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script chargé - Recherche activée');
+    
+    // ============ FONCTIONS DE RECHERCHE ============
+    let currentSort = { field: 'nom', direction: 'asc' };
+    
+    // Fonction de filtrage
+    function filterCategories(searchTerm) {
+        const rows = document.querySelectorAll('.category-row');
+        const noResults = document.getElementById('no-results');
+        const tableBody = document.getElementById('categories-body');
+        let visibleCount = 0;
+        
+        if (!searchTerm || searchTerm.trim() === '') {
+            // Afficher toutes les lignes
+            rows.forEach(row => {
+                row.style.display = '';
+                removeHighlights(row);
+            });
+            
+            if (noResults) noResults.style.display = 'none';
+            if (tableBody) tableBody.style.display = '';
+            
+            visibleCount = rows.length;
+        } else {
+            const searchTerms = searchTerm.toLowerCase().split(' ').filter(term => term.length > 0);
+            let hasVisibleRows = false;
+            
+            rows.forEach(row => {
+                const nom = row.getAttribute('data-nom');
+                const description = row.getAttribute('data-description');
+                let shouldShow = false;
+                
+                if (searchTerms.length === 0) {
+                    shouldShow = true;
+                } else {
+                    // Vérifier chaque terme de recherche
+                    for (const term of searchTerms) {
+                        if ((nom && nom.includes(term)) || 
+                            (description && description.includes(term))) {
+                            shouldShow = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                    hasVisibleRows = true;
+                    visibleCount++;
+                    
+                    // Surligner le texte correspondant
+                    highlightSearchTerms(row, searchTerms);
+                } else {
+                    row.style.display = 'none';
+                    removeHighlights(row);
+                }
+            });
+            
+            // Afficher/masquer les messages
+            if (noResults) {
+                noResults.style.display = hasVisibleRows ? 'none' : 'block';
+            }
+            if (tableBody) {
+                tableBody.style.display = hasVisibleRows ? '' : 'none';
+            }
+        }
+        
+        // Mettre à jour les compteurs
+        updateCounters(visibleCount, searchTerm);
+        
+        // Mettre à jour le tri si nécessaire
+        if (currentSort.field !== 'none') {
+            sortTable(currentSort.field, currentSort.direction);
+        }
+    }
+    
+    // Surligner les termes de recherche
+    function highlightSearchTerms(row, searchTerms) {
+        if (searchTerms.length === 0) return;
+        
+        const nameCell = row.querySelector('.category-name');
+        const descCell = row.querySelector('.category-description');
+        
+        if (nameCell) {
+            let nameText = nameCell.textContent;
+            searchTerms.forEach(term => {
+                const regex = new RegExp(`(${term})`, 'gi');
+                nameText = nameText.replace(regex, '<span class="highlight-text">$1</span>');
+            });
+            nameCell.innerHTML = nameText;
+        }
+        
+        if (descCell) {
+            let descText = descCell.textContent;
+            searchTerms.forEach(term => {
+                const regex = new RegExp(`(${term})`, 'gi');
+                descText = descText.replace(regex, '<span class="highlight-text">$1</span>');
+            });
+            descCell.innerHTML = descText;
+        }
+        
+        // Ajouter un effet visuel
+        row.classList.add('highlight');
+        setTimeout(() => row.classList.remove('highlight'), 1000);
+    }
+    
+    // Enlever les surlignements
+    function removeHighlights(row) {
+        const nameCell = row.querySelector('.category-name');
+        const descCell = row.querySelector('.category-description');
+        
+        if (nameCell && nameCell.querySelector('.highlight-text')) {
+            nameCell.innerHTML = nameCell.textContent;
+        }
+        
+        if (descCell && descCell.querySelector('.highlight-text')) {
+            descCell.innerHTML = descCell.textContent;
+        }
+    }
+    
+    // Mettre à jour les compteurs
+    function updateCounters(visibleCount, searchTerm) {
+        const totalCount = document.querySelectorAll('.category-row').length;
+        const filteredCount = document.getElementById('filtered-count');
+        const totalCategories = document.getElementById('total-categories');
+        const searchInfo = document.getElementById('search-info');
+        
+        if (filteredCount) {
+            filteredCount.textContent = visibleCount;
+        }
+        
+        if (searchInfo) {
+            if (searchTerm && searchTerm.trim() !== '') {
+                searchInfo.textContent = `(Filtré: ${visibleCount}/${totalCount})`;
+                searchInfo.style.display = 'inline';
+            } else {
+                searchInfo.style.display = 'none';
+            }
+        }
+    }
+    
+    // Fonction de tri
+    function sortTable(field, direction) {
+        const rows = Array.from(document.querySelectorAll('.category-row:not([style*="display: none"])'));
+        
+        rows.sort((a, b) => {
+            let aValue, bValue;
+            
+            switch(field) {
+                case 'nom':
+                    aValue = a.getAttribute('data-nom');
+                    bValue = b.getAttribute('data-nom');
+                    break;
+                case 'description':
+                    aValue = a.getAttribute('data-description');
+                    bValue = b.getAttribute('data-description');
+                    break;
+                case 'date':
+                    aValue = a.getAttribute('data-date');
+                    bValue = b.getAttribute('data-date');
+                    break;
+                default:
+                    return 0;
+            }
+            
+            // Comparaison
+            if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+            if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+        
+        // Réorganiser les lignes dans le DOM
+        const tbody = document.getElementById('categories-body');
+        if (tbody) {
+            rows.forEach(row => tbody.appendChild(row));
+        }
+        
+        // Mettre à jour les icônes de tri
+        updateSortIcons(field, direction);
+    }
+    
+    // Mettre à jour les icônes de tri
+    function updateSortIcons(field, direction) {
+        document.querySelectorAll('.sortable').forEach(link => {
+            link.classList.remove('active');
+            const icon = link.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-sort';
+            }
+        });
+        
+        const activeLink = document.querySelector(`.sortable[data-sort="${field}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+            const icon = activeLink.querySelector('i');
+            if (icon) {
+                icon.className = direction === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+            }
+        }
+        
+        currentSort = { field, direction };
+    }
+    
+    // ============ ÉVÉNEMENTS ============
+    
+    // Recherche en temps réel
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterCategories(this.value);
+            }, 300); // Délai de 300ms pour éviter trop d'appels
+        });
+        
+        // Recherche avec la touche Entrée
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                filterCategories(this.value);
+            }
+        });
+    }
+    
+    // Réinitialiser la recherche
+    const resetButton = document.getElementById('btn-reset-search');
+    if (resetButton) {
+        resetButton.addEventListener('click', function() {
+            if (searchInput) {
+                searchInput.value = '';
+                filterCategories('');
+                searchInput.focus();
+            }
+        });
+    }
+    
+    // Effacer la recherche
+    const clearButton = document.getElementById('btn-clear-search');
+    if (clearButton) {
+        clearButton.addEventListener('click', function() {
+            if (searchInput) {
+                searchInput.value = '';
+                filterCategories('');
+            }
+        });
+    }
+    
+    // Aide recherche
+    const helpButton = document.getElementById('btn-help-search');
+    if (helpButton) {
+        helpButton.addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('modalHelpSearch'));
+            modal.show();
+        });
+    }
+    
+    // Trier les colonnes
+    document.querySelectorAll('.sortable').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const field = this.getAttribute('data-sort');
+            const direction = currentSort.field === field && currentSort.direction === 'asc' ? 'desc' : 'asc';
+            sortTable(field, direction);
+        });
+    });
+    
+    // Exporter les données
+    const exportButton = document.getElementById('export-btn');
+    if (exportButton) {
+        exportButton.addEventListener('click', function() {
+            const searchTerm = searchInput ? searchInput.value : '';
+            const visibleRows = document.querySelectorAll('.category-row:not([style*="display: none"])').length;
+            
+            let message = `Catégories exportées:\n`;
+            message += `- Total: ${visibleRows} catégorie(s)\n`;
+            if (searchTerm) {
+                message += `- Recherche: "${searchTerm}"\n`;
+            }
+            message += `- Date: ${new Date().toLocaleDateString()}`;
+            
+            alert(message);
+            
+            // Ici vous pourriez ajouter un vrai export CSV ou PDF
+            // exportToCSV();
+        });
+    }
+    
+    // ============ GESTION GLOBALE DES FORMULAIRES ============
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Déterminer si c'est une édition ou création
+        const isEdit = form.action.includes('/edit');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEdit ? 'Modification...' : 'En cours...');
+        submitBtn.disabled = true;
+        
+        const formData = new FormData(form);
+        
+        console.log('Envoi à:', form.action);
+        console.log('Méthode:', form.method);
+        console.log('Données:', Object.fromEntries(formData));
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Statut:', response.status, response.statusText);
+            
+            // Vérifier le type de contenu
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                // Si ce n'est pas du JSON, lire comme texte
+                return response.text().then(text => {
+                    console.log('Réponse non-JSON (500 premiers):', text.substring(0, 500));
+                    
+                    // Essayer de parser comme JSON malgré tout (au cas où le header est manquant)
+                    try {
+                        const data = JSON.parse(text);
+                        return data;
+                    } catch {
+                        throw new Error('Réponse non-JSON reçue');
+                    }
+                });
+            }
+        })
+        .then(data => {
+            console.log('Données JSON:', data);
+            
+            if (data.success) {
+                // Succès
+                alert(data.message || 'Opération réussie!');
+                
+                // Fermer le modal
+                let modalId = 'modalNouvelleCategorie';
+                if (isEdit) {
+                    modalId = 'modalEditCategorie';
+                }
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // Recharger la page après un délai
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                // Échec - afficher le formulaire avec erreurs
+                console.log('Échec, données:', data);
+                
+                if (data.html) {
+                    let modalBody;
+                    if (isEdit) {
+                        modalBody = document.getElementById('modalEditCategorieBody');
+                    } else {
+                        modalBody = document.querySelector('#modalNouvelleCategorie .modal-body');
+                    }
+                    
+                    if (modalBody) {
+                        modalBody.innerHTML = data.html;
+                        // Réattacher l'événement au nouveau formulaire
+                        const newForm = modalBody.querySelector('form');
+                        if (newForm) {
+                            newForm.addEventListener('submit', handleFormSubmit);
+                        }
+                    }
+                } else {
+                    alert('Erreur: ' + (data.message || 'Inconnue'));
+                }
+                
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Erreur fetch:', error);
+            alert('Erreur: ' + error.message);
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+    
+    // ============ INITIALISATION ============
+    function initForms() {
+        // Formulaire création (dans le modal)
+        const formNew = document.querySelector('#modalNouvelleCategorie form');
+        if (formNew) {
+            formNew.removeEventListener('submit', handleFormSubmit);
+            formNew.addEventListener('submit', handleFormSubmit);
+        }
+        
+        // Formulaire édition (sera attaché dynamiquement)
+        const formEdit = document.querySelector('#modalEditCategorie form');
+        if (formEdit) {
+            formEdit.removeEventListener('submit', handleFormSubmit);
+            formEdit.addEventListener('submit', handleFormSubmit);
+        }
+    }
+    
+    // Initialiser au chargement
+    initForms();
+    
+    // Réinitialiser quand le modal création s'ouvre
+    const modalNew = document.getElementById('modalNouvelleCategorie');
+    if (modalNew) {
+        modalNew.addEventListener('shown.bs.modal', initForms);
+    }
+    
+    // ============ GESTION MODAL ÉDITION ============
+    const modalEdit = document.getElementById('modalEditCategorie');
+    if (modalEdit) {
+        modalEdit.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const action = button.getAttribute('data-action');
+            
+            console.log('Chargement édition, action:', action);
+            
+            // Afficher loader
+            document.getElementById('modalEditCategorieBody').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement du formulaire...</p>
+                </div>
+            `;
+            
+            // Charger le formulaire
+            fetch(action, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Données chargées:', data);
+                
+                if (data.success && data.html) {
+                    document.getElementById('modalEditCategorieBody').innerHTML = data.html;
+                    // Attacher l'événement au formulaire chargé
+                    const newForm = document.querySelector('#modalEditCategorie form');
+                    if (newForm) {
+                        newForm.addEventListener('submit', handleFormSubmit);
+                    }
+                } else {
+                    document.getElementById('modalEditCategorieBody').innerHTML = 
+                        '<div class="alert alert-danger">Erreur de chargement</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur chargement:', error);
+                document.getElementById('modalEditCategorieBody').innerHTML = 
+                    '<div class="alert alert-danger">Erreur: ' + error.message + '</div>';
+            });
+        });
+        
+        // Réinitialiser quand le modal se ferme
+        modalEdit.addEventListener('hidden.bs.modal', function() {
+            document.getElementById('modalEditCategorieBody').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement du formulaire...</p>
+                </div>
+            `;
+        });
+    }
+    
+    // Tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+});
+</script>
+{% endblock %}

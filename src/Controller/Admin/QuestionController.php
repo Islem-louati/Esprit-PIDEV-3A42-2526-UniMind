@@ -11,14 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/admin/question")
- */
-class QuestionController extends AbstractController
+#[Route('/admin/question')]  // ← Important : c'est /question, pas /questionnaire
+class QuestionController extends AbstractController  // ← Le nom de la classe doit être QuestionController
 {
-    /**
-     * @Route("/", name="admin_question_index", methods={"GET"})
-     */
+    #[Route('/', name: 'admin_question_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $questionnaireId = $request->query->get('questionnaire_id');
@@ -30,7 +26,7 @@ class QuestionController extends AbstractController
             ->orderBy('q.created_at', 'DESC');
 
         if ($questionnaireId) {
-            $qb->where('quest.questionnaire_id = :questionnaireId')
+            $qb->where('q.questionnaire = :questionnaireId')
                ->setParameter('questionnaireId', $questionnaireId);
         }
 
@@ -50,9 +46,7 @@ class QuestionController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="admin_question_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'admin_question_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $questionnaireId = $request->query->get('questionnaire_id');
@@ -80,6 +74,10 @@ class QuestionController extends AbstractController
         $form = $this->createForm(QuestionType::class, $question);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'Le champ « Texte de la question » ou des options sont vides ou invalides. Veuillez corriger les erreurs affichées ci-dessous.');
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $em->persist($question);
@@ -89,12 +87,12 @@ class QuestionController extends AbstractController
 
                 if ($request->request->get('add_another')) {
                     return $this->redirectToRoute('admin_question_new', [
-                        'questionnaire_id' => $questionnaire->getId()  // ✅ getId() fonctionne maintenant
+                        'questionnaire_id' => $questionnaire->getId()
                     ]);
                 }
 
                 return $this->redirectToRoute('admin_question_index', [
-                    'questionnaire_id' => $questionnaire->getId()  // ✅ getId() fonctionne maintenant
+                    'questionnaire_id' => $questionnaire->getId()
                 ]);
 
             } catch (\Exception $e) {
@@ -108,9 +106,7 @@ class QuestionController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="admin_question_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'admin_question_show', methods: ['GET'])]
     public function show(Question $question): Response
     {
         return $this->render('admin/question/show.html.twig', [
@@ -118,13 +114,15 @@ class QuestionController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="admin_question_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'admin_question_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Question $question, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(QuestionType::class, $question);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'Des champs sont vides ou invalides. Veuillez corriger les erreurs affichées ci-dessous.');
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
@@ -133,7 +131,7 @@ class QuestionController extends AbstractController
 
                 $this->addFlash('success', 'Question modifiée avec succès');
                 return $this->redirectToRoute('admin_question_show', [
-                    'id' => $question->getId()  // ✅ getId() fonctionne maintenant
+                    'id' => $question->getId()
                 ]);
 
             } catch (\Exception $e) {
@@ -147,12 +145,9 @@ class QuestionController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="admin_question_delete", methods={"POST"})
-     */
+    #[Route('/{id}', name: 'admin_question_delete', methods: ['POST'])]
     public function delete(Request $request, Question $question, EntityManagerInterface $em): Response
     {
-        // ✅ getId() fonctionne maintenant grâce à la correction dans l'entité
         $questionnaireId = $question->getQuestionnaire()->getId();
 
         if ($this->isCsrfTokenValid('delete' . $question->getId(), $request->request->get('_token'))) {

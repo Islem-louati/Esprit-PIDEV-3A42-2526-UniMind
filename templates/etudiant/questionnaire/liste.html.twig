@@ -1,4 +1,4 @@
-{% extends 'etudiant/base.html.twig' %}
+{% extends 'base_etudiant.html.twig' %}
 
 {% block title %}Questionnaires{% endblock %}
 
@@ -47,7 +47,8 @@
     <div class="row">
         {% if questionnaires|length > 0 %}
             {% for questionnaire in questionnaires %}
-                {% set isCompleted = questionnaire.id in questionnaires_completes_ids %}
+                {# ✅ CORRECTION : Utiliser questionnaire.questionnaireId au lieu de questionnaire.id #}
+                {% set isCompleted = questionnaire.questionnaireId in questionnaires_completes_ids %}
                 
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card shadow h-100">
@@ -92,7 +93,8 @@
                                         <i class="fas fa-eye me-2"></i> Voir mes réponses
                                     </a>
                                 {% else %}
-                                    <a href="{{ path('etudiant_questionnaire_passer', {'id': questionnaire.id}) }}" 
+                                    {# ✅ CORRECTION : Utiliser questionnaire.questionnaireId au lieu de questionnaire.id #}
+                                    <a href="{{ path('etudiant_questionnaire_passer', {'id': questionnaire.questionnaireId}) }}" 
                                        class="btn btn-{{ 
                                            questionnaire.type == 'STRESS' ? 'danger' :
                                            questionnaire.type == 'ANXIETE' ? 'warning' :

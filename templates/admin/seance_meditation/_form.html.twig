@@ -1,0 +1,168 @@
+{% set form_action = form_action|default(seance_meditation.seanceId ? 
+    path('admin_seance_meditation_edit', {'id': seance_meditation.seanceId}) : 
+    path('admin_seance_meditation_new', {'categorieId': categorie_id|default(null)})
+) %}
+
+{% set form_id = 'form-seance-' ~ (seance_meditation.seanceId ? seance_meditation.seanceId : 'new') %}
+
+{{ form_start(form, {'attr': {
+    'id': form_id,
+    'action': form_action,
+    'class': 'form-seance',
+    'method': 'POST',
+    'enctype': 'multipart/form-data',
+    'novalidate': 'novalidate'  
+}}) }}
+
+<div class="row">
+    {# Titre #}
+    <div class="col-md-6 mb-3">
+        {{ form_label(form.titre, 'Titre de la séance *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.titre, {'attr': {
+            'class': 'form-control',
+            'placeholder': 'Ex: Relaxation profonde'
+        }}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.titre) }}
+        </div>
+        <small class="form-text text-muted">
+            5 à 150 caractères
+        </small>
+    </div>
+
+    {# Type de fichier #}
+    <div class="col-md-6 mb-3">
+        {{ form_label(form.typeFichier, 'Type de fichier *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.typeFichier, {'attr': {
+            'class': 'form-select'
+        }}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.typeFichier) }}
+        </div>
+    </div>
+
+    {# Description #}
+    <div class="col-md-12 mb-3">
+        {{ form_label(form.description, 'Description *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.description, {'attr': {
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Description détaillée de la séance...'
+        }}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.description) }}
+        </div>
+        <small class="form-text text-muted">
+            Minimum 30 caractères
+        </small>
+    </div>
+
+    {# Durée #}
+    <div class="col-md-4 mb-3">
+        {{ form_label(form.duree, 'Durée (secondes) *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.duree, {'attr': {
+            'class': 'form-control',
+            'placeholder': '300'
+        }}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.duree) }}
+        </div>
+        <small class="form-text text-muted">
+            1 à 3600 secondes (1 minute à 1 heure)
+        </small>
+    </div>
+
+    {# Niveau #}
+    <div class="col-md-4 mb-3">
+        {{ form_label(form.niveau, 'Niveau *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.niveau, {'attr': {
+            'class': 'form-select'
+        }}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.niveau) }}
+        </div>
+    </div>
+
+    {# Catégorie #}
+    <div class="col-md-4 mb-3">
+        {{ form_label(form.categorie, 'Catégorie *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.categorie, {'attr': {
+            'class': 'form-select'
+        }}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.categorie) }}
+        </div>
+    </div>
+
+    {# Fichier #}
+    <div class="col-md-12 mb-3">
+        {{ form_label(form.fichier, 'Fichier ' ~ (not seance_meditation.seanceId ? '*' : ''), {
+            'label_attr': {
+                'class': 'form-label ' ~ (not seance_meditation.seanceId ? 'text-danger' : '')
+            }
+        }) }}
+        
+        {{ form_widget(form.fichier, {'attr': {
+            'class': 'form-control'
+        }}) }}
+        
+        <div class="invalid-feedback">
+            {{ form_errors(form.fichier) }}
+        </div>
+        
+        <small class="form-text {{ not seance_meditation.seanceId ? 'text-danger' : 'text-muted' }}">
+            <i class="fas fa-info-circle me-1"></i>
+            {% if not seance_meditation.seanceId %}
+                Le fichier est obligatoire pour créer une nouvelle séance
+            {% else %}
+                Optionnel - laissez vide pour conserver le fichier actuel
+            {% endif %}
+            <br>Formats acceptés : MP3, MP4 - Max 50MB
+        </small>
+        
+        {# Afficher le fichier actuel si modification #}
+        {% if seance_meditation.seanceId and seance_meditation.fichier %}
+            <div class="alert alert-secondary mt-2">
+                <strong><i class="fas fa-file me-1"></i> Fichier actuel :</strong> {{ seance_meditation.fichier }}
+                {% if seance_meditation.typeFichier == 'audio' %}
+                    <div class="mt-2">
+                        <audio controls style="width: 100%;" class="rounded">
+                            <source src="{{ asset('uploadsmed/' ~ seance_meditation.fichier) }}" type="audio/mpeg">
+                        </audio>
+                    </div>
+                {% elseif seance_meditation.typeFichier == 'video' %}
+                    <div class="mt-2">
+                        <video controls style="width: 100%; max-height: 200px;" class="rounded">
+                            <source src="{{ asset('uploadsmed/' ~ seance_meditation.fichier) }}" type="video/mp4">
+                        </video>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# Séance active #}
+    <div class="col-md-12 mb-3">
+        <div class="form-check form-switch">
+            {{ form_widget(form.isActif, {'attr': {
+                'class': 'form-check-input',
+                'role': 'switch'
+            }}) }}
+            {{ form_label(form.isActif, 'Séance active', {'label_attr': {'class': 'form-check-label'}}) }}
+        </div>
+        <small class="form-text text-muted d-block">
+            Une séance inactive ne sera pas visible pour les utilisateurs
+        </small>
+    </div>
+</div>
+
+<div class="mt-4 d-flex justify-content-end">
+    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+        <i class="fas fa-times"></i> Annuler
+    </button>
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+</div>
+
+{{ form_end(form) }}

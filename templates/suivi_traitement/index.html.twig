@@ -1,0 +1,513 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Gestion des SuiviTraitements{% endblock %}
+{% block page_title %}Gestion des SuiviTraitements{% endblock %}
+
+{% block breadcrumb_title %}SuiviTraitement{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                Gestion des SuiviTraitements
+                            </h6>
+                        </div>
+                        <div class="col-auto">
+                            {% if is_granted('ROLE_PSYCHOLOGUE') %}
+                            <a href="{{ path('app_suivi_traitement_select_traitement') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>
+                                Nouveau Suivi
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+<!-- Statistiques Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-10">
+                        <h5 class="card-title text-uppercase text-muted mb-0">Total Suivis</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ suivis|length }}</span>
+                    </div>
+                    <div class="col-2 text-center">
+                        <i class="fas fa-calendar-check text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-10">
+                        <h5 class="card-title text-uppercase text-muted mb-0">Effectués</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ suivis|filter(s => s.effectue == true)|length }}</span>
+                    </div>
+                    <div class="col-2 text-center">
+                        <i class="fas fa-check-double text-success" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-10">
+                        <h5 class="card-title text-uppercase text-muted mb-0">En Attente</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ suivis|filter(s => s.valide == false)|length }}</span>
+                    </div>
+                    <div class="col-2 text-center">
+                        <i class="fas fa-hourglass-half text-warning" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-10">
+                        <h5 class="card-title text-uppercase text-muted mb-0">Validés</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ suivis|filter(s => s.valide == true)|length }}</span>
+                    </div>
+                    <div class="col-2 text-center">
+                        <i class="fas fa-shield-alt text-info" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres et Recherche -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un suivi...">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="statutFilter" class="form-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="effectue">Effectué</option>
+                            <option value="non_effectue">Non effectué</option>
+                            <option value="valide">Validé</option>
+                            <option value="non_valide">Non validé</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="ressentiFilter" class="form-select">
+                            <option value="">Tous les ressentis</option>
+                            <option value="TRES_BIEN">Très bien</option>
+                            <option value="BIEN">Bien</option>
+                            <option value="MOYEN">Moyen</option>
+                            <option value="DIFFICILE">Difficile</option>
+                            <option value="TRES_DIFFICILE">Très difficile</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="dateFilter" class="form-select">
+                            <option value="">Toutes les dates</option>
+                            <option value="today">Aujourd'hui</option>
+                            <option value="week">Cette semaine</option>
+                            <option value="month">Ce mois</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="resetFilters" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-redo me-1"></i>Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des Suivis -->
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Liste des SuiviTraitements</h6>
+                <div>
+                    {% if is_granted('ROLE_PSYCHOLOGUE') or is_granted('ROLE_ETUDIANT') %}
+                    <a href="{{ path('app_suivi_traitement_select_traitement') }}" class="btn btn-primary btn-sm me-2">
+                        <i class="fas fa-plus me-2"></i>Nouveau Suivi
+                    </a>
+                    {% endif %}
+                    <a href="{{ path('app_traitement_index') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-stethoscope me-2"></i>Traitements
+                    </a>
+                </div>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="date">
+                                    Date <i class="fas fa-sort ms-1"></i>
+                                </th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="traitement">
+                                    Traitement <i class="fas fa-sort ms-1"></i>
+                                </th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="patient">
+                                    Patient <i class="fas fa-sort ms-1"></i>
+                                </th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="ressenti">
+                                    Ressenti <i class="fas fa-sort ms-1"></i>
+                                </th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="evaluation">
+                                    Évaluation <i class="fas fa-sort ms-1"></i>
+                                </th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="statut">
+                                    Statut <i class="fas fa-sort ms-1"></i>
+                                </th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suivisTableBody">
+                            {% set current_traitement = null %}
+                            {% for suivi in suivis %}
+                                {% if current_traitement != suivi.traitement.titre %}
+                                    {% if current_traitement is not null %}
+                                        </tr>
+                                    {% endif %}
+                                    {% set current_traitement = suivi.traitement.titre %}
+                                    <tr class="traitement-header">
+                                        <td colspan="8" class="bg-light text-center fw-bold py-2">
+                                            <i class="fas fa-stethoscope me-2"></i>
+                                            {{ suivi.traitement.titre }}
+                                            <small class="text-muted ms-2">({{ suivi.traitement.etudiant ? suivi.traitement.etudiant.fullName : 'Non assigné' }})</small>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                <tr class="suivi-row" 
+                                    data-statut="{{ suivi.effectue ? 'effectue' : 'non_effectue' }}"
+                                    data-valide="{{ suivi.valide ? 'valide' : 'non_valide' }}"
+                                    data-ressenti="{{ suivi.ressenti ? suivi.ressenti : '' }}"
+                                    data-date="{{ suivi.dateSuivi|date('Y-m-d') }}"
+                                    data-titre="{{ suivi.traitement.titre|lower }}"
+                                    data-patient="{{ suivi.traitement.etudiant ? (suivi.traitement.etudiant.fullName|default('')) : ''|lower }}">
+                                    <td>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ suivi.dateSuivi|date('d/m/Y') }}</h6>
+                                            <p class="text-xs text-secondary mb-0">{{ suivi.heureEffective ? suivi.heureEffective|date('H:i') : 'N/A' }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ suivi.traitement.titre }}</h6>
+                                            <p class="text-xs text-secondary mb-0">{{ suivi.traitement.categorieLabel }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ suivi.traitement.etudiant ? suivi.traitement.etudiant.fullName : 'Non défini' }}</p>
+                                        <p class="text-xs text-secondary mb-0">
+                                            <i class="fas fa-user-md me-1"></i>
+                                            {{ suivi.traitement.psychologue ? suivi.traitement.psychologue.fullName : 'Non défini' }}
+                                        </p>
+                                    </td>
+                                    <td>
+                                        {% if suivi.ressenti %}
+                                            <span class="badge {% if suivi.ressenti == 'TRES_BIEN' %}bg-gradient-success{% elseif suivi.ressenti == 'BIEN' %}bg-gradient-info{% elseif suivi.ressenti == 'MOYEN' %}bg-gradient-warning{% else %}bg-gradient-danger{% endif %}">
+                                                {{ suivi.ressentiLabel|default(suivi.ressenti) }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if suivi.evaluation %}
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2">{{ suivi.evaluation }}/5</span>
+                                                <div class="progress" style="width: 60px; height: 6px;">
+                                                    <div class="progress-bar bg-gradient-info" style="width: {{ (suivi.evaluation / 5) * 100 }}%"></div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            {% if suivi.effectue %}
+                                                <span class="badge bg-gradient-success mb-1">Effectué</span>
+                                            {% else %}
+                                                <span class="badge bg-gradient-warning mb-1">En attente</span>
+                                            {% endif %}
+                                            
+                                            {% if suivi.valide %}
+                                                <span class="badge bg-gradient-info">Validé</span>
+                                            {% else %}
+                                                <span class="badge bg-gradient-secondary">Non validé</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a href="{{ path('app_suivi_traitement_show', {'id': suivi.id}) }}" class="btn btn-sm btn-info" title="Voir">
+                                                <i class="fas fa-eye me-1"></i>Voir
+                                            </a>
+                                            {% if is_granted('ROLE_PSYCHOLOGUE') and suivi.traitement.psychologue == app.user %}
+                                                <a href="{{ path('app_suivi_traitement_edit', {'id': suivi.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+                                                    <i class="fas fa-edit me-1"></i>Modifier
+                                                </a>
+                                                <form method="post" action="{{ path('app_suivi_traitement_delete', {'id': suivi.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce suivi ?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ suivi.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                        <i class="fas fa-trash me-1"></i>Supprimer
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            {% if is_granted('ROLE_ETUDIANT') and suivi.traitement.etudiant == app.user %}
+                                                <a href="{{ path('app_suivi_traitement_edit', {'id': suivi.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
+                                                    <i class="fas fa-edit me-1"></i>Modifier
+                                                </a>
+                                                <form method="post" action="{{ path('app_suivi_traitement_delete', {'id': suivi.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce suivi ?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ suivi.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                        <i class="fas fa-trash me-1"></i>Supprimer
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if suivis is empty %}
+                    <div class="alert alert-info mx-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% if is_granted('ROLE_ETUDIANT') %}
+                            Vous n'avez pas encore de suivis car vous n'avez pas de traitements assignés.<br><br>
+                            <strong>Processus :</strong><br>
+                            1. Un psychologue doit d'abord créer un traitement pour vous<br>
+                            2. Ensuite, vous pourrez créer des suivis pour ce traitement<br><br>
+                            <small>Contactez votre psychologue pour qu'il vous assigne un traitement.</small>
+                        {% else %}
+                            Aucun suivi trouvé. 
+                            <a href="{{ path('app_suivi_traitement_select_traitement') }}" class="alert-link">Créez un suivi</a> pour commencer.
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide flash messages
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+
+    // Fonctionnalités de recherche et filtrage
+    const searchInput = document.getElementById('searchInput');
+    const statutFilter = document.getElementById('statutFilter');
+    const ressentiFilter = document.getElementById('ressentiFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const resetFilters = document.getElementById('resetFilters');
+    const suivisTableBody = document.getElementById('suivisTableBody');
+    const suiviRows = document.querySelectorAll('.suivi-row');
+
+    function filterSuivis() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statutValue = statutFilter.value;
+        const ressentiValue = ressentiFilter.value;
+        const dateValue = dateFilter.value;
+
+        suiviRows.forEach(row => {
+            const titre = row.dataset.titre || '';
+            const patient = row.dataset.patient || '';
+            const statut = row.dataset.statut || '';
+            const valide = row.dataset.valide || '';
+            const ressenti = row.dataset.ressenti || '';
+            const date = row.dataset.date || '';
+
+            const matchesSearch = titre.includes(searchTerm) || patient.includes(searchTerm);
+            const matchesStatut = !statutValue || statut === statutValue || valide === statutValue;
+            const matchesRessenti = !ressentiValue || ressenti === ressentiValue;
+            const matchesDate = !dateValue || checkDateFilter(date, dateValue);
+
+            if (matchesSearch && matchesStatut && matchesRessenti && matchesDate) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        updateNoResultsMessage();
+    }
+
+    function checkDateFilter(date, filter) {
+        const suiviDate = new Date(date);
+        const today = new Date();
+        
+        switch(filter) {
+            case 'today':
+                return suiviDate.toDateString() === today.toDateString();
+            case 'week':
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                return suiviDate >= weekAgo;
+            case 'month':
+                const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+                return suiviDate >= monthAgo;
+            default:
+                return true;
+        }
+    }
+
+    function updateNoResultsMessage() {
+        const visibleRows = Array.from(suiviRows).filter(row => row.style.display !== 'none');
+        
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        if (!noResultsMsg) {
+            noResultsMsg = document.createElement('tr');
+            noResultsMsg.id = 'noResultsMessage';
+            noResultsMsg.innerHTML = `
+                <td colspan="7" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="fas fa-search fa-2x mb-3"></i>
+                        <p>Aucun suivi trouvé pour les critères sélectionnés</p>
+                    </div>
+                </td>
+            `;
+            suivisTableBody.appendChild(noResultsMsg);
+        }
+
+        if (visibleRows.length === 0) {
+            noResultsMsg.style.display = '';
+        } else {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
+    function resetAllFilters() {
+        searchInput.value = '';
+        statutFilter.value = '';
+        ressentiFilter.value = '';
+        dateFilter.value = '';
+        filterSuivis();
+    }
+
+    // Écouteurs d'événements
+    searchInput.addEventListener('input', filterSuivis);
+    statutFilter.addEventListener('change', filterSuivis);
+    ressentiFilter.addEventListener('change', filterSuivis);
+    dateFilter.addEventListener('change', filterSuivis);
+    resetFilters.addEventListener('click', resetAllFilters);
+
+    // Fonctionnalité de tri
+    const tableHeaders = document.querySelectorAll('th[data-sort]');
+    let sortDirection = {};
+
+    tableHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const sortType = header.dataset.sort;
+            const currentDirection = sortDirection[sortType] || 'asc';
+            const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+            sortDirection[sortType] = newDirection;
+
+            const rows = Array.from(suivisTableBody.querySelectorAll('.suivi-row'));
+            const sortedRows = rows.sort((a, b) => {
+                let aValue, bValue;
+
+                switch(sortType) {
+                    case 'date':
+                        aValue = new Date(a.dataset.date);
+                        bValue = new Date(b.dataset.date);
+                        break;
+                    case 'traitement':
+                        aValue = a.querySelector('td:nth-child(2) h6').textContent.trim();
+                        bValue = b.querySelector('td:nth-child(2) h6').textContent.trim();
+                        break;
+                    case 'patient':
+                        aValue = a.querySelector('td:nth-child(3) p').textContent.trim();
+                        bValue = b.querySelector('td:nth-child(3) p').textContent.trim();
+                        break;
+                    case 'ressenti':
+                        aValue = a.dataset.ressenti || '';
+                        bValue = b.dataset.ressenti || '';
+                        break;
+                    case 'evaluation':
+                        aValue = parseFloat(a.querySelector('.progress-bar')?.getAttribute('aria-valuenow')) || 0;
+                        bValue = parseFloat(b.querySelector('.progress-bar')?.getAttribute('aria-valuenow')) || 0;
+                        break;
+                    case 'statut':
+                        aValue = a.dataset.statut + a.dataset.valide;
+                        bValue = b.dataset.statut + b.dataset.valide;
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (aValue instanceof Date) {
+                    return newDirection === 'asc' ? aValue - bValue : bValue - aValue;
+                } else if (typeof aValue === 'number') {
+                    return newDirection === 'asc' ? aValue - bValue : bValue - aValue;
+                } else {
+                    return newDirection === 'asc' 
+                        ? aValue.localeCompare(bValue) 
+                        : bValue.localeCompare(aValue);
+                }
+            });
+
+            // Réorganiser les lignes dans le tableau
+            sortedRows.forEach(row => suivisTableBody.appendChild(row));
+
+            // Mettre à jour les icônes de tri
+            updateSortIcons(sortType, newDirection);
+        });
+    });
+
+    function updateSortIcons(sortType, direction) {
+        tableHeaders.forEach(header => {
+            const icon = header.querySelector('.fa-sort, .fa-sort-up, .fa-sort-down');
+            if (icon) {
+                icon.className = 'fas fa-sort ms-1';
+            }
+
+            if (header.dataset.sort === sortType) {
+                const sortIcon = header.querySelector('.fa-sort');
+                sortIcon.className = `fas fa-sort-${direction === 'asc' ? 'up' : 'down'} ms-1`;
+            }
+        });
+    }
+
+    // Initialisation
+    filterSuivis();
+});
+</script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -31,8 +31,7 @@ class SeanceMeditation
     #[Assert\Length(min: 20, minMessage: "La description doit faire au moins {{ limit }} caractères")]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le fichier est obligatoire")]
+    #[ORM\Column(length: 255, nullable: true)] 
     private ?string $fichier = null;
 
     #[ORM\Column(length: 10)]
@@ -58,11 +57,11 @@ class SeanceMeditation
     #[Assert\NotNull(message: "La catégorie est obligatoire")]
     private ?CategorieMeditation $categorie = null;
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTimeInterface $created_at;
+  #[ORM\Column(type: 'datetime')]
+    private ?\DateTime $created_at = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
+    private ?\DateTime $updated_at = null;
 
     public function __construct()
     {
@@ -114,9 +113,9 @@ class SeanceMeditation
         return $this->typeFichier;
     }
 
-    public function setTypeFichier(TypeFichier $typeFichier): static
+    public function setTypeFichier(string $typeFichier): static
     {
-        $this->typeFichier = $typeFichier->value;
+        $this->typeFichier = $typeFichier;
         return $this;
     }
 
@@ -141,6 +140,11 @@ class SeanceMeditation
         return $this->is_active ?? true;
     }
 
+    public function isActive(): bool
+{
+    return $this->is_active ?? true;
+}
+
     public function setIsActif(bool $is_active): static
     {
         $this->is_active = $is_active;
@@ -152,9 +156,9 @@ class SeanceMeditation
         return $this->niveau;
     }
 
-    public function setNiveau(TypeNiveau $niveau): static
+    public function setNiveau(string $niveau): static
     {
-        $this->niveau = $niveau->value;
+        $this->niveau = $niveau;
         return $this;
     }
 
@@ -169,34 +173,23 @@ class SeanceMeditation
         return $this;
     }
 
-    public function getDateCreation(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->created_at;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    public function setDateCreation(\DateTimeInterface $created_at): static
+    public function setCreatedAt(\DateTime $created_at): static
     {
         $this->created_at = $created_at;
         return $this;
     }
 
-    public function setCreatedAt(\DateTimeInterface $created_at): static
-    {
-        $this->created_at = $created_at;
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    public function setUpdatedAt(?\DateTime $updated_at): static
     {
         $this->updated_at = $updated_at;
         return $this;

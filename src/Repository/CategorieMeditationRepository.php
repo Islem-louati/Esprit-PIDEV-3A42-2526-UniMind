@@ -40,4 +40,41 @@ class CategorieMeditationRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+public function findAllWithStats(): array
+{
+    $results = $this->createQueryBuilder('c')
+        ->leftJoin('c.seanceMeditations', 's')
+        ->select('c', 'COUNT(s) as nbSeances', 'SUM(s.duree) as dureeTotale')
+        ->groupBy('c.categorie_id')
+        ->orderBy('nbSeances', 'DESC')
+        ->getQuery()
+        ->getResult();
+    
+    // Transformez les résultats pour avoir un format cohérent
+    $formattedResults = [];
+    foreach ($results as $result) {
+        if (is_array($result)) {
+            // $result est un tableau [0 => CategorieMeditation, 'nbSeances' => X, 'dureeTotale' => Y]
+            $categorie = $result[0];
+            $nbSeances = $result['nbSeances'];
+            $dureeTotale = $result['dureeTotale'] ?? 0;
+        } else {
+            // $result est directement la catégorie (peu probable)
+            $categorie = $result;
+            $nbSeances = 0;
+            $dureeTotale = 0;
+        }
+        
+        $formattedResults[] = [
+            'categorie' => $categorie,
+            'nbSeances' => (int) $nbSeances,
+            'dureeTotale' => (int) $dureeTotale
+        ];
+    }
+    
+    return $formattedResults;
+}
+
+
 }

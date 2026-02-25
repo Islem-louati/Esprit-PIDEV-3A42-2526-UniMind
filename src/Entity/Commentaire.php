@@ -96,6 +96,18 @@ class Commentaire
         return $this;
     }
 
+    public function getIsAnonyme(): bool
+    {
+        return $this->is_anonyme ?? false;
+    }
+
+    public function setIsAnonyme(bool $is_anonyme): static
+    {
+        $this->is_anonyme = $is_anonyme;
+        return $this;
+    }
+
+
     public function getPost(): ?Post
     {
         return $this->post;

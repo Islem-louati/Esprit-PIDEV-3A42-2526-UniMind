@@ -29,7 +29,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Messages Flash -->
         {% for message in app.flashes('success') %}
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -38,7 +38,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         {% endfor %}
-        
+
         <!-- Tableau des questionnaires -->
         <div class="card">
             <div class="card-body px-0 pt-0 pb-2">
@@ -112,7 +112,9 @@
                                     </div>
                                 </td>
                                 <td>
-                                    {% if questionnaire.questions|length == questionnaire.nbreQuestions %}
+                                    {% if questionnaire.nbreQuestions == 0 %}
+                                        <span class="badge badge-sm bg-gradient-danger">Vide</span>
+                                    {% elseif questionnaire.questions|length == questionnaire.nbreQuestions %}
                                         <span class="badge badge-sm bg-gradient-success">Complet</span>
                                     {% else %}
                                         <span class="badge badge-sm bg-gradient-warning">
@@ -129,15 +131,23 @@
                                     </p>
                                 </td>
                                 <td class="align-middle">
-                                    <div class="btn-group">
+                                    <div class="btn-group" role="group">
+                                        <!-- Bouton Voir -->
                                         <a href="{{ path('admin_questionnaire_show', {'id': questionnaire.questionnaireId}) }}" 
-                                           class="btn btn-sm btn-outline-info me-1" data-bs-toggle="tooltip" title="Voir">
+                                           class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Voir">
                                             <i class="fas fa-eye"></i>
                                         </a>
+
+                                        <!-- Bouton Modifier -->
                                         <a href="{{ path('admin_questionnaire_edit', {'id': questionnaire.questionnaireId}) }}" 
-                                           class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="tooltip" title="Modifier">
+                                           class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <a href="{{ path('admin_questionnaire_generer_ia') }}" class="btn btn-success ms-2">
+    <i class="fas fa-robot me-2"></i>Générer avec IA
+</a>
+
+                                        <!-- Formulaire Supprimer -->
                                         <form method="post" 
                                               action="{{ path('admin_questionnaire_delete', {'id': questionnaire.questionnaireId}) }}" 
                                               class="d-inline">

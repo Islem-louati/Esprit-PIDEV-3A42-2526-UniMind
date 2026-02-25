@@ -25,11 +25,7 @@ enum RoleType: string
     
     public static function getFormChoices(): array
     {
-        $choices = [];
-        foreach (self::cases() as $case) {
-            $choices[$case->value] = $case->value;
-        }
-        return $choices;
+        return self::getChoices();
     }
     
     public function getLabel(): string

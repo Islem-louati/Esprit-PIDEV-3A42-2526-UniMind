@@ -1,0 +1,258 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Suivis à Valider | UniMind{% endblock %}
+{% block page_title %}Suivis à Valider{% endblock %}
+{% block breadcrumb_title %}Suivis à Valider{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-clock me-2"></i>
+                        Suivis en Attente de Validation
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Statistiques -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-gradient-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="col-10">
+                                            <h3 class="mb-0">{{ suivis|length }}</h3>
+                                            <p class="text-sm mb-0">Suivis en attente</p>
+                                        </div>
+                                        <div class="col-2 text-center">
+                                            <i class="fas fa-hourglass-half text-white" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-gradient-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="col-10">
+                                            <h3 class="mb-0">{{ suivis|filter(suivi => suivi.dateSuivi >= date('-3 days'))|length }}</h3>
+                                            <p class="text-sm mb-0">Derniers 3 jours</p>
+                                        </div>
+                                        <div class="col-2 text-center">
+                                            <i class="fas fa-calendar-alt text-white" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtres -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <select class="form-control" id="psychologueFilter">
+                                <option value="">Tous les psychologues</option>
+                                {% for psychologue in psychologues %}
+                                    <option value="{{ psychologue.id }}">{{ psychologue.prenom }} {{ psychologue.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-control" id="traitementFilter">
+                                <option value="">Tous les traitements</option>
+                                {% for traitement in traitements %}
+                                    <option value="{{ traitement.id }}">{{ traitement.titre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
+                        </div>
+                    </div>
+
+                    <!-- Tableau des suivis à valider -->
+                    {% if suivis is defined and suivis|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="suivisTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date</th>
+                                        <th>Étudiant</th>
+                                        <th>Traitement</th>
+                                        <th>Psychologue</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for suivi in suivis %}
+                                        <tr data-psychologue="{{ suivi.psychologue ? suivi.psychologue.id : '' }}" 
+                                            data-traitement="{{ suivi.traitement ? suivi.traitement.id : '' }}">
+                                            <td>
+                                                <span class="badge bg-warning">#{{ suivi.id }}</span>
+                                            </td>
+                                            <td>{{ suivi.dateSuivi ? suivi.dateSuivi|date('d/m/Y H:i') : '-' }}</td>
+                                            <td>
+                                                {% if suivi.traitement and suivi.traitement.etudiant %}
+                                                    <div class="d-flex align-items-center">
+                                                        {% if suivi.traitement.etudiant.profil and suivi.traitement.etudiant.profil.photo %}
+                                                            <img src="{{ asset('uploads/photos/' ~ suivi.traitement.etudiant.profil.photo) }}" 
+                                                                 alt="{{ suivi.traitement.etudiant.prenom }} {{ suivi.traitement.etudiant.nom }}" 
+                                                                 class="rounded-circle me-2"
+                                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" 
+                                                                 style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                                {{ suivi.traitement.etudiant.prenom|first|upper }}{{ suivi.traitement.etudiant.nom|first|upper }}
+                                                            </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <div class="fw-bold">{{ suivi.traitement.etudiant.prenom }} {{ suivi.traitement.etudiant.nom }}</div>
+                                                            <small class="text-muted">{{ suivi.traitement.etudiant.email }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">Non assigné</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if suivi.traitement %}
+                                                    <a href="{{ path('app_traitement_show', {'id': suivi.traitement.id}) }}" 
+                                                       class="text-decoration-none">
+                                                        {{ suivi.traitement.titre }}
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">Non associé</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if suivi.psychologue %}
+                                                    <div class="d-flex align-items-center">
+                                                        {% if suivi.psychologue.profil and suivi.psychologue.profil.photo %}
+                                                            <img src="{{ asset('uploads/photos/' ~ suivi.psychologue.profil.photo) }}" 
+                                                                 alt="{{ suivi.psychologue.prenom }} {{ suivi.psychologue.nom }}" 
+                                                                 class="rounded-circle me-2"
+                                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-2" 
+                                                                 style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                                {{ suivi.psychologue.prenom|first|upper }}{{ suivi.psychologue.nom|first|upper }}
+                                                            </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <div class="fw-bold">{{ suivi.psychologue.prenom }} {{ suivi.psychologue.nom }}</div>
+                                                            <small class="text-muted">{{ suivi.psychologue.email }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">Non assigné</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('app_suivi_traitement_show', {'id': suivi.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <form method="post" action="{{ path('app_suivi_traitement_valider', {'id': suivi.id}) }}" 
+                                                          class="d-inline" onsubmit="return confirm('Valider ce suivi ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('validate' ~ suivi.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-success" title="Valider">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Actions groupées -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-tasks me-2"></i>Actions groupées
+                                        </h6>
+                                        <div class="btn-group w-100">
+                                            <button class="btn btn-success" onclick="validateAll()">
+                                                <i class="fas fa-check-double me-2"></i>Valider tout
+                                            </button>
+                                            <button class="btn btn-warning" onclick="rejectSelected()">
+                                                <i class="fas fa-times me-2"></i>Rejeter sélection
+                                            </button>
+                                            <button class="btn btn-info" onclick="exportSelected()">
+                                                <i class="fas fa-download me-2"></i>Exporter sélection
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-muted">Tous les suivis sont validés</h5>
+                            <p class="text-muted">Il n'y a actuellement aucun suivi en attente de validation</p>
+                            <a href="{{ path('app_suivi_traitement_index') }}" 
+                               class="btn btn-primary btn-lg">
+                                <i class="fas fa-list me-2"></i>Voir tous les suivis
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const psychologueFilter = document.getElementById('psychologueFilter').value;
+    const traitementFilter = document.getElementById('traitementFilter').value;
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#suivisTable tbody tr');
+    
+    rows.forEach(row => {
+        const psychologue = row.dataset.psychologue;
+        const traitement = row.dataset.traitement;
+        const text = row.textContent.toLowerCase();
+        
+        const matchesPsychologue = !psychologueFilter || psychologue === psychologueFilter;
+        const matchesTraitement = !traitementFilter || traitement === traitementFilter;
+        const matchesSearch = !searchInput || text.includes(searchInput);
+        
+        row.style.display = matchesPsychologue && matchesTraitement && matchesSearch ? '' : 'none';
+    });
+}
+
+function validateAll() {
+    if (confirm('Valider tous les suivis affichés ?')) {
+        document.querySelectorAll('#suivisTable tbody tr[style*=""]').forEach(row => {
+            const validateBtn = row.querySelector('form[onsubmit*="Valider"] button');
+            if (validateBtn) {
+                validateBtn.click();
+            }
+        });
+    }
+}
+
+function rejectSelected() {
+    alert('Fonctionnalité de rejet à implémenter');
+}
+
+function exportSelected() {
+    alert('Fonctionnalité d\'exportation à implémenter');
+}
+
+document.getElementById('psychologueFilter').addEventListener('change', filterTable);
+document.getElementById('traitementFilter').addEventListener('change', filterTable);
+document.getElementById('searchInput').addEventListener('input', filterTable);
+</script>
+{% endblock %}

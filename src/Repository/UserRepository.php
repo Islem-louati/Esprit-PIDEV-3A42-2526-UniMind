@@ -15,6 +15,34 @@ class UserRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, User::class);
     }
+    public function countByStatus(string $status): int
+    {
+        return $this->createQueryBuilder('u')
+            ->select('COUNT(u.user_id)')
+            ->where('u.statut = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function findRecentUsers(int $limit = 10): array
+    {
+        return $this->createQueryBuilder('u')
+            ->orderBy('u.created_at', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByRole(string $role): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.role = :role')
+            ->setParameter('role', $role)
+            ->getQuery()
+            ->getResult();
+    }
+    
 
 //    /**
 //     * @return User[] Returns an array of User objects

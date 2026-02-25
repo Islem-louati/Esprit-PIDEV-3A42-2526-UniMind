@@ -40,4 +40,44 @@ class SeanceMeditationRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+public function getDureeTotale(): int
+{
+    return $this->createQueryBuilder('s')
+        ->select('SUM(s.duree)')
+        ->getQuery()
+        ->getSingleScalarResult() ?? 0;
+}
+
+public function getEvolution6Mois(): array
+{
+    $date = new \DateTime();
+    $date->modify('-5 months');
+    $date->modify('first day of this month');
+    
+    $result = [];
+    
+    for ($i = 0; $i < 6; $i++) {
+        $debutMois = clone $date;
+        $finMois = clone $date;
+        $finMois->modify('last day of this month');
+        
+        $nbSeances = $this->createQueryBuilder('s')
+            ->select('COUNT(s)')
+            ->where('s.created_at BETWEEN :debut AND :fin')
+            ->setParameter('debut', $debutMois)
+            ->setParameter('fin', $finMois)
+            ->getQuery()
+            ->getSingleScalarResult();
+            
+        $result[] = [
+            'mois' => $debutMois->format('M Y'),
+            'nbSeances' => (int) $nbSeances
+        ];
+        
+        $date->modify('+1 month');
+    }
+    
+    return $result;
+}
 }

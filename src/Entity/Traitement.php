@@ -8,6 +8,8 @@ use App\Enum\PrioriteTraitement;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'traitement')]
@@ -17,61 +19,124 @@ class Traitement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['traitement:read', 'suivi:detail'])]
     private ?int $traitement_id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $titre;
+    #[Groups(['traitement:read', 'traitement:write', 'suivi:detail'])]
+    #[Assert\NotBlank(message: 'Le titre du traitement est obligatoire')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Le titre doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $titre = null;
 
     #[ORM\Column(type: 'text')]
-    private string $description;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(
+        min: 10,
+        max: 1000,
+        minMessage: 'La description doit faire au moins {{ limit }} caractères',
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $description = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $type;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'Le type de traitement est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le type doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Le type ne peut pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $type = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $categorie;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'La catégorie est obligatoire')]
+    private ?string $categorie = null;
 
     #[ORM\Column(type: 'integer')]
-    private int $duree_jours;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'La durée est obligatoire')]
+    #[Assert\Positive(message: 'La durée doit être positive')]
+    #[Assert\Range(
+        min: 1,
+        max: 365,
+        notInRangeMessage: 'La durée doit être comprise entre {{ min }} et {{ max }} jours'
+    )]
+    private ?int $duree_jours = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['traitement:read', 'traitement:write'])]
     private ?string $dosage = null;
 
     #[ORM\Column(type: 'date')]
-    private \DateTimeInterface $date_debut;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'La date de début est obligatoire')]
+    #[Assert\Type(\DateTimeInterface::class, message: 'La date de début doit être valide')]
+    private ?\DateTimeInterface $date_debut = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\Type(\DateTimeInterface::class, message: 'La date de fin doit être valide')]
+    #[Assert\Expression(
+        "this.getDateFin() == null or this.getDateFin() >= this.getDateDebut()",
+        message: 'La date de fin doit être postérieure à la date de début'
+    )]
     private ?\DateTimeInterface $date_fin = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $statut;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'Le statut est obligatoire')]
+    private ?string $statut = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $priorite;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'La priorité est obligatoire')]
+    private ?string $priorite = null;
 
     #[ORM\Column(type: 'text')]
-    private string $objectif_therapeutique;
+    #[Groups(['traitement:read', 'traitement:write'])]
+    #[Assert\NotBlank(message: 'L\'objectif thérapeutique est obligatoire')]
+    #[Assert\Length(
+        min: 10,
+        max: 1000,
+        minMessage: 'L\'objectif thérapeutique doit faire au moins {{ limit }} caractères',
+        maxMessage: 'L\'objectif thérapeutique ne peut pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $objectif_therapeutique = null;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['traitement:read'])]
     private \DateTimeInterface $created_at;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['traitement:read'])]
     private ?\DateTimeInterface $updated_at = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'traitementsPsychologue')]
     #[ORM\JoinColumn(name: 'psychologue_id', referencedColumnName: 'user_id', nullable: false)]
+    #[Groups(['traitement:read', 'traitement:detail'])]
     private ?User $psychologue = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'traitementsEtudiant')]
     #[ORM\JoinColumn(name: 'etudiant_id', referencedColumnName: 'user_id', nullable: false)]
+    #[Groups(['traitement:read', 'traitement:write', 'traitement:detail'])]
     private ?User $etudiant = null;
 
     #[ORM\OneToMany(mappedBy: 'traitement', targetEntity: SuiviTraitement::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups(['traitement:detail'])]
     private Collection $suivis;
 
     public function __construct()
     {
         $this->created_at = new \DateTime();
+        $this->date_debut = new \DateTime();
         $this->statut = StatutTraitement::EN_COURS->value;
         $this->priorite = PrioriteTraitement::MOYENNE->value;
         $this->categorie = CategorieTraitement::COGNITIF->value;
@@ -296,15 +361,26 @@ class Traitement
     }
 
     public function setEtudiant(?User $etudiant): self
-    {
-        // Vérifier que l'utilisateur est bien un étudiant
-        if ($etudiant && !$etudiant->isEtudiant()) {
-            throw new \InvalidArgumentException('L\'utilisateur doit être un étudiant');
-        }
-
-        $this->etudiant = $etudiant;
-        return $this;
+{
+    // Vérifier que l'utilisateur est bien un étudiant
+    if ($etudiant && !$etudiant->isEtudiant()) {
+        // Débogage pour voir l'utilisateur problématique
+        dump('Utilisateur non-étudiant détecté:', [
+            'id' => $etudiant->getId(),
+            'nom' => $etudiant->getNom(),
+            'prenom' => $etudiant->getPrenom(),
+            'email' => $etudiant->getEmail(),
+            'role_enum' => $etudiant->getRole()->value,
+            'roles' => $etudiant->getRoles(),
+            'isEtudiant_method' => $etudiant->isEtudiant(),
+        ]);
+        
+        throw new \InvalidArgumentException('L\'utilisateur doit être un étudiant. Role actuel: ' . $etudiant->getRole()->value);
     }
+
+    $this->etudiant = $etudiant;
+    return $this;
+}
 
     // Méthodes pour les suivis
     public function getSuivis(): Collection
@@ -486,47 +562,5 @@ class Traitement
             $this->date_debut->format('d/m/Y'),
             $this->getDateFinEstimee()->format('d/m/Y')
         );
-    }
-
-    // Méthode pour créer un traitement
-    public static function create(
-        string $titre,
-        string $description,
-        User $psychologue,
-        User $etudiant,
-        int $dureeJours,
-        \DateTimeInterface $dateDebut,
-        string $objectifTherapeutique,
-        ?string $type = null,
-        ?string $dosage = null,
-        ?CategorieTraitement $categorie = null,
-        ?PrioriteTraitement $priorite = null
-    ): self {
-        $traitement = new self();
-        $traitement->setTitre($titre);
-        $traitement->setDescription($description);
-        $traitement->setPsychologue($psychologue);
-        $traitement->setEtudiant($etudiant);
-        $traitement->setDureeJours($dureeJours);
-        $traitement->setDateDebut($dateDebut);
-        $traitement->setObjectifTherapeutique($objectifTherapeutique);
-
-        if ($type) {
-            $traitement->setType($type);
-        }
-
-        if ($dosage) {
-            $traitement->setDosage($dosage);
-        }
-
-        if ($categorie) {
-            $traitement->setCategorieEnum($categorie);
-        }
-
-        if ($priorite) {
-            $traitement->setPrioriteEnum($priorite);
-        }
-
-        return $traitement;
     }
 }

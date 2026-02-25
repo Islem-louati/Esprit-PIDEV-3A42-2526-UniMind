@@ -1,13 +1,9 @@
 <?php
-namespace App\Entity\Enum;
+
+namespace App\Enum;
 
 enum TypeFichier: string
 {
-    case AUDIO = 'audio';
-    case VIDEO = 'video';
-    
-    public static function getValues(): array
-    {
-        return array_map(fn($case) => $case->value, self::cases());
-    }
+    case PDF = 'pdf';
+    case IMG = 'img';
 }

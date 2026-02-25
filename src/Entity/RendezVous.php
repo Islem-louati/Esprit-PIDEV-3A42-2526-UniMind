@@ -28,7 +28,7 @@ class RendezVous
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updated_at = null;
 
-    #[ORM\ManyToOne(targetEntity: DisponibilitePsy::class, inversedBy: 'rendezVous')]
+   #[ORM\OneToOne(targetEntity: DisponibilitePsy::class, inversedBy: 'rendezVous')]
     #[ORM\JoinColumn(name: 'dispo_id', referencedColumnName: 'dispo_id', nullable: false)]
     private ?DisponibilitePsy $disponibilite = null;
 

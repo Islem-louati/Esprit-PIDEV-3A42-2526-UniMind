@@ -122,6 +122,18 @@ class Post
         return $this;
     }
 
+    public function getIsAnonyme(): bool
+    {
+        return $this->is_anonyme ?? false;
+    }
+
+    public function setIsAnonyme(bool $is_anonyme): static
+    {
+        $this->is_anonyme = $is_anonyme;
+        return $this;
+    }
+
+
     public function getCreatedAt(): \DateTimeInterface
     {
         return $this->created_at;

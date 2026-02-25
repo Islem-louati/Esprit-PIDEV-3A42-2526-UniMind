@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    photos_directory: '%kernel.project_dir%/public/uploads/photos'
+    upload_directory: '%kernel.project_dir%/public/uploadsmed'
 
 services:
     # default configuration for services in *this* file
@@ -19,6 +21,16 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
+
+    # Configuration du service IA
+    App\Service\IaQuestionGeneratorService:
+        arguments:
+            $huggingfaceApiKey: '%env(HUGGINGFACE_API_KEY)%'
+            $em: '@doctrine.orm.entity_manager'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

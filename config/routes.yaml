@@ -1,103 +1,154 @@
-# config/routes.yaml - VERSION COMPLÈTE MANUELLE
+controllers:
+    resource: ../src/Controller/
+    type: annotation
 
-# ==================== PAGE D'ACCUEIL ====================
-home:
-    path: /
-    defaults:
-        _controller: Symfony\Bundle\FrameworkBundle\Controller\TemplateController::templateAction
-        template: 'home/index.html.twig'
+app_login:
+    path: /connexion
+    controller: App\Controller\SecurityController::login
 
-# ==================== ADMIN ====================
+app_logout:
+    path: /deconnexion
 
-# Dashboard Admin
+app_register:
+    path: /inscription
+    controller: App\Controller\SecurityController::register
+
+app_verify_email:
+    path: /verification/email
+    controller: App\Controller\SecurityController::verifyUserEmail
+
+app_forgot_password:
+    path: /mot-de-passe-oublie
+    controller: App\Controller\SecurityController::forgotPassword
+
+app_reset_password:
+    path: /reinitialiser-mot-de-passe/{token}
+    controller: App\Controller\SecurityController::resetPassword
+
+app_dashboard:
+    path: /dashboard
+    controller: App\Controller\DashboardController::index
+
+app_profile:
+    path: /profil/mon-profil
+    controller: App\Controller\ProfileController::index
+
+app_profile_edit:
+    path: /profil/modifier
+    controller: App\Controller\ProfileController::edit
+
+app_change_password:
+    path: /profil/changer-mot-de-passe
+    controller: App\Controller\ProfileController::changePassword
+    methods: [GET, POST]
+
+app_profile_photo:
+    path: /profil/photo
+    controller: App\Controller\ProfileController::updatePhoto
+
 admin_dashboard:
-    path: /admin
-    controller: App\Controller\Admin\DashboardController::index
-    methods: GET
+    path: /admin/dashboard
+    controller: App\Controller\AdminController::dashboard
 
-admin_stats:
-    path: /admin/stats
-    controller: App\Controller\Admin\DashboardController::stats
-    methods: GET
+admin_users:
+    path: /admin/utilisateurs
+    controller: App\Controller\AdminController::users
 
-# Questionnaire Admin CRUD
-admin_questionnaire_index:
-    path: /admin/questionnaire
-    controller: App\Controller\Admin\QuestionnaireController::index
-    methods: GET
+admin_pending_users:
+    path: /admin/utilisateurs/demandes
+    controller: App\Controller\AdminController::pendingUsers
 
-admin_questionnaire_new:
-    path: /admin/questionnaire/new
-    controller: App\Controller\Admin\QuestionnaireController::new
-    methods: [GET, POST]
-
-admin_questionnaire_show:
-    path: /admin/questionnaire/{id}
-    controller: App\Controller\Admin\QuestionnaireController::show
-    methods: GET
-    requirements:
-        id: '\d+'
-
-admin_questionnaire_edit:
-    path: /admin/questionnaire/{id}/edit
-    controller: App\Controller\Admin\QuestionnaireController::edit
-    methods: [GET, POST]
-    requirements:
-        id: '\d+'
-
-admin_questionnaire_delete:
-    path: /admin/questionnaire/{id}
-    controller: App\Controller\Admin\QuestionnaireController::delete
+admin_validate_user:
+    path: /admin/utilisateurs/{id}/valider
+    controller: App\Controller\AdminController::validateUser
     methods: POST
-    requirements:
-        id: '\d+'
 
-admin_questionnaire_questions:
-    path: /admin/questionnaire/{id}/questions
-    controller: App\Controller\Admin\QuestionnaireController::questions
-    methods: GET
-    requirements:
-        id: '\d+'
-
-# Question Admin CRUD (si vous avez QuestionController.php)
-admin_question_index:
-    path: /admin/question
-    controller: App\Controller\Admin\QuestionController::index
-    methods: GET
-
-admin_question_new:
-    path: /admin/question/new
-    controller: App\Controller\Admin\QuestionController::new
-    methods: [GET, POST]
-
-admin_question_show:
-    path: /admin/question/{id}
-    controller: App\Controller\Admin\QuestionController::show
-    methods: GET
-    requirements:
-        id: '\d+'
-
-admin_question_edit:
-    path: /admin/question/{id}/edit
-    controller: App\Controller\Admin\QuestionController::edit
-    methods: [GET, POST]
-    requirements:
-        id: '\d+'
-
-admin_question_delete:
-    path: /admin/question/{id}
-    controller: App\Controller\Admin\QuestionController::delete
+admin_reject_user:
+    path: /admin/utilisateurs/{id}/rejeter
+    controller: App\Controller\AdminController::rejectUser
     methods: POST
-    requirements:
-        id: '\d+'
+
+admin_activate_user:
+    path: /admin/utilisateurs/{id}/activer
+    controller: App\Controller\AdminController::activateUser
+    methods: POST
+
+admin_deactivate_user:
+    path: /admin/utilisateurs/{id}/desactiver
+    controller: App\Controller\AdminController::deactivateUser
+    methods: POST
+
+admin_edit_user:
+    path: /admin/utilisateurs/{id}/modifier
+    controller: App\Controller\AdminController::editUser
+
+admin_delete_user:
+    path: /admin/utilisateurs/{id}/supprimer
+    controller: App\Controller\AdminController::deleteUser
+    methods: POST
+
+admin_view_profile:
+    path: /admin/utilisateurs/{id}/profil
+    controller: App\Controller\AdminController::viewProfile
+
+admin_user_new:
+    path: /admin/utilisateurs/nouveau
+    controller: App\Controller\AdminController::newUser
+    methods: [GET, POST]
+
+admin_statistics:
+    path: /admin/statistiques
+    controller: App\Controller\AdminController::statistics
+
+admin_users_export_excel:
+    path: /admin/utilisateurs/export/excel
+    controller: App\Controller\AdminController::exportExcel
+    methods: GET
+
+admin_users_export_pdf:
+    path: /admin/utilisateurs/export/pdf
+    controller: App\Controller\AdminController::exportPdf
+    methods: GET
+
+admin_users_export_csv:
+    path: /admin/utilisateurs/export/csv
+    controller: App\Controller\AdminController::exportCsv
+    methods: GET
+
+etudiant_dashboard:
+    path: /dashboard/etudiant
+    controller: App\Controller\DashboardController::etudiantDashboard
+
+resp_dashboard:
+    path: /dashboard/responsable
+    controller: App\Controller\DashboardController::responsableDashboard
+
+app_dashboard_psy:
+    path: /dashboard/psychologue
+    controller: App\Controller\DashboardController::psychologueDashboard
+
+app_traitement_index:
+    path: /traitements
+    controller: App\Controller\TraitementController::index
+
+app_traitement_new:
+    path: /traitements/nouveau
+    controller: App\Controller\TraitementController::new
+
+app_traitement_show:
+    path: /traitements/{id}
+    controller: App\Controller\TraitementController::show
+
+app_traitement_edit:
+    path: /traitements/{id}/modifier
+    controller: App\Controller\TraitementController::edit
+
+app_traitement_delete:
+    path: /traitements/{id}/supprimer
+    controller: App\Controller\TraitementController::delete
+    methods: POST
 
 # ==================== ÉTUDIANT ====================
-
-# Dashboard Étudiant
-etudiant_dashboard:
-    path: /etudiant
-    controller: App\Controller\Etudiant\DashboardController::index
-    methods: GET
 
 etudiant_profil:
     path: /etudiant/profil
@@ -164,11 +215,16 @@ etudiant_mes_reponses_simuler:
         questionnaireId: '\d+'
 
 # ==================== API/JSON ====================
-# (Si vous avez des routes API)
-
 etudiant_questionnaire_submit_json:
     path: /etudiant/questionnaire/submit/{id}/json
     controller: App\Controller\Etudiant\QuestionnaireController::submitQuestionnaire
     methods: POST
     requirements:
         id: '\d+'
+
+#stat
+# ==================== STATISTIQUES GLOBALES ====================
+admin_global_stats:
+    path: /admin/global-stats
+    controller: App\Controller\Admin\QuestionnaireController::globalStats
+    methods: GET

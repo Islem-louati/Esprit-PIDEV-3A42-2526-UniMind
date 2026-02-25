@@ -16,6 +16,18 @@ class QuestionnaireRepository extends ServiceEntityRepository
         parent::__construct($registry, Questionnaire::class);
     }
 
+    /**
+     * Tous les questionnaires avec leurs questions chargées en une requête (évite N+1).
+     */
+    public function findAllWithQuestions(): array
+    {
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.questions', 'questions')->addSelect('questions')
+            ->orderBy('q.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Questionnaire[] Returns an array of Questionnaire objects
 //     */

@@ -1,0 +1,209 @@
+{# templates/psy/consultations/detail.html.twig #}
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Détails Consultation | UniMind{% endblock %}
+
+{% block page_title %}Détails de la Consultation{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .detail-card {
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .info-label {
+      font-weight: 600;
+      color: #67748e;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+      font-size: 1.1rem;
+      color: #344767;
+      font-weight: 500;
+    }
+    
+    .stars-display {
+      color: #ffc107;
+      font-size: 1.5rem;
+    }
+    
+    .breadcrumb-link {
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+    
+    .breadcrumb-link:hover {
+      color: white !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="row mb-3">
+    <div class="col-12">
+      <a href="{{ path('app_psy_consultations') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+      </a>
+    </div>
+  </div>
+  
+  <div class="row">
+    {# Informations patient #}
+    <div class="col-lg-4 mb-4">
+      <div class="card detail-card">
+        <div class="card-header bg-gradient-primary">
+          <h6 class="text-white mb-0">
+            <i class="fas fa-user me-2"></i>Patient
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <p class="info-label mb-1">Nom complet</p>
+            <p class="info-value">{{ consultation.etudiant.prenom }} {{ consultation.etudiant.nom }}</p>
+          </div>
+          <div class="mb-3">
+            <p class="info-label mb-1">Email</p>
+            <p class="info-value">{{ consultation.etudiant.email }}</p>
+          </div>
+          <div class="mb-3">
+            <p class="info-label mb-1">Téléphone</p>
+            <p class="info-value">{{ consultation.etudiant.telephone ?? 'Non renseigné' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {# Informations rendez-vous #}
+    <div class="col-lg-4 mb-4">
+      <div class="card detail-card">
+        <div class="card-header bg-gradient-info">
+          <h6 class="text-white mb-0">
+            <i class="fas fa-calendar-alt me-2"></i>Rendez-vous
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <p class="info-label mb-1">Date du RDV</p>
+            <p class="info-value">
+              {% if consultation.rendezVous.disponibilite %}
+                {{ consultation.rendezVous.disponibilite.dateDispo|date('d/m/Y') }}
+              {% else %}
+                Non spécifiée
+              {% endif %}
+            </p>
+          </div>
+          <div class="mb-3">
+            <p class="info-label mb-1">Heure</p>
+            <p class="info-value">
+              {% if consultation.rendezVous.disponibilite %}
+                {{ consultation.rendezVous.disponibilite.heureDebut|date('H:i') }} - 
+                {{ consultation.rendezVous.disponibilite.heureFin|date('H:i') }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
+          </div>
+          <div class="mb-3">
+            <p class="info-label mb-1">Type</p>
+            <p class="info-value">
+              {% if consultation.rendezVous.disponibilite %}
+                <span class="badge bg-{{ consultation.rendezVous.disponibilite.typeConsult == 'présentiel' ? 'success' : 'info' }}">
+                  {{ consultation.rendezVous.disponibilite.typeConsult|capitalize }}
+                </span>
+              {% else %}
+                -
+              {% endif %}
+            </p>
+          </div>
+          <div class="mb-3">
+            <p class="info-label mb-1">Motif</p>
+            <p class="info-value">{{ consultation.rendezVous.motif ?? 'Non précisé' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {# Informations consultation #}
+    <div class="col-lg-4 mb-4">
+      <div class="card detail-card">
+        <div class="card-header bg-gradient-success">
+          <h6 class="text-white mb-0">
+            <i class="fas fa-file-medical me-2"></i>Consultation
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <p class="info-label mb-1">Date de rédaction</p>
+            <p class="info-value">{{ consultation.dateRedaction|date('d/m/Y à H:i') }}</p>
+          </div>
+          <div class="mb-3">
+            <p class="info-label mb-1">Dernière modification</p>
+            <p class="info-value">
+              {% if consultation.dateModification %}
+                {{ consultation.dateModification|date('d/m/Y à H:i') }}
+              {% else %}
+                Jamais modifiée
+              {% endif %}
+            </p>
+          </div>
+          <div class="mb-3">
+            <p class="info-label mb-1">Note de satisfaction</p>
+            {% if consultation.noteSatisfaction %}
+              <div class="stars-display">
+                {% for i in 1..5 %}
+                  {% if i <= consultation.noteSatisfaction %}
+                    <i class="fas fa-star"></i>
+                  {% else %}
+                    <i class="far fa-star"></i>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <p class="info-value mt-2">{{ consultation.noteSatisfaction }}/5</p>
+            {% else %}
+              <span class="badge bg-warning">Non notée</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Avis du psychologue #}
+  <div class="row">
+    <div class="col-12">
+      <div class="card detail-card">
+        <div class="card-header bg-gradient-dark">
+          <h6 class="text-white mb-0">
+            <i class="fas fa-comment-medical me-2"></i>Avis du Psychologue
+          </h6>
+        </div>
+        <div class="card-body">
+          {% if consultation.avisPsy %}
+            <p style="white-space: pre-wrap; line-height: 1.8;">{{ consultation.avisPsy }}</p>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="fas fa-comment-slash text-secondary" style="font-size: 3rem;"></i>
+              <p class="text-muted mt-3">Aucun avis rédigé pour cette consultation</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    // Script spécifique à la page détail si nécessaire
+    document.addEventListener('DOMContentLoaded', function() {
+      // Vous pouvez ajouter du JavaScript spécifique ici
+      console.log('Page de détail de consultation chargée');
+    });
+  </script>
+{% endblock %}

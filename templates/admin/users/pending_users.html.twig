@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscriptions en attente{% endblock %}
+
+{% block breadcrumb_title %}Inscriptions en attente{% endblock %}
+{% block page_title %}Inscriptions en attente de validation{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            {% if pending_users|length == 0 %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Aucune inscription en attente de validation.
+                </div>
+            {% else %}
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>{{ pending_users|length }} inscription(s) en attente</h6>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom & Prénom</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Rôle</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">CIN</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date d'inscription</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in pending_users %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div>
+                                                    {% if user.profil and user.profil.photo %}
+                                                        <img src="{{ asset('uploads/photos/' ~ user.profil.photo) }}" 
+                                                             class="avatar avatar-sm me-3" alt="{{ user.prenom }} {{ user.nom }}">
+                                                    {% else %}
+                                                        <div class="avatar avatar-sm bg-gradient-warning me-3">
+                                                            <span class="text-white">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ user.prenom }} {{ user.nom }}</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ user.email }}</p>
+                                        </td>
+                                        <td>
+                                            {% if user.role.value == 'Etudiant' %}
+                                                <span class="badge badge-sm bg-gradient-info">Étudiant</span>
+                                            {% elseif user.role.value == 'Psychologue' %}
+                                                <span class="badge badge-sm bg-gradient-warning">Psychologue</span>
+                                            {% elseif user.role.value == 'Responsable Etudiant' %}
+                                                <span class="badge badge-sm bg-gradient-success">Responsable</span>
+                                            {% else %}
+                                                <span class="badge badge-sm bg-gradient-primary">{{ user.role.value }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ user.cin ?? '-' }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ user.createdAt|date('d/m/Y H:i') }}</p>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <form action="{{ path('admin_validate_user', {'id': user.userId}) }}" 
+                                                      method="POST" class="d-inline"
+                                                      onsubmit="return confirm('Valider cette inscription ?')">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-check me-1"></i> Valider
+                                                    </button>
+                                                </form>
+                                                <form action="{{ path('admin_reject_user', {'id': user.userId}) }}" 
+                                                      method="POST" class="d-inline"
+                                                      onsubmit="return confirm('Rejeter cette inscription ?')">
+                                                    <button type="submit" class="btn btn-sm btn-danger ms-1">
+                                                        <i class="bi bi-x me-1"></i> Rejeter
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Retour au tableau de bord
+                    </a>
+                    <a href="{{ path('admin_users') }}" class="btn btn-primary">
+                        <i class="bi bi-people me-2"></i>Voir tous les utilisateurs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

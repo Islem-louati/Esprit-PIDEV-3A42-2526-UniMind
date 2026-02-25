@@ -87,7 +87,7 @@
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1">
                                         <span class="badge bg-secondary me-2">#{{ question.ordre }}</span>
-                                        {{ question.texte }}
+                                        {{ question.texte | raw }}
                                     </h6>
                                     <small class="text-muted">
                                         Type: {{ question.type }} | 

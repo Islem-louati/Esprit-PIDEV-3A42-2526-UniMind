@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            background-color: #4e73df;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .section {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .section h2 {
+            font-size: 15px;
+            color: #4e73df;
+            margin: 0 0 10px 0;
+            border-bottom: 2px solid #4e73df;
+            padding-bottom: 5px;
+        }
+        .info-grid {
+            width: 100%;
+        }
+        .info-grid td {
+            padding: 5px 10px;
+            width: 50%;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+        .badge-leger { background-color: #1cc88a; }
+        .badge-modere { background-color: #f6c23e; color: #333; }
+        .badge-severe { background-color: #e74a3b; }
+        .score-box {
+            text-align: center;
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .score-box .score-number {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .score-box .score-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .question-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .question-table th {
+            background-color: #4e73df;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+        .question-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-table tr:nth-child(even) {
+            background-color: #f8f9fc;
+        }
+        .alert-psy {
+            background-color: #fce8e6;
+            border: 1px solid #e74a3b;
+            border-radius: 6px;
+            padding: 10px 15px;
+            color: #e74a3b;
+            margin-top: 15px;
+        }
+        .footer {
+            text-align: center;
+            color: #aaa;
+            font-size: 10px;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        .niveau-leger { color: #1cc88a; font-weight: bold; }
+        .niveau-modere { color: #f6c23e; font-weight: bold; }
+        .niveau-severe { color: #e74a3b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- En-tête -->
+    <div class="header">
+        <h1>🧠 UniMind — Résultat du Questionnaire</h1>
+        <p>Généré le {{ "now"|date("d/m/Y à H:i") }}</p>
+    </div>
+
+    <!-- Score principal -->
+    <div class="score-box">
+        <div class="score-number">{{ reponse.scoreTotale|number_format(1) }}</div>
+        <div class="score-label">Score total obtenu</div>
+    </div>
+
+    <!-- Informations générales -->
+    <div class="section">
+        <h2>📋 Informations générales</h2>
+        <table class="info-grid">
+            <tr>
+                <td>
+                    <span class="label">Questionnaire :</span><br>
+                    {{ reponse.questionnaire.nom }}
+                </td>
+                <td>
+                    <span class="label">Type :</span><br>
+                    {{ reponse.questionnaire.type|capitalize }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Date :</span><br>
+                    {{ reponse.createdAt|date('d/m/Y à H:i') }}
+                </td>
+                <td>
+                    <span class="label">Niveau :</span><br>
+                    <span class="niveau-{{ reponse.niveau }}">
+                        {{ reponse.niveau|upper }}
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Score :</span><br>
+                    {{ reponse.scoreTotale|number_format(1) }} / {{ reponse.scoreMaxPossible|number_format(1) }}
+                </td>
+                <td>
+                    <span class="label">Besoin d'un psychologue :</span><br>
+                    {{ reponse.aBesoinPsy ? '⚠️ Oui' : '✅ Non' }}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Interprétation -->
+    {% if reponse.interpretation %}
+    <div class="section">
+        <h2>💡 Interprétation</h2>
+        <p>{{ reponse.interpretation }}</p>
+        {% if reponse.aBesoinPsy %}
+        <div class="alert-psy">
+            ⚠️ Votre score indique un niveau nécessitant une attention particulière.
+            Nous vous recommandons de consulter un professionnel de santé mentale.
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Détail des réponses -->
+    {% if reponses_detaillees is not empty %}
+    <div class="section">
+        <h2>📝 Détail des réponses</h2>
+        <table class="question-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Question</th>
+                    <th>Réponse</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i, detail in reponses_detaillees %}
+                <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ detail.question_texte }}</td>
+                    <td>{{ detail.reponse }}</td>
+                    <td>{{ detail.score }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        UniMind — Plateforme de santé mentale universitaire<br>
+        Ce document est confidentiel et destiné uniquement à l'usage personnel de l'étudiant.
+    </div>
+
+</body>
+</html>

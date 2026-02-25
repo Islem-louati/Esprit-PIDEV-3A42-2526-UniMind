@@ -1,0 +1,160 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Recherche de Traitements{% endblock %}
+{% block page_title %}Recherche de Traitements{% endblock %}
+{% block breadcrumb_title %}Recherche{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Recherche de Traitements
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Formulaire de recherche -->
+                    <form method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="titre" class="form-label fw-bold">Titre</label>
+                                    <input type="text" class="form-control" id="titre" name="titre" 
+                                           value="{{ app.request.query.get('titre') }}" placeholder="Rechercher par titre...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="categorie" class="form-label fw-bold">Catégorie</label>
+                                    <select class="form-control" id="categorie" name="categorie">
+                                        <option value="">Toutes les catégories</option>
+                                        <option value="medicament" {{ app.request.query.get('categorie') == 'medicament' ? 'selected' : '' }}>Médicament</option>
+                                        <option value="therapie" {{ app.request.query.get('categorie') == 'therapie' ? 'selected' : '' }}>Thérapie</option>
+                                        <option value="consultation" {{ app.request.query.get('categorie') == 'consultation' ? 'selected' : '' }}>Consultation</option>
+                                        <option value="exercice" {{ app.request.query.get('categorie') == 'exercice' ? 'selected' : '' }}>Exercice</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="statut" class="form-label fw-bold">Statut</label>
+                                    <select class="form-control" id="statut" name="statut">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="en_cours" {{ app.request.query.get('statut') == 'en_cours' ? 'selected' : '' }}>En cours</option>
+                                        <option value="termine" {{ app.request.query.get('statut') == 'termine' ? 'selected' : '' }}>Terminé</option>
+                                        <option value="en_attente" {{ app.request.query.get('statut') == 'en_attente' ? 'selected' : '' }}>En attente</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="etudiant" class="form-label fw-bold">Étudiant</label>
+                                    <input type="text" class="form-control" id="etudiant" name="etudiant" 
+                                           value="{{ app.request.query.get('etudiant') }}" placeholder="Nom de l'étudiant...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="date_debut" class="form-label fw-bold">Date début</label>
+                                    <input type="date" class="form-control" id="date_debut" name="date_debut" 
+                                           value="{{ app.request.query.get('date_debut') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="date_fin" class="form-label fw-bold">Date fin</label>
+                                    <input type="date" class="form-control" id="date_fin" name="date_fin" 
+                                           value="{{ app.request.query.get('date_fin') }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>Rechercher
+                            </button>
+                            <a href="{{ path('app_traitement_index') }}" class="btn btn-outline-secondary btn-lg ms-3">
+                                <i class="fas fa-times me-2"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Résultats -->
+                    {% if traitements is defined and traitements|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Catégorie</th>
+                                        <th>Étudiant</th>
+                                        <th>Statut</th>
+                                        <th>Date début</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for traitement in traitements %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ traitement.titre }}</strong>
+                                                {% if traitement.description %}
+                                                    <br><small class="text-muted">{{ traitement.description|slice(0, 50) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ traitement.categorie }}</span>
+                                            </td>
+                                            <td>
+                                                {% if traitement.etudiant %}
+                                                    {{ traitement.etudiant.prenom }} {{ traitement.etudiant.nom }}
+                                                {% else %}
+                                                    <span class="text-muted">Non assigné</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if traitement.statut == 'en_cours' %}
+                                                    <span class="badge bg-success">En cours</span>
+                                                {% elseif traitement.statut == 'termine' %}
+                                                    <span class="badge bg-primary">Terminé</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">{{ traitement.statut }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ traitement.dateDebut ? traitement.dateDebut|date('d/m/Y') : '-' }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('app_traitement_show', {'id': traitement.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {% if is_granted('ROLE_PSYCHOLOGUE') %}
+                                                        <a href="{{ path('app_traitement_edit', {'id': traitement.id}) }}" 
+                                                           class="btn btn-sm btn-warning" title="Modifier">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun traitement trouvé</h5>
+                            <p class="text-muted">Essayez de modifier vos critères de recherche</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

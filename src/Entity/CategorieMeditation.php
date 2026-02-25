@@ -24,9 +24,20 @@ class CategorieMeditation
         minMessage: "Le nom doit faire au moins {{ limit }} caractères",
         maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères"
     )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-ZÀ-ÿ0-9\s\-_',.!?]+$/u",
+        message: "Le nom contient des caractères non autorisés"
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(
+        min: 30,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères",
+        max: 2000,
+        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères"
+    )]
+
     private ?string $description = null;
 
     #[ORM\Column]
@@ -37,6 +48,10 @@ class CategorieMeditation
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Url(message: "L'URL de l'icône n'est pas valide")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "L'URL ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $iconUrl = null;
 
     #[ORM\OneToMany(targetEntity: SeanceMeditation::class, mappedBy: 'categorie')]

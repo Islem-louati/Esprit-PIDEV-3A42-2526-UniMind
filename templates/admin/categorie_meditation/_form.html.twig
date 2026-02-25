@@ -1,0 +1,66 @@
+{% set form_action = form_action|default(path('admin_categorie_meditation_new')) %}
+{% set form_id = form_id|default('form-categorie-' ~ random()) %}
+
+{{ form_start(form, {'attr': {
+    'id': form_id,
+    'action': form_action,
+    'class': 'form-categorie',
+    'method': 'POST',
+    'novalidate': 'novalidate'  
+}}) }}
+
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            {{ form_label(form.nom, 'Nom de la catégorie') }}
+            {{ form_widget(form.nom, {'attr': {
+                'class': 'form-control',
+                'placeholder': 'Ex: Méditation guidée'
+            }}) }}
+            
+            {# UN SEUL AFFICHAGE DES ERREURS #}
+            <div class="text-danger mt-1 small">
+                {{ form_errors(form.nom) }}
+            </div>
+        </div>
+
+        <div class="col-md-12 mb-3">
+            {{ form_label(form.description, 'Description') }}
+            {{ form_widget(form.description, {'attr': {
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Description de la catégorie...'
+            }}) }}
+            
+            {# UN SEUL AFFICHAGE DES ERREURS #}
+            <div class="text-danger mt-1 small">
+                {{ form_errors(form.description) }}
+            </div>
+            <small class="form-text text-muted">
+                Optionnel. Si rempli : minimum 30 caractères.
+            </small>
+        </div>
+
+        <div class="col-md-12 mb-3">
+            {{ form_label(form.iconUrl, 'URL de l\'icône') }}
+            {{ form_widget(form.iconUrl, {'attr': {
+                'class': 'form-control',
+                'placeholder': 'https://example.com/icon.png'
+            }}) }}
+            
+            {# UN SEUL AFFICHAGE DES ERREURS #}
+            <div class="text-danger mt-1 small">
+                {{ form_errors(form.iconUrl) }}
+            </div>
+            <small class="form-text text-muted">URL d'une image pour l'icône (optionnel)</small>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-end">
+        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Annuler
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+{{ form_end(form) }}

@@ -45,8 +45,9 @@ class ReponseQuestionnaire
     #[ORM\JoinColumn(name: 'questionnaire_id', referencedColumnName: 'questionnaire_id', nullable: false)]
     private ?Questionnaire $questionnaire = null;
 
+    // ✅ MODIFICATION 1: Rendre l'étudiant OPTIONNEL
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reponsesQuestionnaires')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: true)] // nullable: true
     private ?User $etudiant = null;
 
     public function __construct()
@@ -176,13 +177,9 @@ class ReponseQuestionnaire
         return $this->etudiant;
     }
 
+    // ✅ MODIFICATION 2: Supprimer la vérification stricte
     public function setEtudiant(?User $etudiant): self
     {
-        // Vérifier que l'utilisateur est bien un étudiant
-        if ($etudiant && !$etudiant->isEtudiant()) {
-            throw new \InvalidArgumentException('L\'utilisateur doit être un étudiant');
-        }
-        
         $this->etudiant = $etudiant;
         return $this;
     }
@@ -191,10 +188,9 @@ class ReponseQuestionnaire
     public function __toString(): string
     {
         return sprintf(
-            'Réponse #%d - Score: %.1f - %s',
+            'Réponse #%d - Score: %.1f',
             $this->reponse_questionnaire_id,
-            $this->score_totale,
-            $this->etudiant ? $this->etudiant->getFullName() : 'N/A'
+            $this->score_totale
         );
     }
 
@@ -353,7 +349,6 @@ class ReponseQuestionnaire
         
         $percentage = ($this->getReponsesCount() / $this->questionnaire->getNbreQuestions()) * 100;
         
-        // Limiter à 100%
         return min($percentage, 100);
     }
 
@@ -384,7 +379,6 @@ class ReponseQuestionnaire
     {
         return sprintf(
             "Réponse #%d\n" .
-            "Étudiant: %s\n" .
             "Questionnaire: %s\n" .
             "Score: %.1f/%.1f\n" .
             "Niveau: %s\n" .
@@ -393,7 +387,6 @@ class ReponseQuestionnaire
             "Durée: %s\n" .
             "Complétion: %.1f%%",
             $this->reponse_questionnaire_id,
-            $this->etudiant ? $this->etudiant->getFullName() : 'Non défini',
             $this->questionnaire ? $this->questionnaire->getNom() : 'Non défini',
             $this->score_totale,
             $this->questionnaire ? $this->getScoreMaxPossible() : 0,
@@ -420,17 +413,17 @@ class ReponseQuestionnaire
         return $maxScore;
     }
 
-    // Méthode pour créer une réponse à partir d'un tableau de réponses
+    // ✅ MODIFICATION 3: Rendre l'étudiant optionnel dans createFromResponses
     public static function createFromResponses(
         Questionnaire $questionnaire,
-        User $etudiant,
-        array $reponses,
+        ?User $etudiant = null, // Optionnel avec valeur par défaut null
+        array $reponses = [],
         ?int $dureePassage = null,
         ?string $commentaire = null
     ): self {
         $reponseQuestionnaire = new self();
         $reponseQuestionnaire->setQuestionnaire($questionnaire);
-        $reponseQuestionnaire->setEtudiant($etudiant);
+        $reponseQuestionnaire->setEtudiant($etudiant); // Peut être null
         $reponseQuestionnaire->setReponseQuest($reponses);
         $reponseQuestionnaire->setDureePassage($dureePassage);
         $reponseQuestionnaire->setCommentaire($commentaire);

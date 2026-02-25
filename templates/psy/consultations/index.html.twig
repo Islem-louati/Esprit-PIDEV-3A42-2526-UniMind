@@ -1,0 +1,732 @@
+{# templates/psy/consultations/index.html.twig #}
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Mes Consultations | UniMind - Psychologue{% endblock %}
+
+{% block page_title %}Gestion des Consultations{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Styles identiques au template disponibilités */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .form-control.is-invalid {
+      border-color: #f5365c;
+      padding-right: calc(1.5em + 0.75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23f5365c'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23f5365c' stroke='none'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-control.is-valid {
+      border-color: #2dce89;
+      padding-right: calc(1.5em + 0.75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%232dce89' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .invalid-feedback {
+      display: none;
+      width: 100%;
+      margin-top: 0.25rem;
+      font-size: 0.875em;
+      color: #f5365c;
+    }
+    
+    .is-invalid ~ .invalid-feedback {
+      display: block;
+    }
+    
+    /* Boutons d'action - style du template disponibilités */
+    .btn-action-group {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+    
+    .btn-action-group .btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+    
+    /* ============================================ */
+    /* SYSTÈME D'ÉTOILES POUR LA MODAL */
+    /* ============================================ */
+    .rating-container {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+    
+    .stars-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: center;
+    }
+    
+    .stars-rating {
+      display: flex;
+      gap: 10px;
+      font-size: 0;
+    }
+    
+    .star-item {
+      display: inline-block;
+      position: relative;
+    }
+    
+    .star-radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .star-icon {
+      cursor: pointer;
+      font-size: 3rem;
+      color: #ddd;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    
+    .star-icon:hover {
+      transform: scale(1.3);
+      color: #ffc107;
+    }
+    
+    .star-radio:checked + .star-icon {
+      color: #ffc107;
+      font-weight: 900;
+    }
+    
+    .star-item:has(~ .star-item .star-radio:checked) .star-icon {
+      color: #ffc107;
+      font-weight: 900;
+    }
+    
+    .rating-display {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #495057;
+      min-width: 100px;
+      text-align: center;
+    }
+    
+    .rating-display .note-value {
+      color: #ffc107;
+      font-size: 2rem;
+    }
+    
+    /* Affichage des étoiles dans le tableau */
+    .note-stars {
+      color: #ffc107;
+      font-size: 1.2rem;
+    }
+    
+    .badge-note {
+      background: linear-gradient(310deg, #fb6340 0%, #fbb140 100%);
+      color: white;
+      font-weight: 600;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  {# Messages Flash #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+        <span class="alert-text text-white">{{ message }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+  
+  {# Statistiques #}
+  <div class="row mb-4">
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-capitalize font-weight-bold">Total</p>
+                <h5 class="font-weight-bolder mb-0">{{ total_consultations }}</h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
+                <i class="ni ni-single-copy-04 text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-capitalize font-weight-bold">Avec notes</p>
+                <h5 class="font-weight-bolder mb-0">{{ consultations_avec_notes }}</h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
+                <i class="ni ni-favourite-28 text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-capitalize font-weight-bold">Sans notes</p>
+                <h5 class="font-weight-bolder mb-0">{{ consultations_sans_notes }}</h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-warning shadow text-center border-radius-md">
+                <i class="ni ni-paper-diploma text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-8">
+              <div class="numbers">
+                <p class="text-sm mb-0 text-capitalize font-weight-bold">Moyenne</p>
+                <h5 class="font-weight-bolder mb-0">{{ moyenne_note }}/5</h5>
+              </div>
+            </div>
+            <div class="col-4 text-end">
+              <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
+                <i class="ni ni-chart-bar-32 text-lg opacity-10"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# Liste des consultations #}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Historique des Consultations ({{ total_consultations }})</h6>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          {% if consultations is empty %}
+            <div class="text-center py-4">
+              <i class="ni ni-single-copy-04 text-secondary" style="font-size: 3rem;"></i>
+              <p class="text-sm text-secondary mb-0 mt-3">Aucune consultation enregistrée</p>
+            </div>
+          {% else %}
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Patient</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date RDV</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date Consultation</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Note</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Avis</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for consultation in consultations %}
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <div class="icon icon-shape bg-gradient-dark shadow-dark text-center rounded-circle">
+                              <i class="ni ni-single-02 text-white text-sm opacity-10"></i>
+                            </div>
+                          </div>
+                          <div class="d-flex flex-column justify-content-center ms-3">
+                            <h6 class="mb-0 text-sm">{{ consultation.etudiant.prenom }} {{ consultation.etudiant.nom }}</h6>
+                            <p class="text-xs text-secondary mb-0">{{ consultation.etudiant.email }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">
+                          {% if consultation.rendezVous.disponibilite %}
+                            {{ consultation.rendezVous.disponibilite.dateDispo|date('d/m/Y') }}
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </p>
+                        <small class="text-xs text-muted">RDV #{{ consultation.rendezVous.rendezVousId }}</small>
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ consultation.dateRedaction|date('d/m/Y') }}</p>
+                        <small class="text-xs text-muted">
+                          {{ consultation.dateRedaction|date('H:i') }}
+                          {% if consultation.dateModification %}
+                            <br><span class="text-info">(modifiée)</span>
+                          {% endif %}
+                        </small>
+                      </td>
+                      <td class="align-middle text-center">
+                        {% if consultation.noteSatisfaction %}
+                          <div class="note-stars">
+                            {% for i in 1..5 %}
+                              {% if i <= consultation.noteSatisfaction %}
+                                <i class="fas fa-star"></i>
+                              {% else %}
+                                <i class="far fa-star"></i>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                          <span class="badge badge-note badge-sm">{{ consultation.noteSatisfaction }}/5</span>
+                        {% else %}
+                          <span class="badge badge-sm bg-gradient-warning">
+                            <i class="fas fa-edit me-1"></i>À noter
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle">
+                        <p class="text-xs text-dark mb-0">
+                          {% if consultation.avisPsy %}
+                            {{ consultation.avisPsy|length > 50 ? consultation.avisPsy|slice(0, 50) ~ '...' : consultation.avisPsy }}
+                          {% else %}
+                            <span class="text-muted"><i>Aucun avis</i></span>
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td class="align-middle text-center">
+                        <div class="btn-action-group">
+                          <button type="button" 
+                                  class="btn btn-outline-primary btn-sm view-consultation-btn"
+                                  data-id="{{ consultation.consultationId }}"
+                                  data-bs-toggle="tooltip" 
+                                  title="Voir">
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button type="button" 
+                                  class="btn btn-outline-info btn-sm edit-consultation-btn"
+                                  data-id="{{ consultation.consultationId }}"
+                                  data-bs-toggle="tooltip" 
+                                  title="Modifier">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <a href="{{ path('app_psy_consultation_detail', {'id': consultation.consultationId}) }}" 
+                             class="btn btn-outline-success btn-sm"
+                             data-bs-toggle="tooltip" 
+                             title="Détails">
+                            <i class="fas fa-external-link-alt"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# ========================================== #}
+  {# MODAL VISUALISATION CONSULTATION #}
+  {# ========================================== #}
+  <div class="modal fade" id="modalViewConsultation" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-gradient-primary">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-eye me-2"></i>Détails de la consultation
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <div class="row">
+              <div class="col-md-6">
+                <strong><i class="fas fa-user me-1"></i>Patient:</strong> <span id="viewPatientName"></span>
+              </div>
+              <div class="col-md-3">
+                <strong><i class="fas fa-calendar me-1"></i>RDV:</strong> <span id="viewRdvDate"></span>
+              </div>
+              <div class="col-md-3">
+                <strong><i class="fas fa-clock me-1"></i>Créée:</strong> <span id="viewConsultationDate"></span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="fas fa-star text-warning me-2"></i>
+              Note de satisfaction
+            </label>
+            <div id="viewRatingDisplay" class="mt-2"></div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-comment-medical me-2 text-primary"></i>
+              Avis du psychologue
+            </label>
+            <div id="viewAvisPsy" class="p-3 bg-light rounded" style="min-height: 100px; white-space: pre-wrap;"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {# ========================================== #}
+  {# MODAL MODIFICATION CONSULTATION #}
+  {# ========================================== #}
+  <div class="modal fade" id="modalEditConsultation" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="editConsultationForm" method="POST">
+          <div class="modal-header bg-gradient-primary">
+            <h5 class="modal-title text-white">
+              <i class="fas fa-edit me-2"></i>Modifier la consultation
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            
+            {# Informations consultation #}
+            <div class="alert alert-info">
+              <div class="row">
+                <div class="col-md-6">
+                  <strong><i class="fas fa-user me-1"></i>Patient:</strong> <span id="modalPatientName"></span>
+                </div>
+                <div class="col-md-3">
+                  <strong><i class="fas fa-calendar me-1"></i>RDV:</strong> <span id="modalRdvDate"></span>
+                </div>
+                <div class="col-md-3">
+                  <strong><i class="fas fa-clock me-1"></i>Créée:</strong> <span id="modalConsultationDate"></span>
+                </div>
+              </div>
+            </div>
+            
+            {# Avis du psychologue #}
+            <div class="mb-4">
+              <label for="avis_psy" class="form-label fw-bold">
+                <i class="fas fa-comment-medical me-2 text-primary"></i>
+                Avis du psychologue
+              </label>
+              <textarea class="form-control" 
+                        id="avis_psy" 
+                        name="avis_psy" 
+                        rows="5" 
+                        placeholder="Rédigez votre avis..."></textarea>
+              <small class="text-muted">
+                <i class="fas fa-lock me-1"></i>Confidentiel - visible uniquement par vous
+              </small>
+            </div>
+            
+            {# SYSTÈME D'ÉTOILES #}
+            <div class="rating-container">
+              <label class="form-label fw-bold text-center d-block mb-3">
+                <i class="fas fa-star me-2 text-warning"></i>
+                Note de satisfaction
+              </label>
+              
+              <div class="stars-wrapper">
+                <div class="stars-rating" id="starsContainer">
+                  <div class="star-item">
+                    <input type="radio" name="note_satisfaction" value="5" id="star5" class="star-radio">
+                    <label for="star5" class="star-icon">
+                      <i class="fas fa-star"></i>
+                    </label>
+                  </div>
+                  <div class="star-item">
+                    <input type="radio" name="note_satisfaction" value="4" id="star4" class="star-radio">
+                    <label for="star4" class="star-icon">
+                      <i class="fas fa-star"></i>
+                    </label>
+                  </div>
+                  <div class="star-item">
+                    <input type="radio" name="note_satisfaction" value="3" id="star3" class="star-radio">
+                    <label for="star3" class="star-icon">
+                      <i class="fas fa-star"></i>
+                    </label>
+                  </div>
+                  <div class="star-item">
+                    <input type="radio" name="note_satisfaction" value="2" id="star2" class="star-radio">
+                    <label for="star2" class="star-icon">
+                      <i class="fas fa-star"></i>
+                    </label>
+                  </div>
+                  <div class="star-item">
+                    <input type="radio" name="note_satisfaction" value="1" id="star1" class="star-radio">
+                    <label for="star1" class="star-icon">
+                      <i class="fas fa-star"></i>
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="rating-display">
+                  <span class="note-value" id="noteDisplay">-</span>/5
+                </div>
+                
+                <button type="button" class="btn btn-sm btn-outline-danger" id="clearRating">
+                  <i class="fas fa-times me-1"></i>Effacer
+                </button>
+              </div>
+              
+              <p class="text-center text-muted mt-2 mb-0">
+                <small>Cliquez sur une étoile pour noter la consultation</small>
+              </p>
+            </div>
+            
+            <input type="hidden" name="_token" value="{{ csrf_token('consultation-edit') }}">
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i>Annuler
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i>Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // ============================================
+      // ÉLÉMENTS DU DOM
+      // ============================================
+      const modalView = document.getElementById('modalViewConsultation');
+      const modalEdit = document.getElementById('modalEditConsultation');
+      const viewButtons = document.querySelectorAll('.view-consultation-btn');
+      const editButtons = document.querySelectorAll('.edit-consultation-btn');
+      const editForm = document.getElementById('editConsultationForm');
+      const avisPsyTextarea = document.getElementById('avis_psy');
+      const clearRatingBtn = document.getElementById('clearRating');
+      const noteDisplay = document.getElementById('noteDisplay');
+      const starIcons = document.querySelectorAll('.star-icon');
+      const starRadios = document.querySelectorAll('.star-radio');
+      
+      // ============================================
+      // GESTION DES ÉTOILES
+      // ============================================
+      
+      function updateStarsDisplay() {
+          const checkedRadio = document.querySelector('.star-radio:checked');
+          const rating = checkedRadio ? parseInt(checkedRadio.value) : 0;
+          
+          noteDisplay.textContent = rating > 0 ? rating : '-';
+          
+          starRadios.forEach((radio) => {
+              const value = parseInt(radio.value);
+              const label = radio.nextElementSibling;
+              
+              if (value <= rating) {
+                  label.style.color = '#ffc107';
+                  label.style.fontWeight = '900';
+              } else {
+                  label.style.color = '#ddd';
+                  label.style.fontWeight = 'normal';
+              }
+          });
+      }
+      
+      starIcons.forEach((icon) => {
+          icon.addEventListener('click', function() {
+              const radio = this.previousElementSibling;
+              radio.checked = true;
+              updateStarsDisplay();
+          });
+      });
+      
+      clearRatingBtn.addEventListener('click', function() {
+          starRadios.forEach(radio => radio.checked = false);
+          updateStarsDisplay();
+      });
+      
+      starIcons.forEach((icon) => {
+          icon.addEventListener('mouseenter', function() {
+              const radio = this.previousElementSibling;
+              const value = parseInt(radio.value);
+              
+              starRadios.forEach((r) => {
+                  const v = parseInt(r.value);
+                  const label = r.nextElementSibling;
+                  
+                  if (v <= value) {
+                      label.style.color = '#ffc107';
+                  } else {
+                      label.style.color = '#ddd';
+                  }
+              });
+          });
+      });
+      
+      document.getElementById('starsContainer').addEventListener('mouseleave', function() {
+          updateStarsDisplay();
+      });
+      
+      // ============================================
+      // BOUTON VISUALISATION
+      // ============================================
+      
+      viewButtons.forEach(button => {
+          button.addEventListener('click', async function() {
+              const consultationId = this.getAttribute('data-id');
+              const originalHTML = this.innerHTML;
+              this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+              this.disabled = true;
+              
+              try {
+                  const response = await fetch(`/psychologue/consultations/${consultationId}/data`);
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                      const data = result.data;
+                      
+                      document.getElementById('viewPatientName').textContent = data.etudiant_nom;
+                      document.getElementById('viewRdvDate').textContent = data.date_rdv;
+                      document.getElementById('viewConsultationDate').textContent = data.date_redaction;
+                      
+                      const ratingDisplay = document.getElementById('viewRatingDisplay');
+                      if (data.note_satisfaction) {
+                          let starsHTML = '<div class="note-stars" style="font-size: 1.5rem;">';
+                          for (let i = 1; i <= 5; i++) {
+                              if (i <= data.note_satisfaction) {
+                                  starsHTML += '<i class="fas fa-star"></i> ';
+                              } else {
+                                  starsHTML += '<i class="far fa-star"></i> ';
+                              }
+                          }
+                          starsHTML += '</div>';
+                          starsHTML += `<span class="badge badge-note mt-2">${data.note_satisfaction}/5</span>`;
+                          ratingDisplay.innerHTML = starsHTML;
+                      } else {
+                          ratingDisplay.innerHTML = '<span class="badge bg-gradient-warning">Non notée</span>';
+                      }
+                      
+                      const avisPsyDiv = document.getElementById('viewAvisPsy');
+                      avisPsyDiv.textContent = data.avis_psy || 'Aucun avis rédigé';
+                      
+                      const modalInstance = new bootstrap.Modal(modalView);
+                      modalInstance.show();
+                      
+                  } else {
+                      alert('Erreur: ' + (result.error || 'Impossible de charger les données'));
+                  }
+                  
+              } catch (error) {
+                  console.error('Erreur:', error);
+                  alert('Erreur lors du chargement: ' + error.message);
+              } finally {
+                  this.innerHTML = originalHTML;
+                  this.disabled = false;
+              }
+          });
+      });
+      
+      // ============================================
+      // BOUTON MODIFICATION
+      // ============================================
+      
+      editButtons.forEach(button => {
+          button.addEventListener('click', async function() {
+              const consultationId = this.getAttribute('data-id');
+              const originalHTML = this.innerHTML;
+              this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+              this.disabled = true;
+              
+              try {
+                  const response = await fetch(`/psychologue/consultations/${consultationId}/data`);
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                      const data = result.data;
+                      
+                      document.getElementById('modalPatientName').textContent = data.etudiant_nom;
+                      document.getElementById('modalRdvDate').textContent = data.date_rdv;
+                      document.getElementById('modalConsultationDate').textContent = data.date_redaction;
+                      avisPsyTextarea.value = data.avis_psy || '';
+                      
+                      editForm.action = `/psychologue/consultations/${consultationId}/edit`;
+                      
+                      starRadios.forEach(radio => radio.checked = false);
+                      if (data.note_satisfaction) {
+                          const starToCheck = document.getElementById(`star${data.note_satisfaction}`);
+                          if (starToCheck) {
+                              starToCheck.checked = true;
+                          }
+                      }
+                      updateStarsDisplay();
+                      
+                      const modalInstance = new bootstrap.Modal(modalEdit);
+                      modalInstance.show();
+                      
+                  } else {
+                      alert('Erreur: ' + (result.error || 'Impossible de charger les données'));
+                  }
+                  
+              } catch (error) {
+                  console.error('Erreur:', error);
+                  alert('Erreur lors du chargement: ' + error.message);
+              } finally {
+                  this.innerHTML = originalHTML;
+                  this.disabled = false;
+              }
+          });
+      });
+      
+      // Réinitialiser à la fermeture
+      modalEdit.addEventListener('hidden.bs.modal', function() {
+          editForm.reset();
+          starRadios.forEach(radio => radio.checked = false);
+          updateStarsDisplay();
+      });
+      
+      // Log avant soumission
+      editForm.addEventListener('submit', function(e) {
+          console.log('Formulaire soumis');
+          const formData = new FormData(this);
+          for (let [key, value] of formData.entries()) {
+              console.log(key, ':', value);
+          }
+      });
+  });
+  </script>
+{% endblock %}

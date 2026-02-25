@@ -1,0 +1,204 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Nouveau Suivi{% endblock %}
+{% block page_title %}Nouveau Suivi{% endblock %}
+{% block breadcrumb_title %}Nouveau Suivi{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Nouveau Suivi de Traitement
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Flash messages -->
+                    {% for type, messages in app.session.flashbag.all() %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    <!-- Formulaire -->
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        
+                        <!-- Traitement associé -->
+                        {% if traitement is defined %}
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body">
+                                            <h6 class="text-info mb-3">
+                                                <i class="fas fa-stethoscope me-2"></i>Traitement concerné
+                                            </h6>
+                                            <div class="d-flex align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">{{ traitement.titre }}</h6>
+                                                    <small class="text-muted">Catégorie: {{ traitement.categorie }}</small>
+                                                    {% if traitement.etudiant %}
+                                                        <br><small class="text-muted">Étudiant: {{ traitement.etudiant.prenom }} {{ traitement.etudiant.nom }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Champ dateSuivi (commun à tous) -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form_label(form.dateSuivi, null, {'label_attr': {'class': 'form-control-label fw-bold'}}) }}
+                                    {{ form_widget(form.dateSuivi, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.dateSuivi) }}
+                                    {% for error in form_errors(form.dateSuivi) %}
+                                        <div class="text-danger small mt-1">
+                                            <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FORMULAIRE ÉTUDIANT -->
+                        {% if form.ressenti is defined %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.ressenti, null, {'label_attr': {'class': 'form-control-label fw-bold'}}) }}
+                                        {{ form_widget(form.ressenti, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(form.ressenti) }}
+                                        {% for error in form_errors(form.ressenti) %}
+                                            <div class="text-danger small mt-1">
+                                                <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.evaluation, null, {'label_attr': {'class': 'form-control-label fw-bold'}}) }}
+                                        {{ form_widget(form.evaluation, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(form.evaluation) }}
+                                        {% for error in form_errors(form.evaluation) %}
+                                            <div class="text-danger small mt-1">
+                                                <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>Note de 1 à 10
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        {{ form_label(form.observations, null, {'label_attr': {'class': 'form-control-label fw-bold'}}) }}
+                                        {{ form_widget(form.observations, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez comment vous vous sentez, vos progrès, vos difficultés...'}}) }}
+                                        {{ form_errors(form.observations) }}
+                                        {% for error in form_errors(form.observations) %}
+                                            <div class="text-danger small mt-1">
+                                                <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.effectue, {'attr': {'class': 'form-check-input'}}) }}
+                                            {{ form_label(form.effectue, null, {'label_attr': {'class': 'form-check-label fw-bold'}}) }}
+                                            {{ form_errors(form.effectue) }}
+                                            {% for error in form_errors(form.effectue) %}
+                                                <div class="text-danger small mt-1">
+                                                    <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- FORMULAIRE PSYCHOLOGUE -->
+                        {% if form.heurePrevue is defined %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(form.heurePrevue, null, {'label_attr': {'class': 'form-control-label fw-bold'}}) }}
+                                        {{ form_widget(form.heurePrevue, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(form.heurePrevue) }}
+                                        {% for error in form_errors(form.heurePrevue) %}
+                                            <div class="text-danger small mt-1">
+                                                <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        {{ form_label(form.observationsPsy, null, {'label_attr': {'class': 'form-control-label fw-bold'}}) }}
+                                        {{ form_widget(form.observationsPsy, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Notes professionnelles, observations, évolutions...'}}) }}
+                                        {{ form_errors(form.observationsPsy) }}
+                                        {% for error in form_errors(form.observationsPsy) %}
+                                            <div class="text-danger small mt-1">
+                                                <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ form_widget(form.valide, {'attr': {'class': 'form-check-input'}}) }}
+                                            {{ form_label(form.valide, null, {'label_attr': {'class': 'form-check-label fw-bold'}}) }}
+                                            {{ form_errors(form.valide) }}
+                                            {% for error in form_errors(form.valide) %}
+                                                <div class="text-danger small mt-1">
+                                                    <span>{{ error.message }}</span>{% if not loop.last %}<br>{% endif %}
+                                                </div>
+                                            {% endfor %}
+                                            <div class="form-text">
+                                                <i class="fas fa-info-circle me-1"></i>Cochez cette case pour valider le suivi
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="text-center mt-4">
+                            <a href="{{ path('app_suivi_traitement_index') }}" class="btn btn-outline-secondary btn-lg me-3">
+                                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                            </a>
+                            {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary btn-lg px-5'}}) }}
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

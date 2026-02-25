@@ -1,0 +1,435 @@
+{% extends 'base_psychologue.html.twig' %}
+
+{% block title %}Gestion des Traitements{% endblock %}
+{% block page_title %}Gestion des Traitements{% endblock %}
+{% block breadcrumb_title %}Traitements{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-stethoscope me-2"></i>
+                                Gestion des Traitements
+                            </h6>
+                        </div>
+                        <div class="col-auto">
+                            {% if is_granted('ROLE_PSYCHOLOGUE') %}
+                            <a href="{{ path('app_traitement_new') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>
+                                Nouveau Traitement
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+        <!-- Message si pas de traitements -->
+        {% if traitements is empty %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Aucun traitement trouvé. 
+                {% if is_granted('ROLE_PSYCHOLOGUE') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RESPONSABLE_ETUDIANT') %}
+                    <a href="{{ path('app_traitement_new') }}" class="alert-link">Créez votre premier traitement</a> pour commencer.
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Statistiques Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Total Traitements</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-stethoscope text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">En Cours</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|filter(t => t.statut == 'en cours')|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-clock text-info" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Terminés</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|filter(t => t.statut == 'termine')|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-check-circle text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-xl-0 mb-4">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Priorité Haute</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ traitements|filter(t => t.priorite == 'HAUTE')|length }}</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                <i class="fas fa-exclamation-triangle text-danger" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres et Recherche -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un traitement...">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="statutFilter" class="form-select">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="en cours">En cours</option>
+                                    <option value="termine">Terminé</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="prioriteFilter" class="form-select">
+                                    <option value="">Toutes les priorités</option>
+                                    <option value="haute">Haute</option>
+                                    <option value="moyenne">Moyenne</option>
+                                    <option value="basse">Basse</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="categorieFilter" class="form-select">
+                                    <option value="">Toutes les catégories</option>
+                                    <option value="cognitif">Cognitif</option>
+                                    <option value="comportemental">Comportemental</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button id="resetFilters" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-redo me-1"></i>Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des Traitements -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Liste des Traitements</h6>
+                        <div>
+                            <a href="{{ path('app_suivi_traitement_index') }}" class="btn btn-info btn-sm me-2">
+                                <i class="fas fa-calendar-check me-2"></i>SuiviTraitement
+                            </a>
+                            {% if is_granted('ROLE_PSYCHOLOGUE') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RESPONSABLE_ETUDIANT') %}
+                            <a href="{{ path('app_traitement_new') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-2"></i>Nouveau Traitement
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="titre">
+                                            Titre <i class="fas fa-sort ms-1"></i>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="patient">
+                                            Patient <i class="fas fa-sort ms-1"></i>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="psychologue">
+                                            Psychologue <i class="fas fa-sort ms-1"></i>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="statut">
+                                            Statut <i class="fas fa-sort ms-1"></i>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="priorite">
+                                            Priorité <i class="fas fa-sort ms-1"></i>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 cursor-pointer" data-sort="progression">
+                                            Progression <i class="fas fa-sort ms-1"></i>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="traitementsTableBody">
+                                    {% for traitement in traitements %}
+                                    <tr class="traitement-row" 
+                                        data-statut="{{ traitement.statut }}"
+                                        data-priorite="{{ traitement.priorite }}"
+                                        data-categorie="{{ traitement.categorieLabel }}"
+                                        data-titre="{{ traitement.titre|lower }}"
+                                        data-patient="{{ traitement.etudiant ? (traitement.etudiant.fullName|default('')) : ''|lower }}">
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ traitement.titre }}</h6>
+                                                    <p class="text-xs text-secondary mb-0">{{ traitement.categorieLabel }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ traitement.etudiant ? traitement.etudiant.fullName : 'Non défini' }}</p>
+                                            <p class="text-xs text-secondary mb-0">
+                                                <i class="fas fa-calendar-check me-1"></i>
+                                                {{ traitement.nb_suivis|default(0) }} suivis
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ traitement.psychologue ? traitement.psychologue.fullName : 'Non défini' }}</p>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm {% if traitement.statut == 'EN_COURS' %}bg-gradient-info{% elseif traitement.statut == 'TERMINE' %}bg-gradient-success{% else %}bg-gradient-warning{% endif %}">
+                                                {{ traitement.statutLabel }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm {% if traitement.priorite == 'HAUTE' %}bg-gradient-danger{% elseif traitement.priorite == 'MOYENNE' %}bg-gradient-warning{% else %}bg-gradient-secondary{% endif %}">
+                                                {{ traitement.prioriteLabel }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-gradient-info" role="progressbar" style="width: {{ traitement.pourcentageCompletion }}%;" aria-valuenow="{{ traitement.pourcentageCompletion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="text-xs">{{ traitement.pourcentageCompletion|number_format(1) }}%</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                <a href="{{ path('app_traitement_show', {'id': traitement.id}) }}" class="btn btn-sm btn-info" data-toggle="tooltip" data-original-title="Voir">
+                                                    <i class="fas fa-eye me-1"></i>Voir
+                                                </a>
+                                                {% if is_granted('ROLE_PSYCHOLOGUE') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RESPONSABLE_ETUDIANT') %}
+                                                    <a href="{{ path('app_traitement_edit', {'id': traitement.id}) }}" class="btn btn-sm btn-warning" data-toggle="tooltip" data-original-title="Modifier">
+                                                        <i class="fas fa-edit me-1"></i>Modifier
+                                                    </a>
+                                                    <form method="post" action="{{ path('app_traitement_delete', {'id': traitement.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce traitement ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ traitement.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" data-original-title="Supprimer">
+                                                            <i class="fas fa-trash me-1"></i>Supprimer
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide flash messages
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+
+    // Fonctionnalités de recherche et filtrage
+    const searchInput = document.getElementById('searchInput');
+    const statutFilter = document.getElementById('statutFilter');
+    const prioriteFilter = document.getElementById('prioriteFilter');
+    const categorieFilter = document.getElementById('categorieFilter');
+    const resetFilters = document.getElementById('resetFilters');
+    const traitementsTableBody = document.getElementById('traitementsTableBody');
+    const traitementRows = document.querySelectorAll('.traitement-row');
+
+    function filterTraitements() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statutValue = statutFilter.value;
+        const prioriteValue = prioriteFilter.value;
+        const categorieValue = categorieFilter.value;
+
+        traitementRows.forEach(row => {
+            const titre = row.dataset.titre || '';
+            const patient = row.dataset.patient || '';
+            const statut = row.dataset.statut || '';
+            const priorite = row.dataset.priorite || '';
+            const categorie = row.dataset.categorie || '';
+
+            const matchesSearch = titre.includes(searchTerm) || patient.includes(searchTerm);
+            const matchesStatut = !statutValue || statut === statutValue;
+            const matchesPriorite = !prioriteValue || priorite === prioriteValue;
+            const matchesCategorie = !categorieValue || categorie === categorieValue;
+
+            if (matchesSearch && matchesStatut && matchesPriorite && matchesCategorie) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        updateNoResultsMessage();
+    }
+
+    function updateNoResultsMessage() {
+        const visibleRows = Array.from(traitementRows).filter(row => row.style.display !== 'none');
+        
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        if (!noResultsMsg) {
+            noResultsMsg = document.createElement('tr');
+            noResultsMsg.id = 'noResultsMessage';
+            noResultsMsg.innerHTML = `
+                <td colspan="7" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="fas fa-search fa-2x mb-3"></i>
+                        <p>Aucun traitement trouvé pour les critères sélectionnés</p>
+                    </div>
+                </td>
+            `;
+            traitementsTableBody.appendChild(noResultsMsg);
+        }
+
+        if (visibleRows.length === 0) {
+            noResultsMsg.style.display = '';
+        } else {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
+    function resetAllFilters() {
+        searchInput.value = '';
+        statutFilter.value = '';
+        prioriteFilter.value = '';
+        categorieFilter.value = '';
+        filterTraitements();
+    }
+
+    // Écouteurs d'événements
+    searchInput.addEventListener('input', filterTraitements);
+    statutFilter.addEventListener('change', filterTraitements);
+    prioriteFilter.addEventListener('change', filterTraitements);
+    categorieFilter.addEventListener('change', filterTraitements);
+    resetFilters.addEventListener('click', resetAllFilters);
+
+    // Fonctionnalité de tri
+    const tableHeaders = document.querySelectorAll('th[data-sort]');
+    let sortDirection = {};
+
+    tableHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const sortType = header.dataset.sort;
+            const currentDirection = sortDirection[sortType] || 'asc';
+            const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+            sortDirection[sortType] = newDirection;
+
+            const rows = Array.from(traitementsTableBody.querySelectorAll('.traitement-row'));
+            const sortedRows = rows.sort((a, b) => {
+                let aValue, bValue;
+
+                switch(sortType) {
+                    case 'titre':
+                        aValue = a.querySelector('h6').textContent.trim();
+                        bValue = b.querySelector('h6').textContent.trim();
+                        break;
+                    case 'patient':
+                        aValue = a.querySelector('td:nth-child(2) p').textContent.trim();
+                        bValue = b.querySelector('td:nth-child(2) p').textContent.trim();
+                        break;
+                    case 'psychologue':
+                        aValue = a.querySelector('td:nth-child(3) p').textContent.trim();
+                        bValue = b.querySelector('td:nth-child(3) p').textContent.trim();
+                        break;
+                    case 'statut':
+                        aValue = a.dataset.statut;
+                        bValue = b.dataset.statut;
+                        break;
+                    case 'priorite':
+                        aValue = a.dataset.priorite;
+                        bValue = b.dataset.priorite;
+                        break;
+                    case 'progression':
+                        aValue = parseFloat(a.querySelector('.progress-bar').getAttribute('aria-valuenow'));
+                        bValue = parseFloat(b.querySelector('.progress-bar').getAttribute('aria-valuenow'));
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (typeof aValue === 'number') {
+                    return newDirection === 'asc' ? aValue - bValue : bValue - aValue;
+                } else {
+                    return newDirection === 'asc' 
+                        ? aValue.localeCompare(bValue) 
+                        : bValue.localeCompare(aValue);
+                }
+            });
+
+            // Réorganiser les lignes dans le tableau
+            sortedRows.forEach(row => traitementsTableBody.appendChild(row));
+
+            // Mettre à jour les icônes de tri
+            updateSortIcons(sortType, newDirection);
+        });
+    });
+
+    function updateSortIcons(sortType, direction) {
+        tableHeaders.forEach(header => {
+            const icon = header.querySelector('.fa-sort, .fa-sort-up, .fa-sort-down');
+            if (icon) {
+                icon.className = 'fas fa-sort ms-1';
+            }
+
+            if (header.dataset.sort === sortType) {
+                const sortIcon = header.querySelector('.fa-sort');
+                sortIcon.className = `fas fa-sort-${direction === 'asc' ? 'up' : 'down'} ms-1`;
+            }
+        });
+    }
+
+    // Initialisation
+    filterTraitements();
+});
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

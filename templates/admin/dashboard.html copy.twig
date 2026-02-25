@@ -1,0 +1,422 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Dashboard Admin - UniMind{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+        <i class="fas fa-cogs me-1"></i>Dashboard
+    </li>
+{% endblock %}
+
+{% block page_title %}Dashboard Administrateur{% endblock %}
+
+{% block body %}
+<!-- Stats Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-gradient-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-white text-uppercase mb-1">
+                            Questionnaires
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-white">
+                            {{ stats.total_questionnaires ?? 0 }}
+                        </div>
+                        <div class="text-xs text-white">
+                            <span class="text-white-50">
+                                <i class="fas fa-arrow-up"></i> {{ stats.questionnaires_complets ?? 0 }}
+                            </span>
+                            complets
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-gradient-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-white text-uppercase mb-1">
+                            Questions
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-white">
+                            {{ stats.total_questions ?? 0 }}
+                        </div>
+                        <div class="text-xs text-white">
+                            Total créées
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-question-circle fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-gradient-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-white text-uppercase mb-1">
+                            Réponses
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-white">
+                            {{ stats.total_reponses ?? 0 }}
+                        </div>
+                        <div class="text-xs text-white">
+                            <span class="text-white-50">
+                                <i class="fas fa-calendar"></i> {{ stats.reponses_ce_mois ?? 0 }}
+                            </span>
+                            ce mois
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-gradient-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-white text-uppercase mb-1">
+                            Étudiants
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-white">
+                            {{ stats.total_etudiants ?? 0 }}
+                        </div>
+                        <div class="text-xs text-white">
+                            Actifs
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-graduate fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques et statistiques -->
+<div class="row mt-4">
+    <!-- Graphique d'évolution -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Évolution des réponses (30 derniers jours)</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="myAreaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Répartition par type -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Répartition par type</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="myPieChart"></canvas>
+                </div>
+                <div class="mt-4 text-center small">
+                    {% for type in stats.repartition_types %}
+                    <span class="mr-2">
+                        <i class="fas fa-circle text-{{ type.color }}"></i> {{ type.label }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques détaillées -->
+<div class="row">
+    <!-- Réponses sévères -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">Alertes - Réponses sévères</h6>
+            </div>
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Cas nécessitant une attention
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ stats.reponses_severes ?? 0 }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="progress progress-sm mr-2">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ stats.total_reponses > 0 ? (stats.reponses_severes / stats.total_reponses * 100) : 0 }}%" aria-valuenow="{{ stats.reponses_severes ?? 0 }}" aria-valuemin="0" aria-valuemax="{{ stats.total_reponses ?? 1 }}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Évolution -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">Évolution mensuelle</h6>
+            </div>
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Taux de croissance
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% if stats.evolution_pourcentage > 0 %}
+                                <span class="text-success">+{{ stats.evolution_pourcentage }}%</span>
+                            {% else %}
+                                <span class="text-danger">{{ stats.evolution_pourcentage }}%</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        {% if stats.evolution_pourcentage > 0 %}
+                            <i class="fas fa-arrow-up fa-2x text-success"></i>
+                        {% else %}
+                            <i class="fas fa-arrow-down fa-2x text-danger"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="text-xs text-gray-600">
+                    Comparaison avec la période précédente
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Actions rapides -->
+    <div class="col-lg-8 mb-lg-0 mb-4">
+        <div class="card">
+            <div class="card-header pb-0 p-3">
+                <div class="d-flex justify-content-between">
+                    <h6 class="mb-0">📊 Actions rapides</h6>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="ni ni-collection text-primary text-3xl mb-3"></i>
+                                <h6>Gestion des Questionnaires</h6>
+                                <p class="text-sm">CRUD complet des questionnaires</p>
+                                <a href="{{ path('admin_questionnaire_index') }}" class="btn btn-primary btn-sm">
+                                    Accéder
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="ni ni-bullet-list-67 text-success text-3xl mb-3"></i>
+                                <h6>Gestion des Questions</h6>
+                                <p class="text-sm">CRUD complet des questions</p>
+                                <a href="{{ path('admin_question_index') }}" class="btn btn-success btn-sm">
+                                    Accéder
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dernières activités -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header pb-0 p-3">
+                <h6 class="mb-0">🕒 Dernières activités</h6>
+            </div>
+            <div class="card-body p-3">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item px-0">
+                        <div class="d-flex">
+                            <div class="avatar avatar-sm bg-gradient-primary me-3">
+                                <i class="ni ni-collection"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <h6 class="text-sm mb-0">Nouveau questionnaire</h6>
+                                <p class="text-xs text-secondary mb-0">il y a 2 heures</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item px-0">
+                        <div class="d-flex">
+                            <div class="avatar avatar-sm bg-gradient-success me-3">
+                                <i class="ni ni-bullet-list-67"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <h6 class="text-sm mb-0">5 questions ajoutées</h6>
+                                <p class="text-xs text-secondary mb-0">il y a 4 heures</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item px-0">
+                        <div class="d-flex">
+                            <div class="avatar avatar-sm bg-gradient-warning me-3">
+                                <i class="ni ni-single-copy-04"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <h6 class="text-sm mb-0">3 nouvelles réponses</h6>
+                                <p class="text-xs text-secondary mb-0">Aujourd'hui</p>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Documentation -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📝 Guide d'administration</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">Création</h6>
+                            <ol class="mb-0 ps-3">
+                                <li>Créer un questionnaire</li>
+                                <li>Ajouter des questions</li>
+                                <li>Définir les seuils</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">Édition</h6>
+                            <ol class="mb-0 ps-3">
+                                <li>Modifier les questionnaires</li>
+                                <li>Éditer les questions</li>
+                                <li>Ajuster les scores</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-success">
+                            <h6 class="alert-heading">Suppression</h6>
+                            <ol class="mb-0 ps-3">
+                                <li>Supprimer avec confirmation</li>
+                                <li>Archiver les données</li>
+                                <li>Exporter les statistiques</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour les graphiques -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique d'évolution des réponses
+const ctx = document.getElementById('myAreaChart').getContext('2d');
+const myAreaChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ stats.graphique_labels|json_encode()|raw }},
+        datasets: [{
+            label: 'Réponses par jour',
+            data: {{ stats.graphique_data|json_encode()|raw }},
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Graphique de répartition par type
+const ctxPie = document.getElementById('myPieChart').getContext('2d');
+const myPieChart = new Chart(ctxPie, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for type in stats.repartition_types %}'{{ type.label }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for type in stats.repartition_types %}{{ type.nombre_questionnaires }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 206, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)',
+                'rgba(255, 159, 64, 0.8)',
+                'rgba(201, 203, 207, 0.8)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

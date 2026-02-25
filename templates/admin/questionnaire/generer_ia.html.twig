@@ -1,0 +1,130 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Génération IA{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">🤖 Génération IA de Questions</h3>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>💡 Comment ça marche ?</strong>
+                        <ol class="mb-0">
+                            <li>Entrez une thématique</li>
+                            <li>Choisissez le nombre de questions</li>
+                            <li>L'IA génère en 30-60 secondes</li>
+                        </ol>
+                    </div>
+
+                    <form id="form-generer-ia" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Thématique *</strong></label>
+                            <input type="text" name="thematique" class="form-control" 
+                                   placeholder="Ex: Stress lié aux examens" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><strong>Nombre</strong></label>
+                                <input type="number" name="nombre" class="form-control" 
+                                       value="10" min="5" max="10">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><strong>Questionnaire</strong></label>
+                                <select name="questionnaire_id" class="form-select">
+                                    <option value="">-- Prévisualiser --</option>
+                                    {% for q in questionnaires %}
+                                        <option value="{{ q.questionnaireId }}">{{ q.nom }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100" id="btn-generer">
+                            <i class="fas fa-robot me-2"></i>Générer
+                        </button>
+                    </form>
+
+                    <div id="resultats" class="mt-4" style="display: none;">
+                        <hr>
+                        <h5>✅ Questions Générées</h5>
+                        <div id="liste-questions"></div>
+                    </div>
+
+                    <div id="loader" class="text-center mt-4" style="display: none;">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">🤖 Génération en cours...</p>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <a href="{{ path('admin_questionnaire_index') }}" class="btn btn-secondary">
+                        ← Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('form-generer-ia').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    document.getElementById('loader').style.display = 'block';
+    document.getElementById('resultats').style.display = 'none';
+    document.getElementById('btn-generer').disabled = true;
+    
+    try {
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            afficherQuestions(data.questions);
+            document.getElementById('resultats').style.display = 'block';
+        } else {
+            alert('❌ ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Erreur : ' + error.message);
+    } finally {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('btn-generer').disabled = false;
+    }
+});
+
+function afficherQuestions(questions) {
+    const container = document.getElementById('liste-questions');
+    container.innerHTML = '';
+    
+    questions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.className = 'card mb-2';
+        div.innerHTML = `
+            <div class="card-body">
+                <h6>${i + 1}. ${q.texte}</h6>
+                <small class="text-muted">${q.options_quest.join(' | ')}</small>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+</script>
+{% endblock %}

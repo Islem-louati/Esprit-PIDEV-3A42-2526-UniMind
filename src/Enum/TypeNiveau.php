@@ -1,14 +1,10 @@
 <?php
-namespace App\Entity\Enum;
+
+namespace App\Enum;
 
 enum TypeNiveau: string
 {
-    case DEBUTANT = 'débutant';
-    case INTERMEDIAIRE = 'intermédiaire';
-    case AVANCE = 'avancé';
-    
-    public static function getValues(): array
-    {
-        return array_map(fn($case) => $case->value, self::cases());
-    }
+    case DEBUTANT = 'debutant';
+    case INTERMEDIAIRE = 'intermediaire';
+    case AVANCE = 'avance';
 }

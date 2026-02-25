@@ -11,6 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class QuestionType extends AbstractType
 {
@@ -18,22 +19,25 @@ class QuestionType extends AbstractType
     {
         $builder
             ->add('texte', TextareaType::class, [
-                'label'    => 'Texte de la question',
+                'label'    => 'Texte de la question *',
                 'required' => true,
                 'attr'     => [
                     'rows'        => 3,
                     'class'       => 'form-control',
                     'placeholder' => 'Entrez le texte de la question...'
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Le champ « Texte de la question » ne peut pas être vide.']),
                 ]
             ])
             ->add('type_question', ChoiceType::class, [
                 'label'   => 'Type de question',
                 'choices' => [
                     'Likert (échelle)'    => 'likert',
-                    'Choix multiple'      => 'multiple',
-                    'Oui/Non'             => 'yesno',
-                    'Texte libre'         => 'text',
-                    'Note numérique (0-10)' => 'numeric'
+                    'Choix multiple'      => 'choix_multiple',
+                    'Oui/Non'             => 'oui_non',
+                    'Texte libre'         => 'texte_libre',
+                    'Échelle numérique'   => 'echelle'
                 ],
                 'required' => true,
                 'attr'     => [
